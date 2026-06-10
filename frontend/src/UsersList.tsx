@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./UsersList.css";
 
 // Userオブジェクトの型を定義
 type User = {
@@ -139,63 +140,30 @@ function UsersList() {
   );
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#E8E8E8",
-      }}
-    >
+    <div className="users-list">
       {/* ヘッダー */}
-      <header
-        style={{
-          backgroundColor: "#2C5A9C",
-          color: "white",
-          padding: "12px 24px",
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
+      <header className="header">
         <h1>書籍貸出管理システム</h1>
         <span>ようこそ</span>
       </header>
 
       {/* 検索エリア */}
-      <div
-        style={{
-          backgroundColor: "white",
-          margin: "20px",
-          padding: "20px",
-          borderRadius: "15px",
-        }}
-      >
-        <h1 style={{marginBottom: "15px",fontSize: "20px", color: "black",textAlign: "left"}}>社員検索</h1>
+      <div className="search-container">
+        <h1 className="section-title">社員検索</h1>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          <select
+        <div className="search-form">
+          <select className="search-select"
             value={searchField}
             onChange={(e) =>
               setSearchField(e.target.value)
-            }
-            style={{
-              border: "1px solid black",
-              padding: "5px",
-              paddingRight: "50px",
-              backgroundColor: "white",
-              color: "black",
-            }}
-          >
+            }>
             <option>メールアドレス</option>
             <option>氏名</option>
             <option>社員コード</option>
           </select>
 
           <input
+            className="search-input"
             type="text"
             value={searchValue}
             onChange={(e) =>
@@ -207,88 +175,43 @@ function UsersList() {
               }
             }}
             placeholder={`${searchField}を入力`}
-            style={{
-              border: "1px solid black",
-              marginLeft: "10px",
-              padding: "5px",
-              flex: 1,
-              backgroundColor: "white",
-              color: "black",
-            }}
           />
           <select
+            className="search-select"
             value={department}
             onChange={(e) =>
               setDepartment(e.target.value)
             }
-            style={{
-              border: "1px solid black",
-              padding: "5px",
-              backgroundColor: "white",
-              color: "black",
-            }}
-          >
+>
             <option value="">全拠点</option>
             <option value="0">東京</option>
             <option value="1">大阪</option>
           </select>
 
-          <button
-            onClick={handleSearch}
-            style={{
-              padding: "5px 15px",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <button className="search-button"
+            onClick={handleSearch}>
             検索
           </button>
         </div>
 
         {/* 一覧 */}
-        <div
-          style={{
-            backgroundColor: "white",
-            marginTop: "30px",
-          }}
-        >
-          <h1
-            style={{
-              paddingBottom: "20px",
-              fontSize: "20px",color: "black",textAlign: "left",
-            }}
-          >
+        <div className="results-container">
+          <h1 className="result-title">
             検索結果
             <strong>{filteredUsers.length}</strong> 件
           </h1>
 
           <table
             border={1}
-            width="100%"
-            style={{
-              borderCollapse: "collapse",
-              textAlign: "left",
-            }}
-          >
-            <thead
-              style={{
-                backgroundColor: "#bce0ea",
-                borderBottom:
-                  "2px solid #2C5A9C",
-                height: "60px",
-              }}
-            >
+            className="user-table">
+            <thead className="user-table thead">
               <tr>
                 <th>ID</th>
 
-                <th
+                <th className="sortable-header"
                   onClick={() =>
                     handleSort("name")
-                  }
-                  style={{
-                    cursor: "pointer",
-                    userSelect: "none",
-                  }}
-                >
+                  }>
                   名前
                   {sortField === "name" &&
                     (sortOrder === "asc"
@@ -298,17 +221,12 @@ function UsersList() {
 
                 <th>メールアドレス</th>
 
-                <th
+                <th className="sortable-header"
                   onClick={() =>
                     handleSort(
                       "employee_code"
                     )
-                  }
-                  style={{
-                    cursor: "pointer",
-                    userSelect: "none",
-                  }}
-                >
+                  }>
                   社員コード
                   {sortField ===
                     "employee_code" &&
@@ -325,13 +243,8 @@ function UsersList() {
 
             <tbody>
               {currentUsers.map((user) => (
-                <tr
+                <tr className="user-row "
                   key={user.id}
-                  style={{
-                    borderBottom:
-                      "1px solid #ddd",
-                    cursor: "pointer",
-                  }}
                   onMouseEnter={(e) =>
                     (e.currentTarget.style.backgroundColor =
                       "#f0f8ff")
@@ -357,15 +270,7 @@ function UsersList() {
               ))}
             </tbody>
           </table>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "5px",
-              marginTop: "20px",
-              flexWrap: "wrap",
-            }}>
+          <div className="pagination">
             <button
               disabled={currentPage === 1}
               onClick={() =>
@@ -415,25 +320,9 @@ function UsersList() {
           </div>
         </div>
       </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: "20px",
-          paddingRight: "30px",
-        }}>
-        <button
-          onClick={() => navigate("/users/create")}
-          style={{
-            width: "60px",
-            height: "60px",
-            borderRadius: "50%",
-            border: "none",
-            backgroundColor: "#2C5A9C",
-            color: "white",
-            fontSize: "32px",
-            cursor: "pointer",
-          }}>
+      <div className="create-button-container ">
+        <button className="create-button"
+          onClick={() => navigate("/users/create")}>
           ＋
         </button>
       </div>
