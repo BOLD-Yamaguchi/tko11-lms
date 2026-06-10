@@ -1,3 +1,44 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import UserList from "./UsersList";
+import UserDetail from "./UserDetail";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* ユーザー一覧画面 */}
+        <Route path="/" element={<UserList />} />
+
+        {/* ユーザー詳細画面 */}
+        <Route path="/users/:id" element={<UserDetail />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*import { useEffect, useState } from 'react';
 
 function App() {
@@ -24,21 +65,26 @@ function App() {
 
 export default App;*/
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./Home";
-import CreateBook from "./CreateBook";
-import DeleteBook from "./DeleteBook";
+//import { BrowserRouter, Routes, Route } from "react-router-dom";
+//import Home from "./Home";
+//import CreateBook from "./CreateBook";
+//import DeleteBook from "./DeleteBook";
+//
+//function App() {
+//  return (
+//    <BrowserRouter>
+//      <Routes>
+//        <Route path="/" element={<Home />} />
+//        <Route path="/create" element={<CreateBook />} />
+//        <Route path="/delete" element={<DeleteBook />} />
+//      </Routes>
+//    </BrowserRouter>
+//  );
+//}
+//
+//export default App;
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/create" element={<CreateBook />} />
-        <Route path="/delete" element={<DeleteBook />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
 
-export default App;
+
+
+
