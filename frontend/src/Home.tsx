@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-function Home() {
+//型定義を追加
+interface Book {
+  id: number;
+  title: string;
+}
 
-  const [books, setBooks] = useState([]);
+function Home() {
+  const [books, setBooks] = useState<Book[]>([]);
 
   useEffect(() => {
     fetchBooks();
