@@ -52,19 +52,19 @@ public class User {
         this.employee_code = employee_code;
     }
     
-    public Long getrole() {
+    public Long getRole() {
         return role;
     }
 
-    public void setrole(Long role) {
+    public void setRole(Long role) {
         this.role = role;
     }
     
-    public Long getdepertment() {
+    public Long getDepartment() {
         return depertment;
     }
 
-    public void setdepertment(Long depertment) {
+    public void setDepartment(Long depertment) {
         this.depertment = depertment;
     }
 }

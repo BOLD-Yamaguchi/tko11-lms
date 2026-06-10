@@ -93,6 +93,7 @@ function Login() {
             <div
               style={{
                 marginBottom: "20px",
+                textAlign: "left",
               }}
             >
               <label
@@ -128,16 +129,14 @@ function Login() {
                     color: "red",
                     fontSize: "12px",
                     marginTop: "5px",
-                  }}
-                >
+                  }}>
                   {errors.email && (
                     <p
                       style={{
                         color: "red",
                         fontSize: "12px",
                         marginTop: "5px",
-                      }}
-                    >
+                      }}>
                       {String(errors.email.message)}
                     </p>
                   )}
@@ -149,8 +148,8 @@ function Login() {
             <div
               style={{
                 marginBottom: "25px",
-              }}
-            >
+                textAlign: "left",
+              }}>
               <label
                 style={{
                   display: "block",
@@ -220,8 +219,7 @@ function Login() {
                     color: "red",
                     fontSize: "12px",
                     marginTop: "5px",
-                  }}
-                >
+                  }}>
                   {errors.password && (
                     <p
                       style={{
@@ -250,8 +248,7 @@ function Login() {
                 borderRadius: "5px",
                 cursor: "pointer",
                 fontSize: "16px",
-              }}
-            >
+              }}>
               {isSubmitting
                 ? "ログイン中..."
                 : "ログインする"}
@@ -264,8 +261,7 @@ function Login() {
               marginTop: "25px",
               textAlign: "center",
               fontSize: "14px",
-            }}
-          >
+            }}>
             <p>
               アカウントをお持ちでない方は
               <button
@@ -279,8 +275,7 @@ function Login() {
                   color: "#4285F4",
                   cursor: "pointer",
                   marginLeft: "5px",
-                }}
-              >
+                }}>
                 新規ユーザー登録
               </button>
             </p>
@@ -293,8 +288,7 @@ function Login() {
                   background: "none",
                   color: "#4285F4",
                   cursor: "pointer",
-                }}
-              >
+                }}>
                 パスワードを忘れた方
               </button>
             </p>

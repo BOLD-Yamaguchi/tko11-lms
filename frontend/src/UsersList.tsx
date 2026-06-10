@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Userオブジェクトの型を定義
 type User = {
   id: number;
   name: string;
@@ -16,7 +17,9 @@ function UsersList() {
   // APIから取得した全ユーザー
   const [users, setUsers] = useState<User[]>([]);
 
+  // 現在表示中のページ番号
   const [currentPage, setCurrentPage] = useState(1);
+  // 1ページあたりの表示件数
   const itemsPerPage = 2;
 
   // 画面表示用ユーザー
@@ -24,9 +27,9 @@ function UsersList() {
 
   // 検索条件
   const [searchField, setSearchField] = useState("メールアドレス");
-
+  // 入力値
   const [searchValue, setSearchValue] = useState("");
-
+  // 所属拠点
   const [department, setDepartment] = useState("");
 
   // ソート情報
@@ -61,25 +64,19 @@ function UsersList() {
       if (query) {
         switch (searchField) {
           case "メールアドレス":
-            matchesKeyword = user.email
-              .toLowerCase()
-              .includes(query);
+            matchesKeyword = user.email.toLowerCase().includes(query);
             break;
 
           case "氏名":
-            matchesKeyword = user.name.includes(
-              searchValue.trim()
-            );
+            matchesKeyword = user.name.includes(searchValue.trim());
             break;
 
           case "社員コード":
-            matchesKeyword = user.employee_code
-              .toLowerCase()
-              .includes(query);
+            matchesKeyword = user.employee_code.toLowerCase().includes(query);
             break;
         }
       }
-
+      // 所属拠点の絞り込み
       const matchesDepartment =
         department === "" ||
         String(user.department) === department;
@@ -128,13 +125,14 @@ function UsersList() {
     setSortOrder(newOrder);
   };
 
+  // 総ページ数
   const totalPages = Math.ceil(
     filteredUsers.length / itemsPerPage
   );
-
+  // 開始位置
   const startIndex =
     (currentPage - 1) * itemsPerPage;
-
+  // 現在のページに表示するユーザー
   const currentUsers = filteredUsers.slice(
     startIndex,
     startIndex + itemsPerPage
@@ -334,29 +332,27 @@ function UsersList() {
                       "1px solid #ddd",
                     cursor: "pointer",
                   }}
-                  onClick={() =>
-                    (window.location.href = `/users/${user.id}`)
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      "#f0f8ff")
                   }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      "white")
+                  }
+                  onClick={() => navigate(`/users/${user.id}`)}
                 >
-                  <td style={{ padding: "15px" }}>
-                    {user.id}
-                  </td>
+                  <td style={{ padding: "15px" }}>{user.id}</td>
 
                   <td>{user.name}</td>
 
                   <td>{user.email}</td>
 
-                  <td>
-                    {user.employee_code}
-                  </td>
+                  <td>{user.employee_code}</td>
 
-                  <td>
-                    {user.role === 1 ? "管理者" : "一般社員"}
-                  </td>
+                  <td>{user.role === 1 ? "管理者" : "一般社員"}</td>
 
-                  <td>
-                    {user.department === 1 ? "大阪": "東京"}
-                  </td>
+                  <td>{user.department === 1 ? "大阪": "東京"}</td>
                 </tr>
               ))}
             </tbody>
