@@ -1,119 +1,33 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  employee_code: string;
-  role: number;
-  department: number;
-};
+function Login() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-function UsersList() {
-  // APIから取得した全ユーザー
-  const [users, setUsers] = useState<User[]>([]);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
-  // 画面表示用ユーザー
-  const [filteredUsers, setFilteredUsers] =
-    useState<User[]>([]);
+  const onSubmit = async (data) => {
+    setIsSubmitting(true);
 
-  // 検索条件
-  const [searchField, setSearchField] =
-    useState("メールアドレス");
+    console.log(data);
 
-  const [searchValue, setSearchValue] =
-    useState("");
-
-  // ソート情報
-  const [sortField, setSortField] =
-    useState<keyof User | null>(null);
-
-  const [sortOrder, setSortOrder] =
-    useState<"asc" | "desc">("asc");
-
-  // 初回表示時
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  // ユーザー一覧取得
-  const fetchUsers = async (): Promise<void> => {
-    const response = await fetch(
-      "http://localhost:8080/users"
-    );
-
-    const data: User[] = await response.json();
-
-    setUsers(data);
-    setFilteredUsers(data);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      alert("ログイン成功");
+      navigate("/UsersList");
+    }, 1000);
   };
 
-  // 検索
-  const handleSearch = (): void => {
-    const query = searchValue.trim().toLowerCase();
-
-    if (!query) {
-      setFilteredUsers(users);
-      return;
-    }
-
-    const result = users.filter((user) => {
-      switch (searchField) {
-        case "メールアドレス":
-          return user.email
-            .toLowerCase()
-            .includes(query);
-
-        case "氏名":
-          return user.name.includes(
-            searchValue.trim()
-          );
-
-        case "社員コード":
-          return user.employee_code
-            .toLowerCase()
-            .includes(query);
-
-        default:
-          return true;
-      }
-    });
-
-    setFilteredUsers(result);
-  };
-
-  // ソート
-  const handleSort = (
-    field: keyof User
-  ): void => {
-    const newOrder =
-      sortField === field &&
-      sortOrder === "asc"
-        ? "desc"
-        : "asc";
-
-    const sortedUsers = [...filteredUsers].sort(
-      (a, b) => {
-        const valueA = a[field] ?? "";
-        const valueB = b[field] ?? "";
-
-        if (newOrder === "asc") {
-          return String(valueA).localeCompare(
-            String(valueB),
-            "ja"
-          );
-        }
-
-        return String(valueB).localeCompare(
-          String(valueA),
-          "ja"
-        );
-      }
-    );
-
-    setFilteredUsers(sortedUsers);
-    setSortField(field);
-    setSortOrder(newOrder);
+  const onNavigateToSignup = () => {
+    window.location.href = "/signup";
   };
 
   return (
@@ -121,6 +35,8 @@ function UsersList() {
       style={{
         minHeight: "100vh",
         backgroundColor: "#E8E8E8",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* ヘッダー */}
@@ -131,200 +47,262 @@ function UsersList() {
           padding: "12px 24px",
           display: "flex",
           justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <h1>書籍貸出管理システム</h1>
+        <h2 style={{ margin: 0 }}>
+          書籍貸出管理システム
+        </h2>
+
         <span>ようこそ</span>
       </header>
 
-      {/* 検索エリア */}
+      {/* メイン */}
       <div
         style={{
-          backgroundColor: "white",
-          margin: "20px",
-          padding: "20px",
-          borderRadius: "15px",
+          flex: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "30px",
         }}
       >
-        <h1 style={{marginBottom: "15px",fontSize: "20px", color: "black",textAlign: "left"}}>社員検索</h1>
-
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
+            width: "100%",
+            maxWidth: "480px",
+            backgroundColor: "#FFFFFF",
+            borderRadius: "10px",
+            boxShadow:
+              "0 2px 8px rgba(0,0,0,0.15)",
+            padding: "40px",
           }}
         >
-          <select
-            value={searchField}
-            onChange={(e) =>
-              setSearchField(e.target.value)
-            }
+          <h2
             style={{
-              border: "1px solid black",
-              padding: "5px",
-              paddingRight: "50px",
-              backgroundColor: "white",
-              color: "black",
+              textAlign: "center",
+              marginBottom: "30px",
+              color: "black"
             }}
           >
-            <option>メールアドレス</option>
-            <option>氏名</option>
-            <option>社員コード</option>
-          </select>
+            ログイン
+          </h2>
 
-          <input
-            type="text"
-            value={searchValue}
-            onChange={(e) =>
-              setSearchValue(e.target.value)
-            }
-            placeholder={`${searchField}を入力`}
-            style={{
-              border: "1px solid black",
-              marginLeft: "10px",
-              padding: "5px",
-              flex: 1,
-              backgroundColor: "white",
-              color: "black",
-            }}
-          />
-
-          <button
-            onClick={handleSearch}
-            style={{
-              padding: "5px 15px",
-              whiteSpace: "nowrap",
-            }}
-          >
-            検索
-          </button>
-        </div>
-
-        {/* 一覧 */}
-        <div
-          style={{
-            backgroundColor: "white",
-            marginTop: "30px",
-          }}
-        >
-          <h1
-            style={{
-              paddingBottom: "20px",
-              fontSize: "20px",color: "black",textAlign: "left",
-            }}
-          >
-            検索結果
-          </h1>
-
-          <table
-            border={1}
-            width="100%"
-            style={{
-              borderCollapse: "collapse",
-              textAlign: "left",
-            }}
-          >
-            <thead
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {/* メールアドレス */}
+            <div
               style={{
-                backgroundColor: "#bce0ea",
-                borderBottom:
-                  "2px solid #2C5A9C",
-                height: "60px",
+                marginBottom: "20px",
               }}
             >
-              <tr>
-                <th>ID</th>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  color: "black"
+                }}
+              >
+                ユーザーID（メールアドレス）
+              </label>
 
-                <th
-                  onClick={() =>
-                    handleSort("name")
-                  }
+              <input
+                type="email"
+                placeholder="sample@example.com"
+                {...register("email", {
+                  required:
+                    "メールアドレスを入力してください",
+                })}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border:
+                    "1px solid #CCCCCC",
+                  borderRadius: "5px",
+                  boxSizing: "border-box",
+                }}
+              />
+
+              {errors.email && (
+                <p
                   style={{
-                    cursor: "pointer",
-                    userSelect: "none",
+                    color: "red",
+                    fontSize: "12px",
+                    marginTop: "5px",
                   }}
                 >
-                  名前
-                  {sortField === "name" &&
-                    (sortOrder === "asc"
-                      ? " ▲"
-                      : " ▼")}
-                </th>
+                  {errors.email && (
+                    <p
+                      style={{
+                        color: "red",
+                        fontSize: "12px",
+                        marginTop: "5px",
+                      }}
+                    >
+                      {String(errors.email.message)}
+                    </p>
+                  )}
+                </p>
+              )}
+            </div>
 
-                <th>メールアドレス</th>
+            {/* パスワード */}
+            <div
+              style={{
+                marginBottom: "25px",
+              }}
+            >
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  color: "black"
+                }}
+              >
+                パスワード
+              </label>
 
-                <th
+              <div
+                style={{
+                  position: "relative",
+                }}
+              >
+                <input
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  placeholder="********"
+                  {...register("password", {
+                    required:
+                      "パスワードを入力してください",
+                  })}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    paddingRight: "40px",
+                    border:
+                      "1px solid #CCCCCC",
+                    borderRadius: "5px",
+                    boxSizing: "border-box",
+                  }}
+                />
+
+                <button
+                  type="button"
                   onClick={() =>
-                    handleSort(
-                      "employee_code"
+                    setShowPassword(
+                      !showPassword
                     )
                   }
                   style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform:
+                      "translateY(-50%)",
+                    border: "none",
+                    background: "none",
                     cursor: "pointer",
-                    userSelect: "none",
                   }}
                 >
-                  社員コード
-                  {sortField ===
-                    "employee_code" &&
-                    (sortOrder === "asc"
-                      ? " ▲"
-                      : " ▼")}
-                </th>
+                  {showPassword ? (
+                    <EyeOff size={18} />
+                  ) : (
+                    <Eye size={18} />
+                  )}
+                </button>
+              </div>
 
-                <th>権限</th>
-
-                <th>所属場所</th>
-
-                <th>貸出中情報</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredUsers.map((user) => (
-                <tr
-                  key={user.id}
+              {errors.password && (
+                <p
                   style={{
-                    borderBottom:
-                      "1px solid #ddd",
-                    cursor: "pointer",
+                    color: "red",
+                    fontSize: "12px",
+                    marginTop: "5px",
                   }}
-                  onClick={() =>
-                    (window.location.href = `/users/${user.id}`)
-                  }
                 >
-                  <td style={{ padding: "15px" }}>
-                    {user.id}
-                  </td>
+                  {errors.password && (
+                    <p
+                      style={{
+                        color: "red",
+                        fontSize: "12px",
+                        marginTop: "5px",
+                      }}
+                    >
+                      {String(errors.password.message)}
+                    </p>
+                  )}
+                </p>
+              )}
+            </div>
 
-                  <td>{user.name}</td>
+            {/* ログインボタン */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                width: "100%",
+                padding: "12px",
+                backgroundColor: "#4285F4",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+                fontSize: "16px",
+              }}
+            >
+              {isSubmitting
+                ? "ログイン中..."
+                : "ログインする"}
+            </button>
+          </form>
 
-                  <td>{user.email}</td>
+          {/* 下部リンク */}
+          <div
+            style={{
+              marginTop: "25px",
+              textAlign: "center",
+              fontSize: "14px",
+            }}
+          >
+            <p>
+              アカウントをお持ちでない方は
+              <button
+                type="button"
+                onClick={
+                  onNavigateToSignup
+                }
+                style={{
+                  border: "none",
+                  background: "none",
+                  color: "#4285F4",
+                  cursor: "pointer",
+                  marginLeft: "5px",
+                }}
+              >
+                新規ユーザー登録
+              </button>
+            </p>
 
-                  <td>
-                    {user.employee_code}
-                  </td>
-
-                  <td>
-                    {user.role === 1 ? "管理者" : "一般社員"}
-                  </td>
-
-                  <td>
-                    {user.department === 1 ? "大阪": "東京"}
-                  </td>
-
-                  <td style={{ color: "red" }}>
-                    貸出中
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            <p>
+              <button
+                type="button"
+                style={{
+                  border: "none",
+                  background: "none",
+                  color: "#4285F4",
+                  cursor: "pointer",
+                }}
+              >
+                パスワードを忘れた方
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-export default UsersList;
+export default Login;

@@ -2,13 +2,16 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import UserList from "./UsersList";
 import UserDetail from "./UserDetail";
+import Login from "./Login";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* ログイン画面 */}
+        <Route path="/" element={<Login />} />
         {/* ユーザー一覧画面 */}
-        <Route path="/" element={<UserList />} />
+        <Route path="/UsersList" element={<UserList />} />
 
         {/* ユーザー詳細画面 */}
         <Route path="/users/:id" element={<UserDetail />} />
