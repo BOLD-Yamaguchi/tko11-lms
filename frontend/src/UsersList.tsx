@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type User = {
   id: number;
@@ -10,26 +11,28 @@ type User = {
 };
 
 function UsersList() {
+  const navigate = useNavigate();
+
   // APIから取得した全ユーザー
   const [users, setUsers] = useState<User[]>([]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 2;
+
   // 画面表示用ユーザー
-  const [filteredUsers, setFilteredUsers] =
-    useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 
   // 検索条件
-  const [searchField, setSearchField] =
-    useState("メールアドレス");
+  const [searchField, setSearchField] = useState("メールアドレス");
 
-  const [searchValue, setSearchValue] =
-    useState("");
+  const [searchValue, setSearchValue] = useState("");
+
+  const [department, setDepartment] = useState("");
 
   // ソート情報
-  const [sortField, setSortField] =
-    useState<keyof User | null>(null);
+  const [sortField, setSortField] = useState<keyof User | null>(null);
 
-  const [sortOrder, setSortOrder] =
-    useState<"asc" | "desc">("asc");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // 初回表示時
   useEffect(() => {
@@ -52,34 +55,43 @@ function UsersList() {
   const handleSearch = (): void => {
     const query = searchValue.trim().toLowerCase();
 
-    if (!query) {
-      setFilteredUsers(users);
-      return;
-    }
-
     const result = users.filter((user) => {
-      switch (searchField) {
-        case "メールアドレス":
-          return user.email
-            .toLowerCase()
-            .includes(query);
+      let matchesKeyword = true;
 
-        case "氏名":
-          return user.name.includes(
-            searchValue.trim()
-          );
+      if (query) {
+        switch (searchField) {
+          case "メールアドレス":
+            matchesKeyword = user.email
+              .toLowerCase()
+              .includes(query);
+            break;
 
-        case "社員コード":
-          return user.employee_code
-            .toLowerCase()
-            .includes(query);
+          case "氏名":
+            matchesKeyword = user.name.includes(
+              searchValue.trim()
+            );
+            break;
 
-        default:
-          return true;
+          case "社員コード":
+            matchesKeyword = user.employee_code
+              .toLowerCase()
+              .includes(query);
+            break;
+        }
       }
+
+      const matchesDepartment =
+        department === "" ||
+        String(user.department) === department;
+
+      return (
+        matchesKeyword &&
+        matchesDepartment
+      );
     });
 
     setFilteredUsers(result);
+    setCurrentPage(1);
   };
 
   // ソート
@@ -115,6 +127,18 @@ function UsersList() {
     setSortField(field);
     setSortOrder(newOrder);
   };
+
+  const totalPages = Math.ceil(
+    filteredUsers.length / itemsPerPage
+  );
+
+  const startIndex =
+    (currentPage - 1) * itemsPerPage;
+
+  const currentUsers = filteredUsers.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   return (
     <div
@@ -179,6 +203,11 @@ function UsersList() {
             onChange={(e) =>
               setSearchValue(e.target.value)
             }
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
             placeholder={`${searchField}を入力`}
             style={{
               border: "1px solid black",
@@ -189,6 +218,22 @@ function UsersList() {
               color: "black",
             }}
           />
+          <select
+            value={department}
+            onChange={(e) =>
+              setDepartment(e.target.value)
+            }
+            style={{
+              border: "1px solid black",
+              padding: "5px",
+              backgroundColor: "white",
+              color: "black",
+            }}
+          >
+            <option value="">全拠点</option>
+            <option value="0">東京</option>
+            <option value="1">大阪</option>
+          </select>
 
           <button
             onClick={handleSearch}
@@ -215,6 +260,7 @@ function UsersList() {
             }}
           >
             検索結果
+            <strong>{filteredUsers.length}</strong> 件
           </h1>
 
           <table
@@ -276,13 +322,11 @@ function UsersList() {
                 <th>権限</th>
 
                 <th>所属場所</th>
-
-                <th>貸出中情報</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredUsers.map((user) => (
+              {currentUsers.map((user) => (
                 <tr
                   key={user.id}
                   style={{
@@ -313,15 +357,89 @@ function UsersList() {
                   <td>
                     {user.department === 1 ? "大阪": "東京"}
                   </td>
-
-                  <td style={{ color: "red" }}>
-                    貸出中
-                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "5px",
+              marginTop: "20px",
+              flexWrap: "wrap",
+            }}>
+            <button
+              disabled={currentPage === 1}
+              onClick={() =>
+                setCurrentPage(currentPage - 1)
+              }>
+              前へ
+            </button>
+
+            {Array.from(
+              { length: totalPages },
+              (_, i) => i + 1
+            ).map((page) => (
+              <button
+                key={page}
+                onClick={() =>
+                  setCurrentPage(page)
+                }
+                style={{
+                  padding: "5px 10px",
+                  border: "1px solid #ccc",
+                  cursor: "pointer",
+                  backgroundColor:
+                    page === currentPage
+                      ? "#2C5A9C"
+                      : "white",
+                  color:
+                    page === currentPage
+                      ? "white"
+                      : "black",
+                }}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              disabled={
+                currentPage === totalPages ||
+                totalPages === 0
+              }
+              onClick={() =>
+                setCurrentPage(currentPage + 1)
+              }
+            >
+              次へ
+            </button>
+          </div>
         </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginTop: "20px",
+          paddingRight: "30px",
+        }}>
+        <button
+          onClick={() => navigate("/users/create")}
+          style={{
+            width: "60px",
+            height: "60px",
+            borderRadius: "50%",
+            border: "none",
+            backgroundColor: "#2C5A9C",
+            color: "white",
+            fontSize: "32px",
+            cursor: "pointer",
+          }}>
+          ＋
+        </button>
       </div>
     </div>
   );
