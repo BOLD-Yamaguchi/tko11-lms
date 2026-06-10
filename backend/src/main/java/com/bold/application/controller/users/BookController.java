@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.bold.application.controller.users;
 
 import java.util.List;
 
@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.bold.application.entity.users.Book;
+import com.bold.application.repository.users.BookRepository;
 
 @RestController
 @RequestMapping("/books")
