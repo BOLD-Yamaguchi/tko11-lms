@@ -1,0 +1,555 @@
+import { useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  BookIcon,
+  BookmarkIcon,
+  ClockIcon,
+  PlusIcon,
+  SearchIcon,
+  UserIcon,
+  UsersIcon,
+} from './Icons'
+import {
+  BackButton,
+  BookActionModal,
+  DropdownField,
+  TextBox,
+  Toast,
+  UserMenu,
+} from './components'
+import {
+  borrowingRecords,
+  reservationRecords,
+  userLoanHistory,
+} from './mockData'
+import type { BorrowingRecord, ReservationRecord, UserRole } from './types'
+
+type MyPageProps = {
+  role: UserRole
+  onLogout: () => void
+}
+
+const roleProfiles: Record<UserRole, {
+  title: string
+  label: string
+  userId: string
+  name: string
+}> = {
+  general: {
+    title: 'ユーザー情報',
+    label: '一般ユーザー',
+    userId: 'U0001',
+    name: '山田 太郎',
+  },
+  operator: {
+    title: '貸出ユーザー情報',
+    label: '貸出ユーザー',
+    userId: 'L0001',
+    name: '貸出 担当',
+  },
+  admin: {
+    title: 'ユーザー情報',
+    label: '管理者ユーザー',
+    userId: 'A0001',
+    name: '管理 太郎',
+  },
+}
+
+type AccordionPanelProps = {
+  title: string
+  tone?: 'blue' | 'orange'
+  icon: ReactNode
+  defaultOpen?: boolean
+  children: ReactNode
+}
+
+function AccordionPanel({
+  title,
+  tone = 'blue',
+  icon,
+  defaultOpen = false,
+  children,
+}: AccordionPanelProps) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  return (
+    <section className={`mypage-section accordion-section ${tone}`}>
+      <button type="button" className="accordion-heading" onClick={() => setOpen((current) => !current)}>
+        <span>{icon}{title}</span>
+        <span className={`accordion-chevron ${open ? 'open' : ''}`}>⌄</span>
+      </button>
+      {open && <div className="accordion-content">{children}</div>}
+    </section>
+  )
+}
+
+function MyPage({ role, onLogout }: MyPageProps) {
+  const navigate = useNavigate()
+  const profile = roleProfiles[role]
+  const [borrowings, setBorrowings] = useState<BorrowingRecord[]>(borrowingRecords)
+  const [reservations, setReservations] = useState<ReservationRecord[]>(reservationRecords)
+  const [pendingLoan, setPendingLoan] = useState<ReservationRecord | null>(null)
+  const [hasReservation, setHasReservation] = useState(true)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [filterKey, setFilterKey] = useState('id')
+  const [keyword, setKeyword] = useState('')
+  const [message, setMessage] = useState('')
+
+  const filteredBorrowings = useMemo(() => {
+    const normalized = keyword.trim().toLowerCase()
+    if (!normalized) return borrowings
+    return borrowings.filter((record) => {
+      const target = filterKey === 'name'
+        ? record.borrower
+        : filterKey === 'title'
+          ? record.title
+          : record.id
+      return target.toLowerCase().includes(normalized)
+    })
+  }, [borrowings, filterKey, keyword])
+
+  const menuItems = [
+    { id: 'system', label: 'システムメニュー', description: '最初のメニューへ戻る' },
+    { id: 'search', label: '書籍検索', description: '蔵書を条件検索する' },
+    ...(role === 'admin'
+      ? [{ id: 'create', label: '書籍登録', description: '新しい書籍を登録する' }]
+      : []),
+    { id: 'logout', label: 'ログアウト', description: 'ログイン画面へ戻る' },
+  ]
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((current) => (
+      current.includes(id)
+        ? current.filter((selectedId) => selectedId !== id)
+        : [...current, id]
+    ))
+  }
+
+  const approveReturn = (id: string) => {
+    setBorrowings((current) => current.filter((record) => record.id !== id))
+    setSelectedIds((current) => current.filter((selectedId) => selectedId !== id))
+    setMessage('返却を承認しました。')
+  }
+
+  const bulkReturn = () => {
+    if (selectedIds.length === 0) {
+      setMessage('返却する行を選択してください。')
+      return
+    }
+    setBorrowings((current) => current.filter((record) => !selectedIds.includes(record.id)))
+    setMessage(`${selectedIds.length}件の一括返却登録を受け付けました。`)
+    setSelectedIds([])
+  }
+
+  const requestReturn = () => {
+    setBorrowings((current) => current.map((record) => (
+      record.id === 'U0001' ? { ...record, status: '返却申請中' } : record
+    )))
+    setMessage('返却申請を受け付けました。')
+  }
+
+  const cancelReservation = () => {
+    setHasReservation(false)
+    setMessage('予約を取り消しました。')
+  }
+
+  const loanReservedBook = () => {
+    if (!pendingLoan) return
+
+    setReservations((current) => current.filter((record) => record !== pendingLoan))
+    setBorrowings((current) => [
+      ...current,
+      {
+        id: `U${String(current.length + 1).padStart(4, '0')}`,
+        borrower: pendingLoan.reserver,
+        title: pendingLoan.title,
+        author: pendingLoan.author,
+        loanDate: '2026/06/10',
+        shelfNumber: pendingLoan.shelfNumber,
+        tierNumber: pendingLoan.tierNumber,
+        status: '貸出中',
+      },
+    ])
+    setMessage(`${pendingLoan.reserver}さんへの貸出を登録しました。`)
+    setPendingLoan(null)
+  }
+
+  const logout = () => {
+    onLogout()
+    navigate('/login', { replace: true })
+  }
+
+  const handleMenu = (id: string) => {
+    if (id === 'system') navigate('/')
+    if (id === 'search') navigate('/search')
+    if (id === 'create') navigate('/create')
+    if (id === 'logout') logout()
+  }
+
+  return (
+    <main className="page-shell mypage">
+      <div className="mypage-nav">
+        <BackButton label="メニューへ戻る" onClick={() => navigate('/')} />
+        <UserMenu
+          role={role}
+          items={menuItems}
+          onSelect={(item) => handleMenu(item.id)}
+        />
+      </div>
+
+      <h1 className="standalone-title">マイページ</h1>
+
+      <section className="user-card">
+        <span className="user-avatar">
+          {role === 'general' ? <UserIcon size={46} /> : <UsersIcon size={46} />}
+        </span>
+        <h2>{profile.title}</h2>
+        <div className="user-meta">
+          <p>ユーザーID：{profile.userId}</p>
+          <p>名前：{profile.name}</p>
+        </div>
+        <span className={`role-chip ${role}`}>{profile.label}</span>
+      </section>
+
+      <div className="mypage-primary-actions">
+        <button type="button" className="outline-action search-action" onClick={() => navigate('/search')}>
+          <SearchIcon />書籍検索
+        </button>
+        {role === 'admin' && (
+          <button type="button" className="outline-action" onClick={() => navigate('/create')}>
+            <PlusIcon />書籍登録
+          </button>
+        )}
+      </div>
+
+      {role === 'general' && (
+        <GeneralUserSections
+          borrowing={borrowings.find((record) => record.id === 'U0001')}
+          hasReservation={hasReservation}
+          onRequestReturn={requestReturn}
+          onCancelReservation={cancelReservation}
+          onOpenBook={(bookId) => navigate(`/books/${bookId}`)}
+        />
+      )}
+
+      {role === 'operator' && (
+        <div className="operator-accordions">
+          <AccordionPanel title="借受リスト（全員分）" icon={<BookIcon />}>
+            <SimpleBorrowingTable records={borrowings} />
+          </AccordionPanel>
+          <AccordionPanel title="予約リスト（全員分）" tone="orange" icon={<BookmarkIcon />}>
+            <ReservationTable records={reservations} onLoan={setPendingLoan} />
+          </AccordionPanel>
+          <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
+            <HistoryTable />
+          </AccordionPanel>
+        </div>
+      )}
+
+      {role === 'admin' && (
+        <>
+          <section className="mypage-section admin-borrowings">
+            <h2 className="mypage-section-title"><BookIcon />借受リスト（全員分）</h2>
+            <div className="admin-filter">
+              <DropdownField
+                label="検索対象"
+                value={filterKey}
+                onChange={setFilterKey}
+                options={[
+                  { value: 'id', label: '借受人ID' },
+                  { value: 'name', label: '借受人名' },
+                  { value: 'title', label: '書籍名' },
+                ]}
+              />
+              <TextBox label="キーワード" value={keyword} onChange={setKeyword} placeholder="キーワードを入力" />
+              <button
+                type="button"
+                className="compact-search"
+                onClick={() => setMessage(`${filteredBorrowings.length}件見つかりました。`)}
+              >
+                <SearchIcon size={19} />検索
+              </button>
+            </div>
+            <div className="table-scroll">
+              <table className="data-table admin-table">
+                <thead>
+                  <tr>
+                    <th aria-label="選択" />
+                    <th>借受人ID</th>
+                    <th>借受人名</th>
+                    <th>書籍名</th>
+                    <th>著者</th>
+                    <th>貸出日付</th>
+                    <th>棚番号</th>
+                    <th>段番号</th>
+                    <th>状態</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBorrowings.map((record) => (
+                    <tr key={record.id} className={selectedIds.includes(record.id) ? 'selected' : ''}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          aria-label={`${record.borrower}を選択`}
+                          checked={selectedIds.includes(record.id)}
+                          onChange={() => toggleSelected(record.id)}
+                        />
+                      </td>
+                      <td>{record.id}</td>
+                      <td>{record.borrower}</td>
+                      <td>{record.title}</td>
+                      <td>{record.author}</td>
+                      <td>{record.loanDate}</td>
+                      <td>{record.shelfNumber}</td>
+                      <td>{record.tierNumber}</td>
+                      <td><RecordStatus status={record.status} /></td>
+                      <td>
+                        {record.status === '返却申請中' ? (
+                          <button
+                            type="button"
+                            className="list-action-button approve"
+                            onClick={() => approveReturn(record.id)}
+                          >
+                            返却承認
+                          </button>
+                        ) : '−'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <button type="button" className="bulk-return-button" onClick={bulkReturn}>
+              <BookIcon size={21} />一括返却登録
+            </button>
+          </section>
+
+          <div className="operator-accordions admin-secondary-lists">
+            <AccordionPanel title="予約リスト（全員分）" tone="orange" icon={<BookmarkIcon />}>
+              <ReservationTable records={reservations} />
+            </AccordionPanel>
+            <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
+              <HistoryTable />
+            </AccordionPanel>
+          </div>
+        </>
+      )}
+
+      {pendingLoan && (
+        <BookActionModal
+          open
+          title="予約書籍の貸出"
+          description={`${pendingLoan.reserver}さんへ「${pendingLoan.title}」を貸し出します。`}
+          confirmLabel="貸出する"
+          requireEmployeeId
+          requirePassword
+          onClose={() => setPendingLoan(null)}
+          onConfirm={loanReservedBook}
+        />
+      )}
+      <Toast open={Boolean(message)} message={message} severity="success" onClose={() => setMessage('')} />
+    </main>
+  )
+}
+
+type GeneralUserSectionsProps = {
+  borrowing?: BorrowingRecord
+  hasReservation: boolean
+  onRequestReturn: () => void
+  onCancelReservation: () => void
+  onOpenBook: (bookId: string) => void
+}
+
+function GeneralUserSections({
+  borrowing,
+  hasReservation,
+  onRequestReturn,
+  onCancelReservation,
+  onOpenBook,
+}: GeneralUserSectionsProps) {
+  return (
+    <>
+      <section className="mypage-section">
+        <h2 className="mypage-section-title"><BookIcon />貸出予約リスト</h2>
+        <div className="table-scroll">
+          <table className="data-table">
+            <thead>
+              <tr><th>書籍名</th><th>著者</th><th>利用日付</th><th>棚番号</th><th>段番号</th><th>状態</th><th>操作</th></tr>
+            </thead>
+            <tbody>
+              {borrowing && (
+                <tr>
+                  <td>{borrowing.title}</td>
+                  <td>{borrowing.author}</td>
+                  <td>{borrowing.loanDate}</td>
+                  <td>{borrowing.shelfNumber}</td>
+                  <td>{borrowing.tierNumber}</td>
+                  <td><RecordStatus status={borrowing.status} /></td>
+                  <td>
+                    {borrowing.status === '貸出中' ? (
+                      <button type="button" className="list-action-button request" onClick={onRequestReturn}>
+                        返却申請
+                      </button>
+                    ) : '申請済み'}
+                  </td>
+                </tr>
+              )}
+              {hasReservation && (
+                <tr>
+                  <td>{reservationRecords[0].title}</td>
+                  <td>{reservationRecords[0].author}</td>
+                  <td>{reservationRecords[0].reservationDate}</td>
+                  <td>{reservationRecords[0].shelfNumber}</td>
+                  <td>{reservationRecords[0].tierNumber}</td>
+                  <td><span className="record-status reserved">予約中</span></td>
+                  <td>
+                    <button type="button" className="list-action-button cancel" onClick={onCancelReservation}>
+                      予約取消
+                    </button>
+                  </td>
+                </tr>
+              )}
+              {!borrowing && !hasReservation && (
+                <tr><td colSpan={7}>現在の貸出・予約はありません。</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="mypage-section">
+        <h2 className="mypage-section-title"><ClockIcon />貸出履歴</h2>
+        <div className="table-scroll">
+          <table className="data-table">
+            <thead><tr><th>書籍名</th><th>著者</th><th>貸出日付</th><th>返却日</th><th>詳細</th></tr></thead>
+            <tbody>
+              {userLoanHistory.map((record, index) => (
+                <tr key={record.title}>
+                  <td>{record.title}</td>
+                  <td>{record.author}</td>
+                  <td>{record.loanDate}</td>
+                  <td>{record.returnDate}</td>
+                  <td>
+                    <button type="button" className="row-detail" onClick={() => onOpenBook(initialBookIds[index])}>
+                      ›
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </>
+  )
+}
+
+const initialBookIds = ['B0001', 'B0004', 'B0006']
+
+function RecordStatus({ status }: { status: BorrowingRecord['status'] }) {
+  return (
+    <span className={`record-status ${status === '返却申請中' ? 'returning' : ''}`}>
+      {status}
+    </span>
+  )
+}
+
+function SimpleBorrowingTable({ records }: { records: BorrowingRecord[] }) {
+  return (
+    <div className="table-scroll">
+      <table className="data-table">
+        <thead>
+          <tr><th>書籍名</th><th>著者</th><th>借受者</th><th>貸出日付</th><th>棚番号</th><th>段番号</th><th>状態</th></tr>
+        </thead>
+        <tbody>
+          {records.map((record) => (
+            <tr key={record.id}>
+              <td>{record.title}</td>
+              <td>{record.author}</td>
+              <td>{record.borrower}</td>
+              <td>{record.loanDate}</td>
+              <td>{record.shelfNumber}</td>
+              <td>{record.tierNumber}</td>
+              <td><RecordStatus status={record.status} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function ReservationTable({
+  records,
+  onLoan,
+}: {
+  records: ReservationRecord[]
+  onLoan?: (record: ReservationRecord) => void
+}) {
+  return (
+    <div className="table-scroll">
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>書籍名</th><th>著者</th><th>予約者</th><th>予約日付</th><th>棚番号</th><th>段番号</th>
+            {onLoan && <th>操作</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {records.map((record) => (
+            <tr key={`${record.title}-${record.reserver}`}>
+              <td>{record.title}</td>
+              <td>{record.author}</td>
+              <td>{record.reserver}</td>
+              <td>{record.reservationDate}</td>
+              <td>{record.shelfNumber}</td>
+              <td>{record.tierNumber}</td>
+              {onLoan && (
+                <td>
+                  <button
+                    type="button"
+                    className="list-action-button loan"
+                    onClick={() => onLoan(record)}
+                  >
+                    貸出
+                  </button>
+                </td>
+              )}
+            </tr>
+          ))}
+          {records.length === 0 && (
+            <tr><td colSpan={onLoan ? 7 : 6}>予約中の書籍はありません。</td></tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function HistoryTable() {
+  return (
+    <div className="table-scroll">
+      <table className="data-table">
+        <thead><tr><th>書籍名</th><th>著者</th><th>借受者</th><th>貸出日付</th><th>返却日</th><th>棚番号</th><th>段番号</th></tr></thead>
+        <tbody>
+          {userLoanHistory.map((record) => (
+            <tr key={record.title}>
+              <td>{record.title}</td>
+              <td>{record.author}</td>
+              <td>{record.borrower}</td>
+              <td>{record.loanDate}</td>
+              <td>{record.returnDate}</td>
+              <td>{record.shelfNumber}</td>
+              <td>{record.tierNumber}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+export default MyPage

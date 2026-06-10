@@ -11,7 +11,7 @@ function DeleteBook() {
 
     try {
       //const response = await fetch(`http://localhost:8080/books/${id}`, {
-      const response = fetch(`http://localhost:8080/books/${id}`, {
+      void fetch(`http://localhost:8080/books/${id}`, {
         method: 'DELETE',
         body: JSON.stringify(bookData),
       });

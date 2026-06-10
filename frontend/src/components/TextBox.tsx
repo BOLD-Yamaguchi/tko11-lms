@@ -1,3 +1,4 @@
+import type { HTMLInputTypeAttribute } from 'react'
 import TextField from '@mui/material/TextField'
 
 export interface TextBoxProps {
@@ -9,6 +10,7 @@ export interface TextBoxProps {
   multiline?: boolean
   minRows?: number
   required?: boolean
+  type?: HTMLInputTypeAttribute
 }
 
 export function TextBox({
@@ -20,6 +22,7 @@ export function TextBox({
   multiline = false,
   minRows,
   required = false,
+  type = 'text',
 }: TextBoxProps) {
   return (
     <TextField
@@ -33,6 +36,7 @@ export function TextBox({
       multiline={multiline}
       minRows={minRows}
       required={required}
+      type={type}
       sx={{
         '& .MuiInputLabel-root': {
           color: 'var(--text)',
