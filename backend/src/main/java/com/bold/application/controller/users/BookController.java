@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:backend/src/main/java/com/bold/application/controller/users/controller/BookController.java
-package com.example.demo.controller;
-========
 package com.bold.application.controller.users;
->>>>>>>> main:backend/src/main/java/com/bold/application/controller/users/BookController.java
 
 import java.util.List;
 
@@ -19,10 +15,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-<<<<<<<< HEAD:backend/src/main/java/com/bold/application/controller/users/controller/BookController.java
-import com.example.demo.entity.Book;
-import com.example.demo.repository.BookRepository;
-========
 import com.bold.application.entity.users.Book;
 import com.bold.application.repository.users.BookRepository;
 >>>>>>>> main:backend/src/main/java/com/bold/application/controller/users/BookController.java

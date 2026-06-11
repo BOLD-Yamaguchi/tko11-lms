@@ -1,9 +1,4 @@
-<<<<<<<< HEAD:backend/src/main/java/com/bold/application/controller/users/controller/ApiController.java
-package com.example.demo.controller;
-========
 package com.bold.application.controller.users;
->>>>>>>> main:backend/src/main/java/com/bold/application/controller/users/ApiController.java
-
 import java.util.HashMap;
 import java.util.Map;
 

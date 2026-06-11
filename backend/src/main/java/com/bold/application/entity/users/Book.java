@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:backend/src/main/java/com/bold/application/controller/users/entity/Book.java
-package com.example.demo.entity;
-========
 package com.bold.application.entity.users;
->>>>>>>> main:backend/src/main/java/com/bold/application/entity/users/Book.java
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
