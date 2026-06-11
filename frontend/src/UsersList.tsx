@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./UsersList.css";
+import Header from "./components/Header";
 
 // Userオブジェクトの型を定義
 type User = {
@@ -142,10 +143,10 @@ function UsersList() {
   return (
     <div className="users-list">
       {/* ヘッダー */}
-      <header className="header">
-        <h1>書籍貸出管理システム</h1>
-        <span>ようこそ</span>
-      </header>
+      <Header
+        title="書籍貸出管理システム"
+        menuItems={[]}
+      />
 
       {/* 検索エリア */}
       <div className="search-container">
