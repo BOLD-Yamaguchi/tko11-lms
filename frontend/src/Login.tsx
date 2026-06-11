@@ -288,7 +288,8 @@ function Login() {
                   background: "none",
                   color: "#4285F4",
                   cursor: "pointer",
-                }}>
+                }}
+                onClick={() => navigate("/passwordReset")}>
                 パスワードを忘れた方
               </button>
             </p>
