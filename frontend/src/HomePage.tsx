@@ -49,6 +49,7 @@ break;
 const handleLogout = () => {
 console.log("ログアウトしました");
 setIsLogoutModalOpen(false);
+};
 
 return ( <div className="min-h-screen flex flex-col bg-gray-100"> <Header
      title="社内書籍貸出管理システム"
@@ -57,7 +58,6 @@ return ( <div className="min-h-screen flex flex-col bg-gray-100"> <Header
      onMenuSelect={handleMenuSelect}
    />
 
-```
   <main className="flex-1 container mx-auto px-4 py-8 mt-24">
     <div className="max-w-4xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -95,5 +95,4 @@ return ( <div className="min-h-screen flex flex-col bg-gray-100"> <Header
 </div>
 
 );
-}
 }

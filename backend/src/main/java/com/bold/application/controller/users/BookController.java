@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bold.application.entity.users.Book;
 import com.bold.application.repository.users.BookRepository;
->>>>>>>> main:backend/src/main/java/com/bold/application/controller/users/BookController.java
 
 @RestController
 @RequestMapping("/books")
