@@ -27,6 +27,12 @@ function App() {
       initialBooks.map((book) => [book.id, loanHistory.map((history) => history.id)]),
     ),
   )
+  const [returnComments, setReturnComments] = useState<Record<string, string>>({
+    B0003: '図が多く、理解しやすかったです。',
+    B0006: '具体例が豊富で、業務にも活用できそうです。',
+    B0009: '画面構成の説明が分かりやすかったです。',
+    B0011: '',
+  })
 
   const login = (nextRole: UserRole) => {
     sessionStorage.setItem(roleStorageKey, nextRole)
@@ -67,6 +73,10 @@ function App() {
     setHistoryVisibility((current) => ({ ...current, [bookId]: visibleIds }))
   }
 
+  const updateReturnComment = (bookId: string, comment: string) => {
+    setReturnComments((current) => ({ ...current, [bookId]: comment }))
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -80,7 +90,11 @@ function App() {
         />
         <Route
           path="/mypage"
-          element={role ? <MyPage role={role} onLogout={logout} /> : <Navigate to="/login" replace />}
+          element={
+            role
+              ? <MyPage books={books} role={role} onLogout={logout} />
+              : <Navigate to="/login" replace />
+          }
         />
         <Route
           path="/search"
@@ -109,6 +123,8 @@ function App() {
                   onStatusChange={updateLoanStatus}
                   historyVisibility={historyVisibility}
                   onHistoryVisibilityChange={updateHistoryVisibility}
+                  returnComments={returnComments}
+                  onReturnCommentChange={updateReturnComment}
                   onLogout={logout}
                 />
               )

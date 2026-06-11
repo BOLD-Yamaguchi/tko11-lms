@@ -28,6 +28,7 @@ function EditBook({
       initialValues={book}
       onSubmit={onUpdate}
       role={role}
+      allowDisposal={book.loanStatus === '貸出可'}
       onLogout={onLogout}
     />
   )

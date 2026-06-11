@@ -10,6 +10,7 @@ import DialogTitle from '@mui/material/DialogTitle'
 import {
   containedActionButtonSx,
   dangerContainedActionButtonSx,
+  dangerOutlinedActionButtonSx,
   outlinedActionButtonSx,
 } from './buttonStyles'
 
@@ -19,9 +20,12 @@ export interface ModalDialogProps {
   description?: string
   confirmLabel?: string
   cancelLabel?: string
+  secondaryActionLabel?: string
+  maxWidth?: 'xs' | 'sm' | 'md'
   tone?: 'default' | 'danger'
   onClose: () => void
   onConfirm?: () => void
+  onSecondaryAction?: () => void
   children?: ReactNode
 }
 
@@ -31,9 +35,12 @@ export function ModalDialog({
   description,
   confirmLabel = '確認',
   cancelLabel = 'キャンセル',
+  secondaryActionLabel,
+  maxWidth = 'xs',
   tone = 'default',
   onClose,
   onConfirm,
+  onSecondaryAction,
   children,
 }: ModalDialogProps) {
   const confirmSx =
@@ -44,7 +51,7 @@ export function ModalDialog({
       open={open}
       onClose={onClose}
       fullWidth
-      maxWidth='xs'
+      maxWidth={maxWidth}
       slotProps={{
         paper: {
           sx: {
@@ -81,6 +88,15 @@ export function ModalDialog({
         <Button variant='outlined' onClick={onClose} sx={outlinedActionButtonSx}>
           {cancelLabel}
         </Button>
+        {secondaryActionLabel && onSecondaryAction && (
+          <Button
+            variant='outlined'
+            onClick={onSecondaryAction}
+            sx={dangerOutlinedActionButtonSx}
+          >
+            {secondaryActionLabel}
+          </Button>
+        )}
         <Button
           variant='contained'
           onClick={onConfirm}

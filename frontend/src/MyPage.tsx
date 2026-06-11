@@ -11,24 +11,38 @@ import {
   UsersIcon,
 } from './Icons'
 import {
+  ActionConfirmationModal,
   BackButton,
   BookActionModal,
   DropdownField,
+  ModalDialog,
+  ReturnRequestModal,
   TextBox,
   Toast,
   UserMenu,
 } from './components'
+import { getReturnDueDate } from './dateUtils'
 import {
   borrowingRecords,
   reservationRecords,
   userLoanHistory,
 } from './mockData'
-import type { BorrowingRecord, ReservationRecord, UserRole } from './types'
+import type {
+  BorrowingRecord,
+  CatalogBook,
+  ReservationRecord,
+  UserLoanHistory,
+  UserRole,
+} from './types'
 
 type MyPageProps = {
+  books: CatalogBook[]
   role: UserRole
   onLogout: () => void
 }
+
+type GeneralPendingAction = 'requestReturn' | 'cancelReservation'
+type LoanStep = 'auth' | 'confirm'
 
 const roleProfiles: Record<UserRole, {
   title: string
@@ -84,17 +98,24 @@ function AccordionPanel({
   )
 }
 
-function MyPage({ role, onLogout }: MyPageProps) {
+function MyPage({ books, role, onLogout }: MyPageProps) {
   const navigate = useNavigate()
   const profile = roleProfiles[role]
   const [borrowings, setBorrowings] = useState<BorrowingRecord[]>(borrowingRecords)
   const [reservations, setReservations] = useState<ReservationRecord[]>(reservationRecords)
   const [pendingLoan, setPendingLoan] = useState<ReservationRecord | null>(null)
+  const [loanStep, setLoanStep] = useState<LoanStep | null>(null)
+  const [pendingGeneralAction, setPendingGeneralAction] = useState<GeneralPendingAction | null>(null)
+  const [pendingApproval, setPendingApproval] = useState<BorrowingRecord | null>(null)
   const [hasReservation, setHasReservation] = useState(true)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [filterKey, setFilterKey] = useState('id')
   const [keyword, setKeyword] = useState('')
   const [message, setMessage] = useState('')
+  const visibleLoanHistory = userLoanHistory.filter((record) => {
+    if (role === 'admin' || !record.bookId) return true
+    return books.find((book) => book.id === record.bookId)?.collectionStatus !== '廃棄'
+  })
 
   const filteredBorrowings = useMemo(() => {
     const normalized = keyword.trim().toLowerCase()
@@ -130,6 +151,17 @@ function MyPage({ role, onLogout }: MyPageProps) {
     setBorrowings((current) => current.filter((record) => record.id !== id))
     setSelectedIds((current) => current.filter((selectedId) => selectedId !== id))
     setMessage('返却を承認しました。')
+    setPendingApproval(null)
+  }
+
+  const rejectReturn = (id: string) => {
+    setBorrowings((current) => current.map((record) => (
+      record.id === id
+        ? { ...record, status: '貸出中', returnComment: undefined }
+        : record
+    )))
+    setMessage('返却申請を却下しました。')
+    setPendingApproval(null)
   }
 
   const bulkReturn = () => {
@@ -142,16 +174,20 @@ function MyPage({ role, onLogout }: MyPageProps) {
     setSelectedIds([])
   }
 
-  const requestReturn = () => {
+  const requestReturn = (comment: string) => {
     setBorrowings((current) => current.map((record) => (
-      record.id === 'U0001' ? { ...record, status: '返却申請中' } : record
+      record.id === 'U0001'
+        ? { ...record, status: '返却申請中', returnComment: comment }
+        : record
     )))
     setMessage('返却申請を受け付けました。')
+    setPendingGeneralAction(null)
   }
 
   const cancelReservation = () => {
     setHasReservation(false)
     setMessage('予約を取り消しました。')
+    setPendingGeneralAction(null)
   }
 
   const loanReservedBook = () => {
@@ -173,6 +209,17 @@ function MyPage({ role, onLogout }: MyPageProps) {
     ])
     setMessage(`${pendingLoan.reserver}さんへの貸出を登録しました。`)
     setPendingLoan(null)
+    setLoanStep(null)
+  }
+
+  const startLoan = (record: ReservationRecord) => {
+    setPendingLoan(record)
+    setLoanStep('auth')
+  }
+
+  const closeLoanFlow = () => {
+    setPendingLoan(null)
+    setLoanStep(null)
   }
 
   const logout = () => {
@@ -227,8 +274,9 @@ function MyPage({ role, onLogout }: MyPageProps) {
         <GeneralUserSections
           borrowing={borrowings.find((record) => record.id === 'U0001')}
           hasReservation={hasReservation}
-          onRequestReturn={requestReturn}
-          onCancelReservation={cancelReservation}
+          onRequestReturn={() => setPendingGeneralAction('requestReturn')}
+          onCancelReservation={() => setPendingGeneralAction('cancelReservation')}
+          historyRecords={visibleLoanHistory}
           onOpenBook={(bookId) => navigate(`/books/${bookId}`)}
         />
       )}
@@ -239,10 +287,10 @@ function MyPage({ role, onLogout }: MyPageProps) {
             <SimpleBorrowingTable records={borrowings} />
           </AccordionPanel>
           <AccordionPanel title="予約リスト（全員分）" tone="orange" icon={<BookmarkIcon />}>
-            <ReservationTable records={reservations} onLoan={setPendingLoan} />
+            <ReservationTable records={reservations} onLoan={startLoan} />
           </AccordionPanel>
           <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
-            <HistoryTable />
+            <HistoryTable records={visibleLoanHistory} />
           </AccordionPanel>
         </div>
       )}
@@ -311,7 +359,7 @@ function MyPage({ role, onLogout }: MyPageProps) {
                           <button
                             type="button"
                             className="list-action-button approve"
-                            onClick={() => approveReturn(record.id)}
+                            onClick={() => setPendingApproval(record)}
                           >
                             返却承認
                           </button>
@@ -332,23 +380,78 @@ function MyPage({ role, onLogout }: MyPageProps) {
               <ReservationTable records={reservations} />
             </AccordionPanel>
             <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
-              <HistoryTable />
+              <HistoryTable records={visibleLoanHistory} />
             </AccordionPanel>
           </div>
         </>
       )}
 
-      {pendingLoan && (
+      {pendingLoan && loanStep === 'auth' && (
         <BookActionModal
           open
           title="予約書籍の貸出"
           description={`${pendingLoan.reserver}さんへ「${pendingLoan.title}」を貸し出します。`}
-          confirmLabel="貸出する"
+          confirmLabel="内容を確認"
           requireEmployeeId
           requirePassword
-          onClose={() => setPendingLoan(null)}
+          onClose={closeLoanFlow}
+          onConfirm={() => setLoanStep('confirm')}
+        />
+      )}
+      {pendingLoan && loanStep === 'confirm' && (
+        <ActionConfirmationModal
+          open
+          title="貸出確認"
+          personLabel={`${pendingLoan.reserver}さん`}
+          bookTitle={pendingLoan.title}
+          returnDueDate={getReturnDueDate()}
+          prompt="上記の内容で貸出を実施しますか？"
+          onClose={closeLoanFlow}
           onConfirm={loanReservedBook}
         />
+      )}
+      {pendingGeneralAction === 'requestReturn' && (
+        <ReturnRequestModal
+          open
+          onClose={() => setPendingGeneralAction(null)}
+          onConfirm={requestReturn}
+        />
+      )}
+      {pendingGeneralAction === 'cancelReservation' && (
+        <ActionConfirmationModal
+          open
+          title="予約取消の確認"
+          personLabel={`${profile.name}さん`}
+          bookTitle={reservationRecords[0].title}
+          prompt="上記の書籍の予約を取り消しますか？"
+          confirmLabel="予約を取り消す"
+          onClose={() => setPendingGeneralAction(null)}
+          onConfirm={cancelReservation}
+        />
+      )}
+      {pendingApproval && (
+        <ModalDialog
+          open
+          title="返却承認確認"
+          confirmLabel="返却を承認"
+          secondaryActionLabel="却下"
+          maxWidth="sm"
+          onClose={() => setPendingApproval(null)}
+          onConfirm={() => approveReturn(pendingApproval.id)}
+          onSecondaryAction={() => rejectReturn(pendingApproval.id)}
+        >
+          <div className="return-approval-confirmation">
+            <dl>
+              <div><dt>申請者：</dt><dd>{pendingApproval.borrower}さん</dd></div>
+              <div><dt>書籍名：</dt><dd>{pendingApproval.title}</dd></div>
+            </dl>
+            <div className="return-comment-preview">
+              <strong>返却申請時の感想</strong>
+              <p>{pendingApproval.returnComment || '感想は入力されていません。'}</p>
+            </div>
+            <p>内容を確認し、返却申請の承認または却下を選択してください。</p>
+          </div>
+        </ModalDialog>
       )}
       <Toast open={Boolean(message)} message={message} severity="success" onClose={() => setMessage('')} />
     </main>
@@ -360,6 +463,7 @@ type GeneralUserSectionsProps = {
   hasReservation: boolean
   onRequestReturn: () => void
   onCancelReservation: () => void
+  historyRecords: UserLoanHistory[]
   onOpenBook: (bookId: string) => void
 }
 
@@ -368,6 +472,7 @@ function GeneralUserSections({
   hasReservation,
   onRequestReturn,
   onCancelReservation,
+  historyRecords,
   onOpenBook,
 }: GeneralUserSectionsProps) {
   return (
@@ -426,14 +531,18 @@ function GeneralUserSections({
           <table className="data-table">
             <thead><tr><th>書籍名</th><th>著者</th><th>貸出日付</th><th>返却日</th><th>詳細</th></tr></thead>
             <tbody>
-              {userLoanHistory.map((record, index) => (
+              {historyRecords.map((record, index) => (
                 <tr key={record.title}>
                   <td>{record.title}</td>
                   <td>{record.author}</td>
                   <td>{record.loanDate}</td>
                   <td>{record.returnDate}</td>
                   <td>
-                    <button type="button" className="row-detail" onClick={() => onOpenBook(initialBookIds[index])}>
+                    <button
+                      type="button"
+                      className="row-detail"
+                      onClick={() => onOpenBook(record.bookId ?? initialBookIds[index])}
+                    >
                       ›
                     </button>
                   </td>
@@ -529,13 +638,13 @@ function ReservationTable({
   )
 }
 
-function HistoryTable() {
+function HistoryTable({ records }: { records: UserLoanHistory[] }) {
   return (
     <div className="table-scroll">
       <table className="data-table">
         <thead><tr><th>書籍名</th><th>著者</th><th>借受者</th><th>貸出日付</th><th>返却日</th><th>棚番号</th><th>段番号</th></tr></thead>
         <tbody>
-          {userLoanHistory.map((record) => (
+          {records.map((record) => (
             <tr key={record.title}>
               <td>{record.title}</td>
               <td>{record.author}</td>

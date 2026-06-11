@@ -831,6 +831,32 @@ svg {
   font-weight: 500;
 }
 
+.results-controls {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.page-size-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.page-size-control select {
+  min-width: 82px;
+  min-height: 40px;
+  padding: 0 30px 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  background: #fff;
+  font: inherit;
+}
+
 .pagination {
   display: flex;
   align-items: center;
@@ -1087,12 +1113,24 @@ svg {
   cursor: pointer;
 }
 
+.radio-row .radio-option.disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .radio-option input {
   width: 21px;
   min-height: 21px;
   margin: 0;
   padding: 0;
   accent-color: var(--blue-600);
+}
+
+.field-guidance {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .form-footer {
@@ -1272,6 +1310,75 @@ svg {
   display: grid;
   gap: 16px;
   margin-top: 22px;
+}
+
+.action-confirmation,
+.return-approval-confirmation,
+.return-request-form {
+  color: var(--text);
+}
+
+.action-confirmation dl,
+.return-approval-confirmation dl {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0 28px;
+}
+
+.action-confirmation dl div,
+.return-approval-confirmation dl div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 16px;
+  align-items: baseline;
+}
+
+.action-confirmation dt,
+.return-approval-confirmation dt {
+  color: var(--blue-800);
+  font-weight: 700;
+}
+
+.action-confirmation dd,
+.return-approval-confirmation dd {
+  margin: 0;
+  font-size: 18px;
+}
+
+.action-confirmation > p,
+.return-approval-confirmation > p {
+  margin: 0;
+  color: var(--blue-800);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.return-request-form {
+  display: grid;
+  gap: 22px;
+  padding-top: 8px;
+}
+
+.return-request-form > p {
+  margin: 0;
+}
+
+.return-comment-preview {
+  margin-bottom: 24px;
+}
+
+.return-comment-preview strong {
+  color: var(--blue-800);
+}
+
+.return-comment-preview p {
+  min-height: 72px;
+  margin: 8px 0 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  white-space: pre-wrap;
 }
 
 .modal-input-error {
@@ -1687,6 +1794,12 @@ svg {
 
   .results-heading {
     align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .results-controls {
+    width: 100%;
+    align-items: flex-end;
     flex-direction: column;
   }
 

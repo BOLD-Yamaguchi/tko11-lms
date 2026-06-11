@@ -14,6 +14,7 @@ type BookFormProps = {
   initialValues: Book
   onSubmit: (book: Book) => void
   role: UserRole
+  allowDisposal?: boolean
   onLogout: () => void
 }
 
@@ -25,6 +26,7 @@ function BookForm({
   initialValues,
   onSubmit,
   role,
+  allowDisposal = false,
   onLogout,
 }: BookFormProps) {
   const [form, setForm] = useState<Book>(initialValues)
@@ -182,19 +184,30 @@ function BookForm({
         <fieldset className="field field-full radio-field">
           <legend>配架分類</legend>
           <div className="radio-row">
-            {(['開架', '閉架', ...(isEdit ? ['廃棄'] : [])] as CollectionStatus[]).map((status) => (
-              <label key={status} className="radio-option">
+            {([
+              '開架',
+              '閉架',
+              ...(isEdit ? ['廃棄'] : []),
+            ] as CollectionStatus[]).map((status) => (
+              <label
+                key={status}
+                className={`radio-option ${status === '廃棄' && !allowDisposal ? 'disabled' : ''}`}
+              >
                 <input
                   type="radio"
                   name="collectionStatus"
                   value={status}
                   checked={form.collectionStatus === status}
                   onChange={updateField}
+                  disabled={status === '廃棄' && !allowDisposal}
                 />
                 {status}
               </label>
             ))}
           </div>
+          {isEdit && !allowDisposal && (
+            <p className="field-guidance">「廃棄」は貸出ステータスが「貸出可」の書籍のみ選択できます。</p>
+          )}
         </fieldset>
 
         <fieldset className="field field-full radio-field">

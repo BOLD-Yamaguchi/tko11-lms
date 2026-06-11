@@ -40,6 +40,7 @@ export type BorrowingRecord = {
   shelfNumber: string
   tierNumber: string
   status: '貸出中' | '返却申請中'
+  returnComment?: string
 }
 
 export type ReservationRecord = {
@@ -52,6 +53,7 @@ export type ReservationRecord = {
 }
 
 export type UserLoanHistory = {
+  bookId?: string
   title: string
   author: string
   borrower: string

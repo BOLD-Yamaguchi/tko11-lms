@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router-dom'
 import {
   BookIcon,
   CalendarIcon,
@@ -8,7 +14,16 @@ import {
   EditIcon,
   ReturnIcon,
 } from './Icons'
-import { BackButton, BookActionModal, Toast, UserMenu } from './components'
+import {
+  ActionConfirmationModal,
+  BackButton,
+  BookActionModal,
+  ModalDialog,
+  ReturnRequestModal,
+  Toast,
+  UserMenu,
+} from './components'
+import { getReturnDueDate } from './dateUtils'
 import { loanHistory } from './mockData'
 import type { CatalogBook, LoanStatus, UserRole } from './types'
 
@@ -18,6 +33,8 @@ type BookDetailProps = {
   onStatusChange: (bookId: string, status: LoanStatus) => void
   historyVisibility: Record<string, string[]>
   onHistoryVisibilityChange: (bookId: string, visibleIds: string[]) => void
+  returnComments: Record<string, string>
+  onReturnCommentChange: (bookId: string, comment: string) => void
   onLogout: () => void
 }
 
@@ -33,6 +50,8 @@ type BookAction =
   | 'requestReturn'
   | 'cancelReturnRequest'
   | 'approveReturn'
+
+type ActionStep = 'auth' | 'confirm' | 'returnRequest' | 'approval'
 
 type ActionDefinition = {
   id: BookAction
@@ -98,6 +117,16 @@ const actionSettings: Record<BookAction, {
   },
 }
 
+const actionConfirmationPrompts: Record<BookAction, string> = {
+  reserve: '上記の書籍を予約しますか？',
+  cancelReservation: '上記の書籍の予約を取り消しますか？',
+  loan: '上記の内容で貸出を実施しますか？',
+  return: '上記の内容で直接返却を実施しますか？',
+  requestReturn: '上記の書籍の返却を申請しますか？',
+  cancelReturnRequest: '上記の書籍の返却申請を取り消しますか？',
+  approveReturn: '上記の書籍の返却を承認しますか？',
+}
+
 function formatDate(date: string) {
   return date ? date.replaceAll('-', '/') : '未設定'
 }
@@ -151,6 +180,8 @@ function BookDetail({
   onStatusChange,
   historyVisibility,
   onHistoryVisibilityChange,
+  returnComments,
+  onReturnCommentChange,
   onLogout,
 }: BookDetailProps) {
   const navigate = useNavigate()
@@ -160,11 +191,15 @@ function BookDetail({
   const routeMessage = (location.state as LocationState | null)?.message
   const [message, setMessage] = useState(routeMessage ?? '')
   const [pendingAction, setPendingAction] = useState<BookAction | null>(null)
+  const [actionStep, setActionStep] = useState<ActionStep | null>(null)
   const [editingHistory, setEditingHistory] = useState(false)
   const [draftVisibleHistoryIds, setDraftVisibleHistoryIds] = useState<string[]>([])
 
   if (!book) {
     return null
+  }
+  if (book.collectionStatus === '廃棄' && role !== 'admin') {
+    return <Navigate to="/search" replace />
   }
 
   const details = [
@@ -202,6 +237,7 @@ function BookDetail({
     onStatusChange(book.id, setting.nextStatus)
     setMessage(setting.message)
     setPendingAction(null)
+    setActionStep(null)
   }
 
   const startHistoryEditing = () => {
@@ -233,16 +269,38 @@ function BookDetail({
     role === 'operator'
     && ['loan', 'requestReturn', 'cancelReturnRequest'].includes(action)
   )
-  const requiresConfirmation = (action: BookAction) => (
-    ['reserve', 'cancelReservation', 'cancelReturnRequest'].includes(action)
-  )
-
   const startAction = (action: BookAction) => {
-    if (requiresEmployeeId(action) || requiresConfirmation(action)) {
-      setPendingAction(action)
-      return
+    setPendingAction(action)
+    if (action === 'approveReturn') {
+      setActionStep('approval')
+    } else if (requiresEmployeeId(action)) {
+      setActionStep('auth')
+    } else if (action === 'requestReturn') {
+      setActionStep('returnRequest')
+    } else {
+      setActionStep('confirm')
     }
-    executeAction(action)
+  }
+
+  const closeAction = () => {
+    setPendingAction(null)
+    setActionStep(null)
+  }
+
+  const finishAuthentication = (action: BookAction) => {
+    setActionStep(action === 'requestReturn' ? 'returnRequest' : 'confirm')
+  }
+
+  const submitReturnRequest = (comment: string) => {
+    onReturnCommentChange(book.id, comment)
+    executeAction('requestReturn')
+  }
+
+  const rejectReturnRequest = () => {
+    onStatusChange(book.id, '貸出中')
+    onReturnCommentChange(book.id, '')
+    setMessage('返却申請を却下しました。')
+    closeAction()
   }
 
   const handleMenu = (id: string) => {
@@ -279,6 +337,12 @@ function BookDetail({
   }[book.loanStatus]
 
   const modalSetting = pendingAction ? actionSettings[pendingAction] : null
+  const confirmationTitle = pendingAction === 'loan'
+    ? '貸出確認'
+    : pendingAction === 'return'
+      ? '直接返却確認'
+      : modalSetting?.title ?? ''
+  const personLabel = role === 'general' ? '山田 太郎さん' : '山田太郎さん'
 
   return (
     <main className="page-shell detail-page">
@@ -412,17 +476,62 @@ function BookDetail({
         </div>
       </section>
 
-      {pendingAction && modalSetting && (
+      {pendingAction && modalSetting && actionStep === 'auth' && (
         <BookActionModal
           open
           title={modalSetting.title}
           description={modalSetting.description}
-          confirmLabel={modalSetting.confirmLabel}
+          confirmLabel="内容を確認"
           requireEmployeeId={requiresEmployeeId(pendingAction)}
           requirePassword={requiresPassword(pendingAction)}
-          onClose={() => setPendingAction(null)}
+          onClose={closeAction}
+          onConfirm={() => finishAuthentication(pendingAction)}
+        />
+      )}
+      {pendingAction && modalSetting && actionStep === 'confirm' && (
+        <ActionConfirmationModal
+          open
+          title={confirmationTitle}
+          personLabel={personLabel}
+          bookTitle={book.title}
+          returnDueDate={pendingAction === 'loan' ? getReturnDueDate() : undefined}
+          prompt={actionConfirmationPrompts[pendingAction]}
+          confirmLabel="確定"
+          onClose={closeAction}
           onConfirm={() => executeAction(pendingAction)}
         />
+      )}
+      {pendingAction === 'requestReturn' && actionStep === 'returnRequest' && (
+        <ReturnRequestModal
+          open
+          initialComment={returnComments[book.id] ?? ''}
+          onClose={closeAction}
+          onConfirm={submitReturnRequest}
+        />
+      )}
+      {pendingAction === 'approveReturn' && actionStep === 'approval' && (
+        <ModalDialog
+          open
+          title="返却承認確認"
+          confirmLabel="返却を承認"
+          secondaryActionLabel="却下"
+          maxWidth="sm"
+          onClose={closeAction}
+          onConfirm={() => executeAction('approveReturn')}
+          onSecondaryAction={rejectReturnRequest}
+        >
+          <div className="return-approval-confirmation">
+            <dl>
+              <div><dt>申請者：</dt><dd>山田太郎さん</dd></div>
+              <div><dt>書籍名：</dt><dd>{book.title}</dd></div>
+            </dl>
+            <div className="return-comment-preview">
+              <strong>返却申請時の感想</strong>
+              <p>{returnComments[book.id] || '感想は入力されていません。'}</p>
+            </div>
+            <p>内容を確認し、返却申請の承認または却下を選択してください。</p>
+          </div>
+        </ModalDialog>
       )}
       <Toast open={Boolean(message)} message={message} severity="success" onClose={() => setMessage('')} />
     </main>

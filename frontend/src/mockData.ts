@@ -30,7 +30,15 @@ export const initialBooks: CatalogBook[] = [
   { ...baseBook, id: 'B0009', title: 'Webアプリ開発入門', author: '伊藤美咲', shelfNumber: 'B-03', loanStatus: '返却申請中' },
   { ...baseBook, id: 'B0010', title: 'Webアプリ開発入門', author: '伊藤美咲', shelfNumber: 'B-03', loanStatus: '貸出可' },
   { ...baseBook, id: 'B0011', title: 'セキュリティの基礎', author: '中村拓也', shelfNumber: 'C-02', loanStatus: '返却申請中' },
-  { ...baseBook, id: 'B0012', title: 'ネットワーク入門', author: '小林優子', shelfNumber: 'C-02', loanStatus: '貸出可' },
+  {
+    ...baseBook,
+    id: 'B0012',
+    title: 'ネットワーク入門',
+    author: '小林優子',
+    shelfNumber: 'C-02',
+    collectionStatus: '廃棄',
+    loanStatus: '貸出可',
+  },
 ]
 
 export const initialBook = initialBooks[1]
@@ -55,7 +63,17 @@ export const emptyBook: CatalogBook = {
 export const borrowingRecords: BorrowingRecord[] = [
   { id: 'U0001', borrower: '山田太郎', title: 'AWS入門', author: '山田太郎', loanDate: '2025/05/20', shelfNumber: 'A-01-03', tierNumber: '01', status: '貸出中' },
   { id: 'U0002', borrower: '佐藤花子', title: 'Python実践', author: '佐藤花子', loanDate: '2025/05/18', shelfNumber: 'B-02-01', tierNumber: '02', status: '貸出中' },
-  { id: 'U0003', borrower: '鈴木一郎', title: 'データ分析の基礎', author: '鈴木一郎', loanDate: '2025/05/22', shelfNumber: 'C-01-05', tierNumber: '03', status: '返却申請中' },
+  {
+    id: 'U0003',
+    borrower: '鈴木一郎',
+    title: 'データ分析の基礎',
+    author: '鈴木一郎',
+    loanDate: '2025/05/22',
+    shelfNumber: 'C-01-05',
+    tierNumber: '03',
+    status: '返却申請中',
+    returnComment: '図が多く、理解しやすかったです。',
+  },
   { id: 'U0004', borrower: '田中次郎', title: 'Linuxの基礎', author: '田中次郎', loanDate: '2025/05/16', shelfNumber: 'A-02-02', tierNumber: '01', status: '貸出中' },
   { id: 'U0005', borrower: '高橋美咲', title: 'SQL入門', author: '高橋美咲', loanDate: '2025/05/16', shelfNumber: 'B-01-04', tierNumber: '03', status: '貸出中' },
   { id: 'U0006', borrower: '伊藤健一', title: 'データベース設計', author: '伊藤健一', loanDate: '2025/05/17', shelfNumber: 'C-03-01', tierNumber: '03', status: '貸出中' },
@@ -75,6 +93,7 @@ export const userLoanHistory: UserLoanHistory[] = [
   { title: 'Linuxの基礎', author: '田中次郎', borrower: '田中次郎', loanDate: '2025/04/26', returnDate: '2025/05/10', shelfNumber: 'A', tierNumber: '02' },
   { title: 'SQL入門', author: '高橋美咲', borrower: '高橋美咲', loanDate: '2025/04/12', returnDate: '2025/04/28', shelfNumber: 'B', tierNumber: '01' },
   { title: 'データベース設計', author: '伊藤健一', borrower: '伊藤健一', loanDate: '2025/04/01', returnDate: '2025/04/15', shelfNumber: 'C', tierNumber: '03' },
+  { bookId: 'B0012', title: 'ネットワーク入門', author: '小林優子', borrower: '小林優子', loanDate: '2025/03/10', returnDate: '2025/03/24', shelfNumber: 'C', tierNumber: '02' },
 ]
 
 export const loanHistory: LoanHistory[] = [
