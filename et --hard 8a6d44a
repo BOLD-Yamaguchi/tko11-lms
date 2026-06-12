@@ -1,0 +1,30 @@
+[33mfe5b4c2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/oka[m[33m, [m[1;31morigin/feature/oka[m[33m)[m HEAD@{0}: reset: moving to ORIG_HEAD
+[33m8a6d44a[m HEAD@{1}: commit: 不要ファイル削除
+[33m6bbe29d[m HEAD@{2}: commit (merge): 岡main取り込み
+[33mfe5b4c2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/oka[m[33m, [m[1;31morigin/feature/oka[m[33m)[m HEAD@{3}: checkout: moving from main to feature/oka
+[33m8271c83[m[33m ([m[1;32mmain[m[33m)[m HEAD@{4}: reset: moving to HEAD
+[33m8271c83[m[33m ([m[1;32mmain[m[33m)[m HEAD@{5}: commit: 2026/06/10 岡componentè¿パスç·修正
+[33mcabd178[m HEAD@{6}: commit: 2026/06/10 岡component追加
+[33m7fa129d[m HEAD@{7}: commit: 2026/06/10 岡backend/src配下パス変更
+[33m826ec0f[m HEAD@{8}: pull origin main: Fast-forward
+[33mbe7e8c2[m HEAD@{9}: checkout: moving from feature/oka to main
+[33mfe5b4c2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/oka[m[33m, [m[1;31morigin/feature/oka[m[33m)[m HEAD@{10}: commit: 2026/06/10 岡トップページを追加
+[33m5a5ea0f[m HEAD@{11}: commit: 2026/06/09 岡 clone: 環境構築
+[33m826ec0f[m HEAD@{12}: reset: moving to origin/main
+[33m2c79850[m HEAD@{13}: reset: moving to origin/feature/oka
+[33m9b68068[m HEAD@{14}: checkout: moving from feature/oka to feature/oka
+[33m9b68068[m HEAD@{15}: commit: clon2026/06/09 岡e: 環境構築
+[33m826ec0f[m HEAD@{16}: reset: moving to origin/main
+[33m2c79850[m HEAD@{17}: commit: 2026/06/09 岡main ãã岡　mainの環境をpull
+[33m6d9557a[m HEAD@{18}: reset: moving to origin/main
+[33ma12f8b8[m HEAD@{19}: pull --rebase=false origin feature_kubota --progress: Merge made by the 'ort' strategy.
+[33m234ba4d[m HEAD@{20}: commit: clone: 環境構築(岡)
+[33mbe7e8c2[m HEAD@{21}: reset: moving to origin/main
+[33m1c1ebfb[m HEAD@{22}: checkout: moving from main to feature/oka
+[33mbe7e8c2[m HEAD@{23}: checkout: moving from feature/oka to main
+[33m1c1ebfb[m HEAD@{24}: reset: moving to HEAD
+[33m1c1ebfb[m HEAD@{25}: reset: moving to HEAD
+[33m1c1ebfb[m HEAD@{26}: checkout: moving from main to feature/oka
+[33mbe7e8c2[m HEAD@{27}: checkout: moving from feature_kubota to main
+[33md2f4d48[m[33m ([m[1;32mfeature_kubota[m[33m)[m HEAD@{28}: checkout: moving from main to feature_kubota
+[33mbe7e8c2[m HEAD@{29}: clone: from https://github.com/BOLD-Yamaguchi/tko11-lms.git

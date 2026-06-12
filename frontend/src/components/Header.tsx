@@ -37,7 +37,7 @@ export function Header({
         right: 0,
         width: '100%',
         borderBottom: '1px solid var(--border)',
-        backgroundColor: 'rgba(255, 253, 250, 0.84)',
+        backgroundColor: 'rgba(65, 126, 192, 0.84)',
         backdropFilter: 'blur(18px)',
         backgroundImage: 'none',
         color: 'var(--text-h)',
@@ -85,3 +85,4 @@ export function Header({
     </AppBar>
   )
 }
+export default Header;
