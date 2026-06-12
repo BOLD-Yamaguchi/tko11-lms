@@ -74,3 +74,443 @@
 2026-06-10T15:57:38.195+09:00  INFO 17936 --- [tko11-lms] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
 2026-06-10T16:03:15.795+09:00  WARN 17936 --- [tko11-lms] [HikariPool-2:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-2 - Failed to validate connection org.postgresql.jdbc.PgConnection@3000b9db (このコネクションは既にクローズされています。). Possibly consider using a shorter maxLifetime value.
 2026-06-10T16:03:16.316+09:00  WARN 17936 --- [tko11-lms] [HikariPool-2:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Thread starvation or clock leap detected (housekeeper delta=1m10s91ms578µs800ns).
+2026-06-12T09:42:57.135+09:00  INFO 4792 --- [tko11-lms] [restartedMain] c.bold.application.tko11_lmsApplication  : Starting tko11_lmsApplication using Java 21.0.10 with PID 4792 (C:\work\appdb\tko11-lms\backend\bin\main started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T09:42:57.139+09:00  INFO 4792 --- [tko11-lms] [restartedMain] c.bold.application.tko11_lmsApplication  : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T09:42:57.210+09:00  INFO 4792 --- [tko11-lms] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-06-12T09:42:57.210+09:00  INFO 4792 --- [tko11-lms] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-06-12T09:42:58.036+09:00  INFO 4792 --- [tko11-lms] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T09:42:58.104+09:00  INFO 4792 --- [tko11-lms] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 57 ms. Found 2 JPA repository interfaces.
+2026-06-12T09:42:58.667+09:00  INFO 4792 --- [tko11-lms] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-06-12T09:42:58.687+09:00  INFO 4792 --- [tko11-lms] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-12T09:42:58.688+09:00  INFO 4792 --- [tko11-lms] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-06-12T09:42:58.743+09:00  INFO 4792 --- [tko11-lms] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1532 ms
+2026-06-12T09:42:58.964+09:00  INFO 4792 --- [tko11-lms] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T09:42:59.038+09:00  INFO 4792 --- [tko11-lms] [restartedMain] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T09:42:59.792+09:00  INFO 4792 --- [tko11-lms] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T09:42:59.837+09:00  INFO 4792 --- [tko11-lms] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T09:43:00.110+09:00  INFO 4792 --- [tko11-lms] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7a70a46f
+2026-06-12T09:43:00.112+09:00  INFO 4792 --- [tko11-lms] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T09:43:00.332+09:00  INFO 4792 --- [tko11-lms] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T09:43:01.499+09:00  INFO 4792 --- [tko11-lms] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T09:43:01.719+09:00  INFO 4792 --- [tko11-lms] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T09:43:01.826+09:00  INFO 4792 --- [tko11-lms] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T09:43:02.013+09:00  WARN 4792 --- [tko11-lms] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T09:43:02.436+09:00  INFO 4792 --- [tko11-lms] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-06-12T09:43:02.444+09:00  INFO 4792 --- [tko11-lms] [restartedMain] c.bold.application.tko11_lmsApplication  : Started tko11_lmsApplication in 5.848 seconds (process running for 6.934)
+2026-06-12T09:55:29.147+09:00  INFO 4792 --- [tko11-lms] [RMI TCP Connection(2)-127.0.0.1] inMXBeanRegistrar$SpringApplicationAdmin : Application shutdown requested.
+2026-06-12T09:55:29.151+09:00  INFO 4792 --- [tko11-lms] [RMI TCP Connection(2)-127.0.0.1] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-06-12T09:55:29.155+09:00  INFO 4792 --- [tko11-lms] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-06-12T09:55:29.160+09:00  INFO 4792 --- [tko11-lms] [RMI TCP Connection(2)-127.0.0.1] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T09:55:29.164+09:00  INFO 4792 --- [tko11-lms] [RMI TCP Connection(2)-127.0.0.1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T09:55:29.173+09:00  INFO 4792 --- [tko11-lms] [RMI TCP Connection(2)-127.0.0.1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T10:00:08.648+09:00  INFO 4648 --- [tko11-lms] [restartedMain] c.bold.application.tko11_lmsApplication  : Starting tko11_lmsApplication using Java 21.0.10 with PID 4648 (C:\work\appdb\tko11-lms\backend\bin\main started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T10:00:08.654+09:00  INFO 4648 --- [tko11-lms] [restartedMain] c.bold.application.tko11_lmsApplication  : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T10:00:08.724+09:00  INFO 4648 --- [tko11-lms] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-06-12T10:00:08.725+09:00  INFO 4648 --- [tko11-lms] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-06-12T10:00:09.451+09:00  INFO 4648 --- [tko11-lms] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T10:00:09.536+09:00  INFO 4648 --- [tko11-lms] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 74 ms. Found 8 JPA repository interfaces.
+2026-06-12T10:00:10.081+09:00  INFO 4648 --- [tko11-lms] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-06-12T10:00:10.099+09:00  INFO 4648 --- [tko11-lms] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-12T10:00:10.100+09:00  INFO 4648 --- [tko11-lms] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-06-12T10:00:10.157+09:00  INFO 4648 --- [tko11-lms] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1431 ms
+2026-06-12T10:00:10.379+09:00  INFO 4648 --- [tko11-lms] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T10:00:10.445+09:00  INFO 4648 --- [tko11-lms] [restartedMain] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T10:00:11.070+09:00  INFO 4648 --- [tko11-lms] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T10:00:11.109+09:00  INFO 4648 --- [tko11-lms] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T10:00:11.301+09:00  INFO 4648 --- [tko11-lms] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7640f32
+2026-06-12T10:00:11.304+09:00  INFO 4648 --- [tko11-lms] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T10:00:11.398+09:00  INFO 4648 --- [tko11-lms] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T10:00:12.660+09:00  INFO 4648 --- [tko11-lms] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T10:00:12.735+09:00  INFO 4648 --- [tko11-lms] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T10:00:12.837+09:00  INFO 4648 --- [tko11-lms] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T10:00:13.016+09:00  WARN 4648 --- [tko11-lms] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T10:00:13.484+09:00  INFO 4648 --- [tko11-lms] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-06-12T10:00:13.492+09:00  INFO 4648 --- [tko11-lms] [restartedMain] c.bold.application.tko11_lmsApplication  : Started tko11_lmsApplication in 5.367 seconds (process running for 6.288)
+2026-06-12T10:01:34.404+09:00  INFO 3084 --- [tko11-lms] [main] c.b.a.r.u.Category_Level1RepositoryTest  : Starting Category_Level1RepositoryTest using Java 21.0.10 with PID 3084 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T10:01:34.410+09:00  INFO 3084 --- [tko11-lms] [main] c.b.a.r.u.Category_Level1RepositoryTest  : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T10:01:35.901+09:00  INFO 3084 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T10:01:36.060+09:00  INFO 3084 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 137 ms. Found 8 JPA repository interfaces.
+2026-06-12T10:01:37.083+09:00  INFO 3084 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T10:01:37.219+09:00  INFO 3084 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T10:01:38.498+09:00  INFO 3084 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T10:01:38.594+09:00  INFO 3084 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T10:01:38.950+09:00  INFO 3084 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@12200670
+2026-06-12T10:01:38.953+09:00  INFO 3084 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T10:01:39.115+09:00  INFO 3084 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T10:01:41.172+09:00  INFO 3084 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T10:01:41.292+09:00  INFO 3084 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T10:01:41.453+09:00  INFO 3084 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T10:01:41.748+09:00  WARN 3084 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T10:01:42.722+09:00  INFO 3084 --- [tko11-lms] [main] c.b.a.r.u.Category_Level1RepositoryTest  : Started Category_Level1RepositoryTest in 8.984 seconds (process running for 12.028)
+2026-06-12T10:01:44.033+09:00  INFO 3084 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T10:01:44.070+09:00  INFO 3084 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T10:01:44.097+09:00  INFO 3084 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T10:53:11.151+09:00  INFO 4648 --- [tko11-lms] [RMI TCP Connection(55)-127.0.0.1] inMXBeanRegistrar$SpringApplicationAdmin : Application shutdown requested.
+2026-06-12T10:53:11.157+09:00  INFO 4648 --- [tko11-lms] [RMI TCP Connection(55)-127.0.0.1] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-06-12T10:53:11.160+09:00  INFO 4648 --- [tko11-lms] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-06-12T10:53:11.166+09:00  INFO 4648 --- [tko11-lms] [RMI TCP Connection(55)-127.0.0.1] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T10:53:11.171+09:00  INFO 4648 --- [tko11-lms] [RMI TCP Connection(55)-127.0.0.1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T10:53:11.179+09:00  INFO 4648 --- [tko11-lms] [RMI TCP Connection(55)-127.0.0.1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T11:27:50.854+09:00  INFO 7564 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Starting Mst_Book_LogRepositoryTest using Java 21.0.10 with PID 7564 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T11:27:50.859+09:00  INFO 7564 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T11:27:52.104+09:00  INFO 7564 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T11:27:52.233+09:00  INFO 7564 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 110 ms. Found 8 JPA repository interfaces.
+2026-06-12T11:27:52.890+09:00  INFO 7564 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T11:27:53.008+09:00  INFO 7564 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T11:27:53.909+09:00  INFO 7564 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T11:27:53.961+09:00  INFO 7564 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T11:27:54.322+09:00  INFO 7564 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@57bac3f0
+2026-06-12T11:27:54.326+09:00  INFO 7564 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T11:27:54.472+09:00  INFO 7564 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T11:27:56.087+09:00  INFO 7564 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T11:27:56.207+09:00  INFO 7564 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T11:27:56.343+09:00  INFO 7564 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T11:27:56.606+09:00  WARN 7564 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T11:27:57.354+09:00  INFO 7564 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Started Mst_Book_LogRepositoryTest in 7.288 seconds (process running for 10.016)
+2026-06-12T11:27:58.148+09:00  INFO 7564 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T11:27:58.156+09:00  INFO 7564 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T11:27:58.176+09:00  INFO 7564 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T11:51:32.712+09:00  INFO 5524 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Starting Mst_Book_LogRepositoryTest using Java 21.0.10 with PID 5524 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T11:51:32.720+09:00  INFO 5524 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T11:51:33.796+09:00  INFO 5524 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T11:51:33.930+09:00  INFO 5524 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 114 ms. Found 8 JPA repository interfaces.
+2026-06-12T11:51:34.594+09:00  INFO 5524 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T11:51:34.722+09:00  INFO 5524 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T11:51:35.666+09:00  INFO 5524 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T11:51:35.727+09:00  INFO 5524 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T11:51:36.056+09:00  INFO 5524 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@12200670
+2026-06-12T11:51:36.060+09:00  INFO 5524 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T11:51:36.198+09:00  INFO 5524 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T11:51:37.945+09:00  INFO 5524 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T11:51:38.058+09:00  INFO 5524 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T11:51:38.200+09:00  INFO 5524 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T11:51:38.496+09:00  WARN 5524 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T11:51:39.289+09:00  INFO 5524 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Started Mst_Book_LogRepositoryTest in 7.172 seconds (process running for 9.202)
+2026-06-12T11:51:40.164+09:00  INFO 5524 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T11:51:40.168+09:00  INFO 5524 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T11:51:40.199+09:00  INFO 5524 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T11:56:50.968+09:00  INFO 7660 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Starting Mst_Book_LogRepositoryTest using Java 21.0.10 with PID 7660 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T11:56:50.974+09:00  INFO 7660 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T11:56:52.084+09:00  INFO 7660 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T11:56:52.220+09:00  INFO 7660 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 117 ms. Found 8 JPA repository interfaces.
+2026-06-12T11:56:52.919+09:00  INFO 7660 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T11:56:52.997+09:00  INFO 7660 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T11:56:53.900+09:00  INFO 7660 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T11:56:53.978+09:00  INFO 7660 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T11:56:54.310+09:00  INFO 7660 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@521c67f0
+2026-06-12T11:56:54.314+09:00  INFO 7660 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T11:56:54.432+09:00  INFO 7660 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T11:56:56.143+09:00  INFO 7660 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T11:56:56.273+09:00  INFO 7660 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T11:56:56.410+09:00  INFO 7660 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T11:56:56.699+09:00  WARN 7660 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T11:56:57.464+09:00  INFO 7660 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Started Mst_Book_LogRepositoryTest in 7.089 seconds (process running for 9.093)
+2026-06-12T11:56:58.253+09:00  INFO 7660 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T11:56:58.261+09:00  INFO 7660 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T11:56:58.297+09:00  INFO 7660 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T13:06:25.477+09:00  INFO 6896 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Starting Mst_Book_LogRepositoryTest using Java 21.0.10 with PID 6896 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T13:06:25.481+09:00  INFO 6896 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T13:06:26.598+09:00  INFO 6896 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T13:06:26.742+09:00  INFO 6896 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 124 ms. Found 8 JPA repository interfaces.
+2026-06-12T13:06:27.432+09:00  INFO 6896 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T13:06:27.550+09:00  INFO 6896 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T13:06:28.465+09:00  INFO 6896 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T13:06:28.534+09:00  INFO 6896 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T13:06:28.839+09:00  INFO 6896 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@4ec27c4c
+2026-06-12T13:06:28.843+09:00  INFO 6896 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T13:06:28.986+09:00  INFO 6896 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T13:06:30.708+09:00  INFO 6896 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T13:06:30.824+09:00  INFO 6896 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:06:30.973+09:00  INFO 6896 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T13:06:31.247+09:00  WARN 6896 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T13:06:32.109+09:00  INFO 6896 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Started Mst_Book_LogRepositoryTest in 7.242 seconds (process running for 9.242)
+2026-06-12T13:06:32.926+09:00  INFO 6896 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:06:32.931+09:00  INFO 6896 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T13:06:32.949+09:00  INFO 6896 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T13:10:29.235+09:00  INFO 3948 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Starting Mst_Book_LogRepositoryTest using Java 21.0.10 with PID 3948 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T13:10:29.238+09:00  INFO 3948 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T13:10:30.367+09:00  INFO 3948 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T13:10:30.508+09:00  INFO 3948 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 120 ms. Found 8 JPA repository interfaces.
+2026-06-12T13:10:31.239+09:00  INFO 3948 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T13:10:31.325+09:00  INFO 3948 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T13:10:32.202+09:00  INFO 3948 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T13:10:32.253+09:00  INFO 3948 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T13:10:32.543+09:00  INFO 3948 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@d271a54
+2026-06-12T13:10:32.547+09:00  INFO 3948 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T13:10:32.686+09:00  INFO 3948 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T13:10:34.311+09:00  INFO 3948 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T13:10:34.427+09:00  INFO 3948 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:10:34.581+09:00  INFO 3948 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T13:10:34.861+09:00  WARN 3948 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T13:10:35.650+09:00  INFO 3948 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Started Mst_Book_LogRepositoryTest in 7.053 seconds (process running for 9.154)
+2026-06-12T13:10:36.484+09:00  INFO 3948 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:10:36.489+09:00  INFO 3948 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T13:10:36.522+09:00  INFO 3948 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T13:13:09.949+09:00  INFO 4592 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Starting Mst_Book_LogRepositoryTest using Java 21.0.10 with PID 4592 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T13:13:09.955+09:00  INFO 4592 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T13:13:11.102+09:00  INFO 4592 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T13:13:11.238+09:00  INFO 4592 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 114 ms. Found 8 JPA repository interfaces.
+2026-06-12T13:13:11.927+09:00  INFO 4592 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T13:13:12.043+09:00  INFO 4592 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T13:13:12.965+09:00  INFO 4592 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T13:13:13.022+09:00  INFO 4592 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T13:13:13.348+09:00  INFO 4592 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@12200670
+2026-06-12T13:13:13.351+09:00  INFO 4592 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T13:13:13.485+09:00  INFO 4592 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T13:13:15.150+09:00  INFO 4592 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T13:13:15.284+09:00  INFO 4592 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:13:15.425+09:00  INFO 4592 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T13:13:15.692+09:00  WARN 4592 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T13:13:16.475+09:00  INFO 4592 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Started Mst_Book_LogRepositoryTest in 7.129 seconds (process running for 9.163)
+2026-06-12T13:13:17.450+09:00  INFO 4592 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:13:17.455+09:00  INFO 4592 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T13:13:17.492+09:00  INFO 4592 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T13:16:48.223+09:00  INFO 5896 --- [tko11-lms] [main] c.b.a.r.u.Category_Level1RepositoryTest  : Starting Category_Level1RepositoryTest using Java 21.0.10 with PID 5896 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T13:16:48.226+09:00  INFO 5896 --- [tko11-lms] [main] c.b.a.r.u.Category_Level1RepositoryTest  : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T13:16:49.347+09:00  INFO 5896 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T13:16:49.476+09:00  INFO 5896 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 112 ms. Found 8 JPA repository interfaces.
+2026-06-12T13:16:50.169+09:00  INFO 5896 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T13:16:50.255+09:00  INFO 5896 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T13:16:51.142+09:00  INFO 5896 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T13:16:51.201+09:00  INFO 5896 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T13:16:51.543+09:00  INFO 5896 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@57bac3f0
+2026-06-12T13:16:51.546+09:00  INFO 5896 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T13:16:51.682+09:00  INFO 5896 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T13:16:53.315+09:00  INFO 5896 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T13:16:53.439+09:00  INFO 5896 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:16:53.590+09:00  INFO 5896 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T13:16:53.859+09:00  WARN 5896 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T13:16:54.601+09:00  INFO 5896 --- [tko11-lms] [main] c.b.a.r.u.Category_Level1RepositoryTest  : Started Category_Level1RepositoryTest in 6.988 seconds (process running for 8.949)
+2026-06-12T13:16:55.714+09:00  INFO 5896 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:16:55.720+09:00  INFO 5896 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T13:16:55.742+09:00  INFO 5896 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T13:17:08.154+09:00  INFO 2556 --- [tko11-lms] [main] c.b.a.r.u.Category_Level2RepositoryTest  : Starting Category_Level2RepositoryTest using Java 21.0.10 with PID 2556 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T13:17:08.161+09:00  INFO 2556 --- [tko11-lms] [main] c.b.a.r.u.Category_Level2RepositoryTest  : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T13:17:09.211+09:00  INFO 2556 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T13:17:09.342+09:00  INFO 2556 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 110 ms. Found 8 JPA repository interfaces.
+2026-06-12T13:17:10.036+09:00  INFO 2556 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T13:17:10.130+09:00  INFO 2556 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T13:17:11.087+09:00  INFO 2556 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T13:17:11.143+09:00  INFO 2556 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T13:17:11.409+09:00  INFO 2556 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@670c171c
+2026-06-12T13:17:11.412+09:00  INFO 2556 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T13:17:11.549+09:00  INFO 2556 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T13:17:13.106+09:00  INFO 2556 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T13:17:13.234+09:00  INFO 2556 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:17:13.374+09:00  INFO 2556 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T13:17:13.644+09:00  WARN 2556 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T13:17:14.425+09:00  INFO 2556 --- [tko11-lms] [main] c.b.a.r.u.Category_Level2RepositoryTest  : Started Category_Level2RepositoryTest in 6.883 seconds (process running for 8.813)
+2026-06-12T13:17:15.376+09:00  INFO 2556 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:17:15.381+09:00  INFO 2556 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T13:17:15.404+09:00  INFO 2556 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T13:17:29.643+09:00  INFO 7460 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Starting Mst_Book_LogRepositoryTest using Java 21.0.10 with PID 7460 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T13:17:29.650+09:00  INFO 7460 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T13:17:30.783+09:00  INFO 7460 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T13:17:30.915+09:00  INFO 7460 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 107 ms. Found 8 JPA repository interfaces.
+2026-06-12T13:17:31.615+09:00  INFO 7460 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T13:17:31.732+09:00  INFO 7460 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T13:17:32.726+09:00  INFO 7460 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T13:17:32.795+09:00  INFO 7460 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T13:17:33.117+09:00  INFO 7460 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@12200670
+2026-06-12T13:17:33.121+09:00  INFO 7460 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T13:17:33.248+09:00  INFO 7460 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T13:17:35.065+09:00  INFO 7460 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T13:17:35.197+09:00  INFO 7460 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:17:35.351+09:00  INFO 7460 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T13:17:35.614+09:00  WARN 7460 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T13:17:36.389+09:00  INFO 7460 --- [tko11-lms] [main] c.b.a.r.u.Mst_Book_LogRepositoryTest     : Started Mst_Book_LogRepositoryTest in 7.345 seconds (process running for 9.362)
+2026-06-12T13:17:37.364+09:00  INFO 7460 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:17:37.368+09:00  INFO 7460 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T13:17:37.402+09:00  INFO 7460 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T13:17:53.435+09:00  INFO 7756 --- [tko11-lms] [main] c.b.a.r.users.Trn_StatusRepositoryTest   : Starting Trn_StatusRepositoryTest using Java 21.0.10 with PID 7756 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T13:17:53.443+09:00  INFO 7756 --- [tko11-lms] [main] c.b.a.r.users.Trn_StatusRepositoryTest   : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T13:17:54.580+09:00  INFO 7756 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T13:17:54.722+09:00  INFO 7756 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 114 ms. Found 8 JPA repository interfaces.
+2026-06-12T13:17:55.434+09:00  INFO 7756 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T13:17:55.551+09:00  INFO 7756 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T13:17:56.411+09:00  INFO 7756 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T13:17:56.483+09:00  INFO 7756 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T13:17:56.829+09:00  INFO 7756 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@46d69ca4
+2026-06-12T13:17:56.834+09:00  INFO 7756 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T13:17:57.001+09:00  INFO 7756 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T13:17:58.731+09:00  INFO 7756 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T13:17:58.834+09:00  INFO 7756 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:17:58.994+09:00  INFO 7756 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T13:17:59.290+09:00  WARN 7756 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T13:18:00.131+09:00  INFO 7756 --- [tko11-lms] [main] c.b.a.r.users.Trn_StatusRepositoryTest   : Started Trn_StatusRepositoryTest in 7.302 seconds (process running for 9.323)
+2026-06-12T13:18:01.059+09:00  INFO 7756 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:18:01.064+09:00  INFO 7756 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T13:18:01.094+09:00  INFO 7756 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-12T13:18:21.147+09:00  INFO 7220 --- [tko11-lms] [main] c.b.a.r.users.UsersRepositoryTest        : Starting UsersRepositoryTest using Java 21.0.10 with PID 7220 (started by user1 in C:\work\appdb\tko11-lms\backend)
+2026-06-12T13:18:21.168+09:00  INFO 7220 --- [tko11-lms] [main] c.b.a.r.users.UsersRepositoryTest        : No active profile set, falling back to 1 default profile: "default"
+2026-06-12T13:18:22.267+09:00  INFO 7220 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-12T13:18:22.395+09:00  INFO 7220 --- [tko11-lms] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 108 ms. Found 8 JPA repository interfaces.
+2026-06-12T13:18:23.087+09:00  INFO 7220 --- [tko11-lms] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-12T13:18:23.211+09:00  INFO 7220 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-12T13:18:24.101+09:00  INFO 7220 --- [tko11-lms] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-12T13:18:24.176+09:00  INFO 7220 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-12T13:18:24.500+09:00  INFO 7220 --- [tko11-lms] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@49f50c8f
+2026-06-12T13:18:24.505+09:00  INFO 7220 --- [tko11-lms] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-12T13:18:24.643+09:00  INFO 7220 --- [tko11-lms] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/appdb]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: appdb/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-12T13:18:26.384+09:00  INFO 7220 --- [tko11-lms] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-12T13:18:26.489+09:00  INFO 7220 --- [tko11-lms] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:18:26.638+09:00  INFO 7220 --- [tko11-lms] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-12T13:18:26.906+09:00  WARN 7220 --- [tko11-lms] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-12T13:18:27.680+09:00  INFO 7220 --- [tko11-lms] [main] c.b.a.r.users.UsersRepositoryTest        : Started UsersRepositoryTest in 7.155 seconds (process running for 9.177)
+2026-06-12T13:18:28.664+09:00  INFO 7220 --- [tko11-lms] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-12T13:18:28.669+09:00  INFO 7220 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-12T13:18:28.708+09:00  INFO 7220 --- [tko11-lms] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

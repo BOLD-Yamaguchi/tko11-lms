@@ -6,7 +6,7 @@
     "configurations": [
 
         {
-            "type": "msedge",
+            "type": "chrome",
             "request": "launch",
             "name": "localhost に対して Edge を起動する",
             "url": "http://localhost:5173/",
