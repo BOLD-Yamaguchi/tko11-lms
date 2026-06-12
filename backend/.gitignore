@@ -36,6 +36,8 @@ out/
 ### VS Code ###
 .vscode/
 
-
 ## logs ##
 logs/
+
+## DB ##
+bin/main/application.properties
