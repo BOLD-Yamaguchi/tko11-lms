@@ -23,7 +23,7 @@ function Login() {
     setTimeout(() => {
       setIsSubmitting(false);
       alert("ログイン成功");
-      navigate("/UsersList");
+      navigate("/home");
     }, 1000);
   };
 

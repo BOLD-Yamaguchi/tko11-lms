@@ -16,7 +16,6 @@ build/
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
-backend/src/main/resources/application.properties
 
 ### IntelliJ IDEA ###
 .idea
@@ -26,6 +25,7 @@ backend/src/main/resources/application.properties
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+!**/src/main/resources/application.properties
 
 ### NetBeans ###
 /nbproject/private/
@@ -36,6 +36,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
 # macOS
 .DS_Store
 **/.DS_Store
