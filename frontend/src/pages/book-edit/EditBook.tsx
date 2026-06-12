@@ -1,21 +1,22 @@
 import { useParams } from 'react-router-dom'
-import BookForm from './BookForm'
-import type { Book, CatalogBook, UserRole } from './types'
+import BookForm from '../book-form/BookForm'
+import { useLibraryDataValue } from '../../data/libraryQueries'
+import type { Book, UserRole } from '../../types'
 
 type EditBookProps = {
-  books: CatalogBook[]
   onUpdate: (book: Book) => void
   role: UserRole
   onLogout: () => void
 }
 
 function EditBook({
-  books,
   onUpdate,
   role,
   onLogout,
 }: EditBookProps) {
   const { bookId } = useParams()
+  const data = useLibraryDataValue()
+  const books = data.books
   const book = books.find((candidate) => candidate.id === bookId) ?? books[0]
 
   if (!book) {

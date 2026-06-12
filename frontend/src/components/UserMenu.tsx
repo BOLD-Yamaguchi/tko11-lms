@@ -1,6 +1,6 @@
 import { HamburgerMenu } from './HamburgerMenu'
 import type { HamburgerMenuItem } from './HamburgerMenu'
-import { roleInfo } from '../roleInfo'
+import { useLibraryDataValue } from '../data/libraryQueries'
 import type { UserRole } from '../types'
 
 type UserMenuProps = {
@@ -16,7 +16,8 @@ export function UserMenu({
   onSelect,
   title = '書籍管理',
 }: UserMenuProps) {
-  const user = roleInfo[role]
+  const data = useLibraryDataValue()
+  const user = data.roleProfiles[role]
 
   return (
     <div className="user-menu">

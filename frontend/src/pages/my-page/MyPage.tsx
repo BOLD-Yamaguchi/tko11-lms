@@ -9,7 +9,7 @@ import {
   SearchIcon,
   UserIcon,
   UsersIcon,
-} from './Icons'
+} from '../../Icons'
 import {
   ActionConfirmationModal,
   BackButton,
@@ -20,55 +20,23 @@ import {
   TextBox,
   Toast,
   UserMenu,
-} from './components'
-import { getReturnDueDate } from './dateUtils'
-import {
-  borrowingRecords,
-  reservationRecords,
-  userLoanHistory,
-} from './mockData'
+} from '../../components'
+import { useLibraryDataValue } from '../../data/libraryQueries'
+import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
 import type {
   BorrowingRecord,
-  CatalogBook,
   ReservationRecord,
   UserLoanHistory,
   UserRole,
-} from './types'
+} from '../../types'
 
 type MyPageProps = {
-  books: CatalogBook[]
   role: UserRole
   onLogout: () => void
 }
 
 type GeneralPendingAction = 'requestReturn' | 'cancelReservation'
 type LoanStep = 'auth' | 'confirm'
-
-const roleProfiles: Record<UserRole, {
-  title: string
-  label: string
-  userId: string
-  name: string
-}> = {
-  general: {
-    title: 'ユーザー情報',
-    label: '一般ユーザー',
-    userId: 'U0001',
-    name: '山田 太郎',
-  },
-  operator: {
-    title: '貸出ユーザー情報',
-    label: '貸出ユーザー',
-    userId: 'L0001',
-    name: '貸出 担当',
-  },
-  admin: {
-    title: 'ユーザー情報',
-    label: '管理者ユーザー',
-    userId: 'A0001',
-    name: '管理 太郎',
-  },
-}
 
 type AccordionPanelProps = {
   title: string
@@ -98,23 +66,25 @@ function AccordionPanel({
   )
 }
 
-function MyPage({ books, role, onLogout }: MyPageProps) {
+function MyPage({ role, onLogout }: MyPageProps) {
   const navigate = useNavigate()
-  const profile = roleProfiles[role]
-  const [borrowings, setBorrowings] = useState<BorrowingRecord[]>(borrowingRecords)
-  const [reservations, setReservations] = useState<ReservationRecord[]>(reservationRecords)
+  const data = useLibraryDataValue()
+  const profile = data.roleProfiles[role]
+  const generalReservation = data.reservationRecords[0]
+  const [borrowings, setBorrowings] = useState<BorrowingRecord[]>(data.borrowingRecords)
+  const [reservations, setReservations] = useState<ReservationRecord[]>(data.reservationRecords)
   const [pendingLoan, setPendingLoan] = useState<ReservationRecord | null>(null)
   const [loanStep, setLoanStep] = useState<LoanStep | null>(null)
   const [pendingGeneralAction, setPendingGeneralAction] = useState<GeneralPendingAction | null>(null)
   const [pendingApproval, setPendingApproval] = useState<BorrowingRecord | null>(null)
   const [hasReservation, setHasReservation] = useState(true)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [filterKey, setFilterKey] = useState('id')
+  const [filterKey, setFilterKey] = useState('employeeNumber')
   const [keyword, setKeyword] = useState('')
   const [message, setMessage] = useState('')
-  const visibleLoanHistory = userLoanHistory.filter((record) => {
-    if (role === 'admin' || !record.bookId) return true
-    return books.find((book) => book.id === record.bookId)?.collectionStatus !== '廃棄'
+  const visibleLoanHistory = data.userLoanHistory.filter((record) => {
+    if (role === 'admin') return true
+    return data.books.find((book) => book.id === record.bookId)?.collectionStatus !== '廃棄'
   })
 
   const filteredBorrowings = useMemo(() => {
@@ -125,7 +95,7 @@ function MyPage({ books, role, onLogout }: MyPageProps) {
         ? record.borrower
         : filterKey === 'title'
           ? record.title
-          : record.id
+          : record.employeeNumber
       return target.toLowerCase().includes(normalized)
     })
   }, [borrowings, filterKey, keyword])
@@ -147,16 +117,16 @@ function MyPage({ books, role, onLogout }: MyPageProps) {
     ))
   }
 
-  const approveReturn = (id: string) => {
-    setBorrowings((current) => current.filter((record) => record.id !== id))
-    setSelectedIds((current) => current.filter((selectedId) => selectedId !== id))
+  const approveReturn = (employeeNumber: string) => {
+    setBorrowings((current) => current.filter((record) => record.employeeNumber !== employeeNumber))
+    setSelectedIds((current) => current.filter((selectedId) => selectedId !== employeeNumber))
     setMessage('返却を承認しました。')
     setPendingApproval(null)
   }
 
-  const rejectReturn = (id: string) => {
+  const rejectReturn = (employeeNumber: string) => {
     setBorrowings((current) => current.map((record) => (
-      record.id === id
+      record.employeeNumber === employeeNumber
         ? { ...record, status: '貸出中', returnComment: undefined }
         : record
     )))
@@ -169,14 +139,14 @@ function MyPage({ books, role, onLogout }: MyPageProps) {
       setMessage('返却する行を選択してください。')
       return
     }
-    setBorrowings((current) => current.filter((record) => !selectedIds.includes(record.id)))
+    setBorrowings((current) => current.filter((record) => !selectedIds.includes(record.employeeNumber)))
     setMessage(`${selectedIds.length}件の一括返却登録を受け付けました。`)
     setSelectedIds([])
   }
 
   const requestReturn = (comment: string) => {
     setBorrowings((current) => current.map((record) => (
-      record.id === 'U0001'
+      record.employeeNumber === profile.employeeNumber
         ? { ...record, status: '返却申請中', returnComment: comment }
         : record
     )))
@@ -197,11 +167,11 @@ function MyPage({ books, role, onLogout }: MyPageProps) {
     setBorrowings((current) => [
       ...current,
       {
-        id: `U${String(current.length + 1).padStart(4, '0')}`,
+        employeeNumber: pendingLoan.employeeNumber,
         borrower: pendingLoan.reserver,
         title: pendingLoan.title,
         author: pendingLoan.author,
-        loanDate: '2026/06/10',
+        loanDate: getCurrentDate(),
         shelfNumber: pendingLoan.shelfNumber,
         tierNumber: pendingLoan.tierNumber,
         status: '貸出中',
@@ -272,12 +242,15 @@ function MyPage({ books, role, onLogout }: MyPageProps) {
 
       {role === 'general' && (
         <GeneralUserSections
-          borrowing={borrowings.find((record) => record.id === 'U0001')}
+          borrowing={borrowings.find((record) => record.employeeNumber === profile.employeeNumber)}
+          reservation={generalReservation}
           hasReservation={hasReservation}
           onRequestReturn={() => setPendingGeneralAction('requestReturn')}
           onCancelReservation={() => setPendingGeneralAction('cancelReservation')}
           historyRecords={visibleLoanHistory}
-          onOpenBook={(bookId) => navigate(`/books/${bookId}`)}
+          onOpenBook={(bookId) => navigate(`/books/${bookId}`, {
+            state: { from: '/mypage' },
+          })}
         />
       )}
 
@@ -305,7 +278,7 @@ function MyPage({ books, role, onLogout }: MyPageProps) {
                 value={filterKey}
                 onChange={setFilterKey}
                 options={[
-                  { value: 'id', label: '借受人ID' },
+                  { value: 'employeeNumber', label: '社員番号' },
                   { value: 'name', label: '借受人名' },
                   { value: 'title', label: '書籍名' },
                 ]}
@@ -324,7 +297,7 @@ function MyPage({ books, role, onLogout }: MyPageProps) {
                 <thead>
                   <tr>
                     <th aria-label="選択" />
-                    <th>借受人ID</th>
+                    <th>社員番号</th>
                     <th>借受人名</th>
                     <th>書籍名</th>
                     <th>著者</th>
@@ -337,16 +310,19 @@ function MyPage({ books, role, onLogout }: MyPageProps) {
                 </thead>
                 <tbody>
                   {filteredBorrowings.map((record) => (
-                    <tr key={record.id} className={selectedIds.includes(record.id) ? 'selected' : ''}>
+                    <tr
+                      key={record.employeeNumber}
+                      className={selectedIds.includes(record.employeeNumber) ? 'selected' : ''}
+                    >
                       <td>
                         <input
                           type="checkbox"
                           aria-label={`${record.borrower}を選択`}
-                          checked={selectedIds.includes(record.id)}
-                          onChange={() => toggleSelected(record.id)}
+                          checked={selectedIds.includes(record.employeeNumber)}
+                          onChange={() => toggleSelected(record.employeeNumber)}
                         />
                       </td>
-                      <td>{record.id}</td>
+                      <td>{record.employeeNumber}</td>
                       <td>{record.borrower}</td>
                       <td>{record.title}</td>
                       <td>{record.author}</td>
@@ -422,7 +398,7 @@ function MyPage({ books, role, onLogout }: MyPageProps) {
           open
           title="予約取消の確認"
           personLabel={`${profile.name}さん`}
-          bookTitle={reservationRecords[0].title}
+          bookTitle={generalReservation?.title ?? ''}
           prompt="上記の書籍の予約を取り消しますか？"
           confirmLabel="予約を取り消す"
           onClose={() => setPendingGeneralAction(null)}
@@ -437,8 +413,8 @@ function MyPage({ books, role, onLogout }: MyPageProps) {
           secondaryActionLabel="却下"
           maxWidth="sm"
           onClose={() => setPendingApproval(null)}
-          onConfirm={() => approveReturn(pendingApproval.id)}
-          onSecondaryAction={() => rejectReturn(pendingApproval.id)}
+          onConfirm={() => approveReturn(pendingApproval.employeeNumber)}
+          onSecondaryAction={() => rejectReturn(pendingApproval.employeeNumber)}
         >
           <div className="return-approval-confirmation">
             <dl>
@@ -460,6 +436,7 @@ function MyPage({ books, role, onLogout }: MyPageProps) {
 
 type GeneralUserSectionsProps = {
   borrowing?: BorrowingRecord
+  reservation?: ReservationRecord
   hasReservation: boolean
   onRequestReturn: () => void
   onCancelReservation: () => void
@@ -469,6 +446,7 @@ type GeneralUserSectionsProps = {
 
 function GeneralUserSections({
   borrowing,
+  reservation,
   hasReservation,
   onRequestReturn,
   onCancelReservation,
@@ -502,13 +480,13 @@ function GeneralUserSections({
                   </td>
                 </tr>
               )}
-              {hasReservation && (
+              {hasReservation && reservation && (
                 <tr>
-                  <td>{reservationRecords[0].title}</td>
-                  <td>{reservationRecords[0].author}</td>
-                  <td>{reservationRecords[0].reservationDate}</td>
-                  <td>{reservationRecords[0].shelfNumber}</td>
-                  <td>{reservationRecords[0].tierNumber}</td>
+                  <td>{reservation.title}</td>
+                  <td>{reservation.author}</td>
+                  <td>{reservation.reservationDate}</td>
+                  <td>{reservation.shelfNumber}</td>
+                  <td>{reservation.tierNumber}</td>
                   <td><span className="record-status reserved">予約中</span></td>
                   <td>
                     <button type="button" className="list-action-button cancel" onClick={onCancelReservation}>
@@ -531,7 +509,7 @@ function GeneralUserSections({
           <table className="data-table">
             <thead><tr><th>書籍名</th><th>著者</th><th>貸出日付</th><th>返却日</th><th>詳細</th></tr></thead>
             <tbody>
-              {historyRecords.map((record, index) => (
+              {historyRecords.map((record) => (
                 <tr key={record.title}>
                   <td>{record.title}</td>
                   <td>{record.author}</td>
@@ -541,7 +519,7 @@ function GeneralUserSections({
                     <button
                       type="button"
                       className="row-detail"
-                      onClick={() => onOpenBook(record.bookId ?? initialBookIds[index])}
+                      onClick={() => onOpenBook(record.bookId)}
                     >
                       ›
                     </button>
@@ -555,8 +533,6 @@ function GeneralUserSections({
     </>
   )
 }
-
-const initialBookIds = ['B0001', 'B0004', 'B0006']
 
 function RecordStatus({ status }: { status: BorrowingRecord['status'] }) {
   return (
@@ -575,7 +551,7 @@ function SimpleBorrowingTable({ records }: { records: BorrowingRecord[] }) {
         </thead>
         <tbody>
           {records.map((record) => (
-            <tr key={record.id}>
+            <tr key={record.employeeNumber}>
               <td>{record.title}</td>
               <td>{record.author}</td>
               <td>{record.borrower}</td>

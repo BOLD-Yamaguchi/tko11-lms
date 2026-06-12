@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookIcon, UserIcon, UsersIcon } from './Icons'
-import type { UserRole } from './types'
+import { BookIcon, UserIcon, UsersIcon } from '../../Icons'
+import type { UserRole } from '../../types'
 
 type LoginPageProps = {
   onLogin: (role: UserRole) => void

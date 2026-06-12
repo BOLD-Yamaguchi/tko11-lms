@@ -1,6 +1,6 @@
-import BookForm from './BookForm'
-import { emptyBook } from './mockData'
-import type { Book, UserRole } from './types'
+import BookForm from '../book-form/BookForm'
+import { useLibraryDataValue } from '../../data/libraryQueries'
+import type { Book, UserRole } from '../../types'
 
 type CreateBookProps = {
   onCreate: (book: Book) => void
@@ -9,10 +9,12 @@ type CreateBookProps = {
 }
 
 function CreateBook({ onCreate, role, onLogout }: CreateBookProps) {
+  const data = useLibraryDataValue()
+
   return (
     <BookForm
       mode="create"
-      initialValues={emptyBook}
+      initialValues={data.emptyBook}
       onSubmit={onCreate}
       role={role}
       onLogout={onLogout}

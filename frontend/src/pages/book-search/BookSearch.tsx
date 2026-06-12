@@ -1,23 +1,21 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronIcon, SearchIcon } from './Icons'
+import { ChevronIcon, SearchIcon } from '../../Icons'
 import {
   BackButton,
   DropdownField,
   TextBox,
   Toast,
   UserMenu,
-} from './components'
+} from '../../components'
+import { useLibraryDataValue } from '../../data/libraryQueries'
 import type {
-  CatalogBook,
-  LibraryLocation,
   LoanStatus,
   UserRole,
-} from './types'
+} from '../../types'
 
 type BookSearchProps = {
-  books: CatalogBook[]
   role: UserRole
   onLogout: () => void
 }
@@ -46,14 +44,10 @@ const emptyConditions: SearchConditions = {
   collectionStatus: '',
 }
 
-const roleLocations: Record<UserRole, LibraryLocation> = {
-  general: '東京',
-  operator: '東京',
-  admin: '東京',
-}
-
-function BookSearch({ books, role, onLogout }: BookSearchProps) {
+function BookSearch({ role, onLogout }: BookSearchProps) {
   const navigate = useNavigate()
+  const data = useLibraryDataValue()
+  const userLocation = data.roleProfiles[role].location
   const [form, setForm] = useState<SearchConditions>(emptyConditions)
   const [conditions, setConditions] = useState<SearchConditions>(emptyConditions)
   const [hasSearched, setHasSearched] = useState(false)
@@ -62,7 +56,6 @@ function BookSearch({ books, role, onLogout }: BookSearchProps) {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [message, setMessage] = useState('')
-  const userLocation = roleLocations[role]
   const collectionOptions = [
     { value: '', label: '全て' },
     { value: '開架', label: '開架' },
@@ -88,7 +81,7 @@ function BookSearch({ books, role, onLogout }: BookSearchProps) {
       !query.trim()
       || value.toLowerCase().includes(query.trim().toLowerCase())
     )
-    return books
+    return data.books
       .filter((book) => (
         book.location === userLocation
         && (role === 'admin' || book.collectionStatus !== '廃棄')
@@ -105,7 +98,7 @@ function BookSearch({ books, role, onLogout }: BookSearchProps) {
         const compared = left[sortKey].localeCompare(right[sortKey], 'ja')
         return ascending ? compared : -compared
       })
-  }, [ascending, books, conditions, hasSearched, role, sortKey, userLocation])
+  }, [ascending, conditions, data.books, hasSearched, role, sortKey, userLocation])
 
   const pageCount = Math.max(1, Math.ceil(results.length / pageSize))
   const currentPage = Math.min(page, pageCount)
@@ -161,8 +154,30 @@ function BookSearch({ books, role, onLogout }: BookSearchProps) {
           <TextBox label="著者名" value={form.author} onChange={(value) => setForm({ ...form, author: value })} placeholder="例：山田太郎" />
           <TextBox label="出版社" value={form.publisher} onChange={(value) => setForm({ ...form, publisher: value })} placeholder="例：技術評論社" />
           <DropdownField label="貸出ステータス" value={form.loanStatus} onChange={(value) => setForm({ ...form, loanStatus: value })} options={loanOptions} />
-          <DropdownField label="カテゴリ1" value={form.majorCategory} onChange={(value) => setForm({ ...form, majorCategory: value })} options={majorOptions} />
-          <DropdownField label="カテゴリ2" value={form.minorCategory} onChange={(value) => setForm({ ...form, minorCategory: value })} options={minorOptions} />
+          <DropdownField
+            label="カテゴリ1"
+            value={form.majorCategory}
+            onChange={(value) => setForm({ ...form, majorCategory: value })}
+            options={[
+              { value: '', label: '全て' },
+              ...data.categoryOptions.major.map((category) => ({
+                value: category,
+                label: category,
+              })),
+            ]}
+          />
+          <DropdownField
+            label="カテゴリ2"
+            value={form.minorCategory}
+            onChange={(value) => setForm({ ...form, minorCategory: value })}
+            options={[
+              { value: '', label: '全て' },
+              ...data.categoryOptions.minor.map((category) => ({
+                value: category,
+                label: category,
+              })),
+            ]}
+          />
           <DropdownField label="配架分類" value={form.collectionStatus} onChange={(value) => setForm({ ...form, collectionStatus: value })} options={collectionOptions} />
         </div>
         <div className="search-submit">
@@ -217,7 +232,14 @@ function BookSearch({ books, role, onLogout }: BookSearchProps) {
                     <td>{book.collectionStatus === '開架' ? '○' : '×'}</td>
                     <td><StatusBadge status={book.loanStatus} /></td>
                     <td>
-                      <button type="button" className="row-detail" aria-label={`${book.title}の詳細`} onClick={() => navigate(`/books/${book.id}`)}>
+                      <button
+                        type="button"
+                        className="row-detail"
+                        aria-label={`${book.title}の詳細`}
+                        onClick={() => navigate(`/books/${book.id}`, {
+                          state: { from: '/search' },
+                        })}
+                      >
                         <ChevronIcon size={21} />
                       </button>
                     </td>
@@ -273,16 +295,6 @@ const loanOptions = [
   { value: '貸出可', label: '貸出可' },
   { value: '貸出中', label: '貸出中' },
   { value: '返却申請中', label: '返却申請中' },
-]
-
-const majorOptions = [
-  { value: '', label: '全て' },
-  { value: '技術書', label: '技術書' },
-]
-
-const minorOptions = [
-  { value: '', label: '全て' },
-  { value: 'プログラミング', label: 'プログラミング' },
 ]
 
 export default BookSearch

@@ -1,14 +1,15 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import BookDetail from './BookDetail'
-import BookSearch from './BookSearch'
-import CreateBook from './CreateBook'
-import EditBook from './EditBook'
-import Home from './Home'
-import LoginPage from './LoginPage'
-import MyPage from './MyPage'
-import { initialBooks, loanHistory } from './mockData'
-import type { Book, CatalogBook, LoanStatus, UserRole } from './types'
+import { libraryDataQueryKey, useLibraryData } from './data/libraryQueries'
+import CreateBook from './pages/book-create/CreateBook'
+import EditBook from './pages/book-edit/EditBook'
+import BookDetail from './pages/book-detail/BookDetail'
+import BookSearch from './pages/book-search/BookSearch'
+import Home from './pages/home/Home'
+import LoginPage from './pages/login/LoginPage'
+import MyPage from './pages/my-page/MyPage'
+import type { Book, LibraryData, LoanStatus, UserRole } from './types'
 
 const roleStorageKey = 'tko11-mock-user-role'
 
@@ -21,18 +22,22 @@ function readStoredRole(): UserRole | null {
 
 function App() {
   const [role, setRole] = useState<UserRole | null>(readStoredRole)
-  const [books, setBooks] = useState<CatalogBook[]>(initialBooks)
-  const [historyVisibility, setHistoryVisibility] = useState<Record<string, string[]>>(
-    () => Object.fromEntries(
-      initialBooks.map((book) => [book.id, loanHistory.map((history) => history.id)]),
-    ),
-  )
-  const [returnComments, setReturnComments] = useState<Record<string, string>>({
-    B0003: '図が多く、理解しやすかったです。',
-    B0006: '具体例が豊富で、業務にも活用できそうです。',
-    B0009: '画面構成の説明が分かりやすかったです。',
-    B0011: '',
-  })
+  const queryClient = useQueryClient()
+  const { data, isPending, isError } = useLibraryData()
+
+  if (isPending) {
+    return <main className="page-shell">データを読み込んでいます。</main>
+  }
+  if (isError || !data) {
+    return <main className="page-shell">データの取得に失敗しました。</main>
+  }
+
+  const updateLibraryData = (updater: (current: LibraryData) => LibraryData) => {
+    queryClient.setQueryData<LibraryData>(
+      libraryDataQueryKey,
+      (current) => current ? updater(current) : current,
+    )
+  }
 
   const login = (nextRole: UserRole) => {
     sessionStorage.setItem(roleStorageKey, nextRole)
@@ -45,36 +50,57 @@ function App() {
   }
 
   const createBook = (newBook: Book) => {
-    setBooks((current) => [
-      ...current.filter((book) => book.id !== newBook.id),
-      { ...newBook, loanStatus: '貸出可' },
-    ])
-    setHistoryVisibility((current) => ({
+    updateLibraryData((current) => ({
       ...current,
-      [newBook.id]: loanHistory.map((history) => history.id),
+      books: [
+        ...current.books.filter((book) => book.id !== newBook.id),
+        { ...newBook, loanStatus: '貸出可' },
+      ],
+      historyVisibility: {
+        ...current.historyVisibility,
+        [newBook.id]: current.loanHistory.map((history) => history.id),
+      },
     }))
   }
 
   const updateBook = (updatedBook: Book) => {
-    setBooks((current) => current.map((book) => (
-      book.id === updatedBook.id
-        ? { ...updatedBook, loanStatus: book.loanStatus }
-        : book
-    )))
+    updateLibraryData((current) => ({
+      ...current,
+      books: current.books.map((book) => (
+        book.id === updatedBook.id
+          ? { ...updatedBook, loanStatus: book.loanStatus }
+          : book
+      )),
+    }))
   }
 
   const updateLoanStatus = (bookId: string, loanStatus: LoanStatus) => {
-    setBooks((current) => current.map((book) => (
-      book.id === bookId ? { ...book, loanStatus } : book
-    )))
+    updateLibraryData((current) => ({
+      ...current,
+      books: current.books.map((book) => (
+        book.id === bookId ? { ...book, loanStatus } : book
+      )),
+    }))
   }
 
   const updateHistoryVisibility = (bookId: string, visibleIds: string[]) => {
-    setHistoryVisibility((current) => ({ ...current, [bookId]: visibleIds }))
+    updateLibraryData((current) => ({
+      ...current,
+      historyVisibility: {
+        ...current.historyVisibility,
+        [bookId]: visibleIds,
+      },
+    }))
   }
 
   const updateReturnComment = (bookId: string, comment: string) => {
-    setReturnComments((current) => ({ ...current, [bookId]: comment }))
+    updateLibraryData((current) => ({
+      ...current,
+      returnComments: {
+        ...current.returnComments,
+        [bookId]: comment,
+      },
+    }))
   }
 
   return (
@@ -92,7 +118,7 @@ function App() {
           path="/mypage"
           element={
             role
-              ? <MyPage books={books} role={role} onLogout={logout} />
+              ? <MyPage role={role} onLogout={logout} />
               : <Navigate to="/login" replace />
           }
         />
@@ -100,7 +126,7 @@ function App() {
           path="/search"
           element={
             role
-              ? <BookSearch books={books} role={role} onLogout={logout} />
+              ? <BookSearch role={role} onLogout={logout} />
               : <Navigate to="/login" replace />
           }
         />
@@ -118,12 +144,9 @@ function App() {
             role
               ? (
                 <BookDetail
-                  books={books}
                   role={role}
                   onStatusChange={updateLoanStatus}
-                  historyVisibility={historyVisibility}
                   onHistoryVisibilityChange={updateHistoryVisibility}
-                  returnComments={returnComments}
                   onReturnCommentChange={updateReturnComment}
                   onLogout={logout}
                 />
@@ -137,7 +160,6 @@ function App() {
             role === 'admin'
               ? (
                 <EditBook
-                  books={books}
                   onUpdate={updateBook}
                   role={role}
                   onLogout={logout}

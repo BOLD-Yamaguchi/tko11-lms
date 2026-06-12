@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Link,
@@ -13,7 +13,7 @@ import {
   ClockIcon,
   EditIcon,
   ReturnIcon,
-} from './Icons'
+} from '../../Icons'
 import {
   ActionConfirmationModal,
   BackButton,
@@ -22,24 +22,22 @@ import {
   ReturnRequestModal,
   Toast,
   UserMenu,
-} from './components'
-import { getReturnDueDate } from './dateUtils'
-import { loanHistory } from './mockData'
-import type { CatalogBook, LoanStatus, UserRole } from './types'
+} from '../../components'
+import { useLibraryDataValue } from '../../data/libraryQueries'
+import { getReturnDueDate } from '../../dateUtils'
+import type { LoanStatus, UserRole } from '../../types'
 
 type BookDetailProps = {
-  books: CatalogBook[]
   role: UserRole
   onStatusChange: (bookId: string, status: LoanStatus) => void
-  historyVisibility: Record<string, string[]>
   onHistoryVisibilityChange: (bookId: string, visibleIds: string[]) => void
-  returnComments: Record<string, string>
   onReturnCommentChange: (bookId: string, comment: string) => void
   onLogout: () => void
 }
 
 type LocationState = {
   message?: string
+  from?: '/mypage' | '/search'
 }
 
 type BookAction =
@@ -139,10 +137,7 @@ function getActions(role: UserRole, status: LoanStatus): ActionDefinition[] {
     if (role === 'operator') {
       return [{ id: 'loan', label: '貸出', icon: <BookIcon /> }]
     }
-    return [
-      { id: 'reserve', label: '予約', icon: <CalendarIcon /> },
-      { id: 'loan', label: '貸出', icon: <BookIcon /> },
-    ]
+    return [{ id: 'loan', label: '貸出', icon: <BookIcon /> }]
   }
 
   if (status === '貸出中') {
@@ -175,25 +170,33 @@ function getActions(role: UserRole, status: LoanStatus): ActionDefinition[] {
 }
 
 function BookDetail({
-  books,
   role,
   onStatusChange,
-  historyVisibility,
   onHistoryVisibilityChange,
-  returnComments,
   onReturnCommentChange,
   onLogout,
 }: BookDetailProps) {
   const navigate = useNavigate()
   const location = useLocation()
+  const data = useLibraryDataValue()
+  const books = data.books
+  const loanHistory = data.loanHistory
+  const historyVisibility = data.historyVisibility
+  const returnComments = data.returnComments
   const { bookId } = useParams()
   const book = books.find((candidate) => candidate.id === bookId) ?? books[0]
-  const routeMessage = (location.state as LocationState | null)?.message
+  const locationState = location.state as LocationState | null
+  const routeMessage = locationState?.message
+  const backPath = locationState?.from === '/mypage' ? '/mypage' : '/search'
   const [message, setMessage] = useState(routeMessage ?? '')
   const [pendingAction, setPendingAction] = useState<BookAction | null>(null)
   const [actionStep, setActionStep] = useState<ActionStep | null>(null)
   const [editingHistory, setEditingHistory] = useState(false)
   const [draftVisibleHistoryIds, setDraftVisibleHistoryIds] = useState<string[]>([])
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.key])
 
   if (!book) {
     return null
@@ -218,6 +221,8 @@ function BookDetail({
     ['備考', book.notes || '付録なし'],
   ]
   const actions = getActions(role, book.loanStatus)
+  const profile = data?.roleProfiles[role]
+  const statusDetail = data?.bookStatusDetails[book.id]
   const visibleHistoryIds = historyVisibility[book.id] ?? loanHistory.map((history) => history.id)
   const displayedHistory = role === 'admin' && editingHistory
     ? loanHistory
@@ -318,20 +323,20 @@ function BookDetail({
     貸出可: <p>現在、この書籍は貸出できます。</p>,
     貸出中: (
       <>
-        <p>貸出者：○○さん</p>
-        <p>返却予定日：2026/04/10</p>
+        <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
+        <p>返却予定日：{statusDetail?.returnDueDate ?? getReturnDueDate()}</p>
       </>
     ),
     返却申請中: (
       <>
-        <p>貸出者：○○さん</p>
+        <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
         <p>返却申請を確認中です。</p>
       </>
     ),
     予約中: (
       <>
-        <p>予約者：○○さん</p>
-        <p>予約日：2026/04/01</p>
+        <p>予約者：{statusDetail?.reserverName ?? profile?.name}さん</p>
+        <p>予約日：{statusDetail?.reservationDate ?? '未設定'}</p>
       </>
     ),
   }[book.loanStatus]
@@ -342,12 +347,12 @@ function BookDetail({
     : pendingAction === 'return'
       ? '直接返却確認'
       : modalSetting?.title ?? ''
-  const personLabel = role === 'general' ? '山田 太郎さん' : '山田太郎さん'
+  const personLabel = `${profile?.name ?? '利用者'}さん`
 
   return (
     <main className="page-shell detail-page">
       <header className="page-header detail-header">
-        <BackButton label="前の画面に戻る" onClick={() => navigate('/search')} />
+        <BackButton label="前の画面に戻る" onClick={() => navigate(backPath)} />
         <h1>書籍詳細画面</h1>
         <div className="detail-header-actions">
           {role === 'admin' && (
@@ -429,7 +434,6 @@ function BookDetail({
               <thead>
                 <tr>
                   {editingHistory && <th>表示</th>}
-                  <th>貸出ID</th>
                   <th>貸出者</th>
                   <th>貸出日</th>
                   <th>返却日</th>
@@ -456,7 +460,6 @@ function BookDetail({
                         />
                       </td>
                     )}
-                    <td>{loan.id}</td>
                     <td>{loan.borrower}</td>
                     <td>{loan.loanDate}</td>
                     <td>{loan.returnDate}</td>
@@ -465,7 +468,7 @@ function BookDetail({
                 ))}
                 {displayedHistory.length === 0 && (
                   <tr>
-                    <td colSpan={editingHistory ? 6 : 5} className="empty-history">
+                    <td colSpan={editingHistory ? 5 : 4} className="empty-history">
                       表示する貸出履歴はありません。
                     </td>
                   </tr>
@@ -522,7 +525,7 @@ function BookDetail({
         >
           <div className="return-approval-confirmation">
             <dl>
-              <div><dt>申請者：</dt><dd>山田太郎さん</dd></div>
+              <div><dt>申請者：</dt><dd>{statusDetail?.borrowerName ?? profile?.name}さん</dd></div>
               <div><dt>書籍名：</dt><dd>{book.title}</dd></div>
             </dl>
             <div className="return-comment-preview">

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookIcon, UsersIcon } from './Icons'
-import { Toast, UserMenu } from './components'
-import type { UserRole } from './types'
+import { BookIcon, UsersIcon } from '../../Icons'
+import { Toast, UserMenu } from '../../components'
+import type { UserRole } from '../../types'
 
 type HomeProps = {
   role: UserRole

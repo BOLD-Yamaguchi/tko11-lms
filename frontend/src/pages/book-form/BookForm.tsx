@@ -1,13 +1,13 @@
 import { useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BackButton, RegisterButton, UserMenu } from './components'
+import { BackButton, RegisterButton, UserMenu } from '../../components'
+import { useLibraryDataValue } from '../../data/libraryQueries'
 import type {
   Book,
   CollectionStatus,
-  LibraryLocation,
   UserRole,
-} from './types'
+} from '../../types'
 
 type BookFormProps = {
   mode: 'create' | 'edit'
@@ -17,9 +17,6 @@ type BookFormProps = {
   allowDisposal?: boolean
   onLogout: () => void
 }
-
-const majorCategories = ['技術書', '文学', 'ビジネス', '資格・試験']
-const minorCategories = ['クラウド', 'プログラミング', 'ネットワーク', 'データベース']
 
 function BookForm({
   mode,
@@ -33,6 +30,7 @@ function BookForm({
   const [csvName, setCsvName] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
+  const data = useLibraryDataValue()
   const isEdit = mode === 'edit'
   const menuItems = [
     { id: 'mypage', label: 'マイページ', description: '利用状況を確認する' },
@@ -160,7 +158,7 @@ function BookForm({
             onChange={updateField}
           >
             <option value="">選択してください</option>
-            {majorCategories.map((category) => (
+            {data.categoryOptions.major.map((category) => (
               <option key={category} value={category}>{category}</option>
             ))}
           </select>
@@ -175,7 +173,7 @@ function BookForm({
             onChange={updateField}
           >
             <option value="">選択してください</option>
-            {minorCategories.map((category) => (
+            {data.categoryOptions.minor.map((category) => (
               <option key={category} value={category}>{category}</option>
             ))}
           </select>
@@ -213,7 +211,7 @@ function BookForm({
         <fieldset className="field field-full radio-field">
           <legend>拠点</legend>
           <div className="radio-row">
-            {(['東京', '大阪'] as LibraryLocation[]).map((location) => (
+            {data.locations.map((location) => (
               <label key={location} className="radio-option">
                 <input
                   type="radio"
