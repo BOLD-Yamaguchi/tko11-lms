@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { libraryDataQueryKey, useLibraryData } from './data/libraryQueries'
+import Login from './Login'
+import PasswordReset from './passwordReset'
+import UserEdit from './UserEdit'
+import UserList from './UsersList'
 import CreateBook from './pages/book-create/CreateBook'
 import EditBook from './pages/book-edit/EditBook'
 import BookDetail from './pages/book-detail/BookDetail'
@@ -169,6 +173,10 @@ function App() {
           }
         />
         <Route path="/delete" element={<Navigate to={role ? '/' : '/login'} replace />} />
+        <Route path="/user-login" element={<Login />} />
+        <Route path="/UsersList" element={<UserList />} />
+        <Route path="/users/:id" element={<UserEdit />} />
+        <Route path="/passwordReset" element={<PasswordReset />} />
         <Route path="*" element={<Navigate to={role ? '/' : '/login'} replace />} />
       </Routes>
     </BrowserRouter>
