@@ -24,52 +24,35 @@ function App() {
 
 export default App;*/
 
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import UserList from "./UsersList";
+import UserEdit from "./UserEdit";
+import Login from "./Login";
+import PasswordReset from "./passwordReset";
+
+import HomePage from "./HomePage";
+import Home from "./Home";
+import UserManagement from "./UserManagement";
 
 function App() {
-
-  const [books, setBooks] = useState([]);
-
-  useEffect(() => {
-    fetchBooks();
-  }, []);
-
-  const fetchBooks = async () => {
-    const response =
-      await fetch("http://localhost:8080/books");
-      //await fetch("http://localhost:5173/books");
-
-    const data = await response.json();
-
-    setBooks(data);
-  };
-
   return (
-    <div>
-      <h1>蔵書管理システム</h1>
+    <BrowserRouter>
+      <Routes>
+        {/* ログイン画面 */}
+        <Route path="/" element={<Login />} />
 
-      <table border="1">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>タイトル</th>
-          </tr>
-        </thead>
+        {/* ユーザー管理（main） */}
+        <Route path="/UsersList" element={<UserList />} />
+        <Route path="/users/:id" element={<UserEdit />} />
+        <Route path="/passwordReset" element={<PasswordReset />} />
 
-        <tbody>
-          {books.map(book => (
-            <tr key={book.id}>
-              <td>{book.id}</td>
-              <td>{book.title}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <Link to="/create">登録ページへ</Link>
-      <Link to="/delete">削除ページへ</Link>
-    </div>
+        {/* 書籍管理（feature/oka） */}
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/books" element={<Home />} />
+        <Route path="/users" element={<UserManagement />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

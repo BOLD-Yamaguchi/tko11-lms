@@ -26,7 +26,7 @@ function Home() {
 
   return (
     <div>
-      <h1>蔵書管理システム</h1>
+      <h1>蔵書管理システムマイページ</h1>
 
       <table border="1">
         <thead>
@@ -49,6 +49,9 @@ function Home() {
       <Link to="/create">登録ページへ</Link>
       <br />
       <Link to="/delete">削除ページへ</Link>
+      <br />
+      <Link to="/home">Ｔｏｐページへ</Link>
+      <br />
     </div>
   );
 }

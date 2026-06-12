@@ -4,7 +4,7 @@ function UserManagement() {
   return (
     <div>
       <h2>ユーザー管理</h2>
-      <Link to="/">トップページへ</Link>
+      <Link to="/home">トップページへ</Link>
     </div>
   );
 }
