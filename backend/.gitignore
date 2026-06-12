@@ -36,7 +36,12 @@ out/
 
 ### VS Code ###
 .vscode/
-
 # macOS
 .DS_Store
 **/.DS_Store
+
+## logs ##
+logs/
+
+## DB ##
+bin/main/application.properties
