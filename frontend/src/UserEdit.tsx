@@ -75,6 +75,8 @@ function UserEdit() {
     // 完了後、ユーザー一覧画面へ戻る
     navigate("/users");
   };
+  // URLのユーザーIDを取得し、編集対象の識別に使用する。
+  const { id } = useParams();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#f9f9f9" }}>
