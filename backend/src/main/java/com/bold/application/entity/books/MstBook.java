@@ -1,0 +1,153 @@
+package com.bold.application.entity.books;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "mst_book")
+public class MstBook {
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int bookId;
+    private String bookName;
+    private String isbn;
+    private String autherName;
+    private String status;
+    private String publisher;
+    private LocalDate publishedAt;
+    private String memo;
+    private int categoryLevel1;
+    private int categoryLevel2;
+    private String region;
+    private String shelfNo;
+    private String tierNo;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    public int getBookId() {
+        return bookId;
+    }
+
+	public void setBookId(int bookId) {
+		this.bookId = bookId;
+	}
+
+    public String getBookName() {
+        return bookName;
+    }
+
+    public void setBookName(String bookName) {
+        this.bookName = bookName;
+    }
+
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+
+    public String getAutherName() {
+        return autherName;
+    }
+
+    public void setAutherName(String autherName) {
+        this.autherName = autherName;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+    }
+
+    public LocalDate getPublished_at() {
+        return publishedAt;
+    }
+
+    public void setPublished_at(LocalDate publishedAt) {
+        this.publishedAt = publishedAt;
+    }
+
+    public String getMemo() {
+        return memo;
+    }
+
+    public void setMemo(String memo) {
+        this.memo = memo;
+    }
+
+    public int getCategoryLevel1() {
+        return categoryLevel1;
+    }
+
+    public void setCategoryLevel1(int categoryLevel1) {
+        this.categoryLevel1 = categoryLevel1;
+    }
+
+    public int getCategoryLevel2() {
+        return categoryLevel2;
+    }
+
+    public void setCategoryLevel2(int categoryLevel2) {
+        this.categoryLevel2 = categoryLevel2;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public String getShelfNo() {
+        return shelfNo;
+    }
+
+    public void setShelfNo(String shelfNo) {
+        this.shelfNo = shelfNo;
+    }
+
+    public String getTierNo() {
+        return tierNo;
+    }
+
+    public void setTierNo(String tierNo) {
+        this.tierNo = tierNo;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+}
