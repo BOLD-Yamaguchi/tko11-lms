@@ -44,7 +44,7 @@ export function Header({
         boxShadow: 'none',
       }}
     >
-      <Box sx={{ width: 'var(--shell-width)', margin: '0 auto' }}>
+      <Box sx={{ width: '100%', margin: '0 auto' }}>
         <Toolbar sx={{ minHeight: 76, gap: 2, px: { xs: 2, md: 3 } }}>
           <HamburgerMenu
             title='Components'

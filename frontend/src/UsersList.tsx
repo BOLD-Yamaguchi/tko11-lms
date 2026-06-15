@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./UsersList.css";
 import Header from "./components/Header";
+import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 
 // Userオブジェクトの型を定義
 type User = {
@@ -140,12 +141,47 @@ function UsersList() {
     startIndex + itemsPerPage
   );
 
+    const menuItems: HamburgerMenuItem[] = [
+      {
+        id: "home",
+        label: "ホーム",
+        description: "トップ画面へ移動",
+      },
+      {
+        id: "books",
+        label: "書籍管理",
+        description: "書籍一覧を表示",
+      },
+      {
+        id: "UsersList",
+        label: "ユーザー管理",
+        description: "ユーザー管理画面を表示",
+      },
+    ];
+  
+    const handleMenuSelect = (item: HamburgerMenuItem) => {
+      switch (item.id) {
+        case "home":
+          navigate("/");
+          break;
+        case "books":
+          navigate("/books");
+          break;
+        case "UsersList":
+          navigate("/UsersList"); 
+          break;
+      }
+    };
+  
+
   return (
     <div className="users-list">
       {/* ヘッダー */}
       <Header
         title="書籍貸出管理システム"
-        menuItems={[]}
+        eyebrow="BOOK MANAGEMENT SYSTEM"
+        menuItems={menuItems}
+        onMenuSelect={handleMenuSelect}
       />
 
       {/* 検索エリア */}
