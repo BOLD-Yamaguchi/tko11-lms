@@ -7,12 +7,6 @@ const SYSTEM_MENU_ITEM = {
   description: '最初のメニューへ戻る',
 } as const
 
-const MY_PAGE_MENU_ITEM = {
-  id: 'mypage',
-  label: 'マイページ',
-  description: '利用状況を確認する',
-} as const
-
 const SEARCH_MENU_ITEM = {
   id: 'search',
   label: '書籍検索',
@@ -31,9 +25,27 @@ const LOGOUT_MENU_ITEM = {
   description: 'ログイン画面へ戻る',
 } as const
 
+export function getMyPageTitle(role: UserRole) {
+  if (role === 'admin') return '書籍管理'
+  if (role === 'operator') return '貸出ページ'
+  return 'マイページ'
+}
+
+function getMyPageMenuItem(role: UserRole): HamburgerMenuItem {
+  return {
+    id: 'mypage',
+    label: getMyPageTitle(role),
+    description: '利用状況を確認する',
+  }
+}
+
 export function getHomeMenuItems(role: UserRole): HamburgerMenuItem[] {
   return [
-    { id: 'books', label: '書籍管理', description: 'マイページと書籍検索を開きます' },
+    {
+      id: 'books',
+      label: '書籍管理',
+      description: `${getMyPageTitle(role)}と書籍検索を開きます`,
+    },
     ...(role === 'admin'
       ? [{ id: 'users', label: 'ユーザー管理', description: 'ユーザー管理モックを確認します' }]
       : []),
@@ -52,16 +64,19 @@ export function getMyPageMenuItems(role: UserRole): HamburgerMenuItem[] {
 
 export function getBookSearchMenuItems(role: UserRole): HamburgerMenuItem[] {
   return [
-    MY_PAGE_MENU_ITEM,
+    getMyPageMenuItem(role),
     ...(role === 'admin' ? [CREATE_MENU_ITEM] : []),
     SYSTEM_MENU_ITEM,
     LOGOUT_MENU_ITEM,
   ]
 }
 
-export function getBookFormMenuItems(isEdit: boolean): HamburgerMenuItem[] {
+export function getBookFormMenuItems(
+  isEdit: boolean,
+  role: UserRole,
+): HamburgerMenuItem[] {
   return [
-    MY_PAGE_MENU_ITEM,
+    getMyPageMenuItem(role),
     SEARCH_MENU_ITEM,
     ...(isEdit ? [CREATE_MENU_ITEM] : []),
     SYSTEM_MENU_ITEM,
@@ -71,7 +86,7 @@ export function getBookFormMenuItems(isEdit: boolean): HamburgerMenuItem[] {
 
 export function getBookDetailMenuItems(role: UserRole): HamburgerMenuItem[] {
   return [
-    MY_PAGE_MENU_ITEM,
+    getMyPageMenuItem(role),
     SEARCH_MENU_ITEM,
     ...(role === 'admin' ? [CREATE_MENU_ITEM] : []),
     SYSTEM_MENU_ITEM,

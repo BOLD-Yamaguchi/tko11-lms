@@ -15,6 +15,7 @@ export type UserProfile = {
 export type BookStatusDetail = {
   borrowerName?: string
   reserverName?: string
+  reservationEmployeeNumber?: string
   returnDueDate?: string
   reservationDate?: string
 }

@@ -23,7 +23,10 @@ import {
   UserMenu,
 } from '../../components'
 import { BORROWING_FILTER_OPTIONS } from '../../constants/myPage'
-import { getMyPageMenuItems } from '../../constants/navigation'
+import {
+  getMyPageMenuItems,
+  getMyPageTitle,
+} from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
 import type {
@@ -224,13 +227,13 @@ function MyPage({ role, onLogout }: MyPageProps) {
         />
       </div>
 
-      <h1 className="standalone-title">マイページ</h1>
+      <h1 className="standalone-title">{getMyPageTitle(role)}</h1>
 
       <section className="user-card">
         <span className="user-avatar">
           {role === 'general' ? <UserIcon size={46} /> : <UsersIcon size={46} />}
         </span>
-        <h2>{profile.title}</h2>
+        <h2>ユーザー情報</h2>
         <div className="user-meta">
           <p>ユーザーID：{profile.userId}</p>
           <p>名前：{profile.name}</p>
@@ -402,7 +405,6 @@ function MyPage({ role, onLogout }: MyPageProps) {
         <ActionConfirmationModal
           open
           title="予約取消の確認"
-          personLabel={`${profile.name}さん`}
           bookTitle={generalReservation?.title ?? ''}
           prompt="上記の書籍の予約を取り消しますか？"
           confirmLabel="予約を取り消す"

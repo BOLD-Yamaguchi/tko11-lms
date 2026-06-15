@@ -24,7 +24,7 @@ export function UserMenu({
     <div className="user-menu">
       <span className={`logged-in-user ${role}`}>
         <span className="logged-in-prefix">ログイン中：</span>
-        <strong>{user.label}</strong>
+        <strong>{user.name}</strong>
         <span className="logged-in-id">（{user.userId}）</span>
       </span>
       <HamburgerMenu

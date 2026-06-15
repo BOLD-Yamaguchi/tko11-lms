@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ChevronIcon, SearchIcon } from '../../Icons'
 import {
   BackButton,
@@ -12,7 +12,6 @@ import {
 import {
   ADMIN_COLLECTION_STATUS_OPTION,
   COLLECTION_STATUS_OPTIONS,
-  DEFAULT_PAGE_SIZE,
   LOAN_STATUS_OPTIONS,
   PAGE_SIZE_OPTIONS,
 } from '../../constants/bookSearch'
@@ -22,51 +21,42 @@ import type {
   LoanStatus,
   UserRole,
 } from '../../types'
+import {
+  initialBookSearchState,
+} from './searchState'
+import type {
+  BookSearchSortKey,
+  BookSearchState,
+  SearchConditions,
+} from './searchState'
 
 type BookSearchProps = {
   role: UserRole
   onLogout: () => void
 }
 
-type SearchConditions = {
-  id: string
-  title: string
-  author: string
-  publisher: string
-  publishedAt: string
-  loanStatus: string
-  majorCategory: string
-  minorCategory: string
-  collectionStatus: string
-}
-
-type SortKey = 'id' | 'title' | 'author' | 'publisher' | 'loanStatus'
-
-const emptyConditions: SearchConditions = {
-  id: '',
-  title: '',
-  author: '',
-  publisher: '',
-  publishedAt: '',
-  loanStatus: '',
-  majorCategory: '',
-  minorCategory: '',
-  collectionStatus: '',
+type SearchLocationState = {
+  searchState?: BookSearchState
 }
 
 function BookSearch({ role, onLogout }: BookSearchProps) {
   const navigate = useNavigate()
+  // 詳細画面から戻った場合、遷移時に渡した検索条件・並び順・ページを復元する。
+  const location = useLocation()
+  const restoredState = (
+    location.state as SearchLocationState | null
+  )?.searchState ?? initialBookSearchState
   // 書籍・カテゴリ・ログインユーザーの拠点情報を共通クエリから取得する。
   const data = useLibraryDataValue()
   const userLocation = data.roleProfiles[role].location
   // 入力中と適用済みの検索条件を分け、検索・ソート・ページング状態を管理する。
-  const [form, setForm] = useState<SearchConditions>(emptyConditions)
-  const [conditions, setConditions] = useState<SearchConditions>(emptyConditions)
-  const [hasSearched, setHasSearched] = useState(false)
-  const [sortKey, setSortKey] = useState<SortKey>('id')
-  const [ascending, setAscending] = useState(true)
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
+  const [form, setForm] = useState<SearchConditions>(restoredState.form)
+  const [conditions, setConditions] = useState<SearchConditions>(restoredState.conditions)
+  const [hasSearched, setHasSearched] = useState(restoredState.hasSearched)
+  const [sortKey, setSortKey] = useState<BookSearchSortKey>(restoredState.sortKey)
+  const [ascending, setAscending] = useState(restoredState.ascending)
+  const [page, setPage] = useState(restoredState.page)
+  const [pageSize, setPageSize] = useState(restoredState.pageSize)
   const [message, setMessage] = useState('')
   const collectionOptions = [
     ...COLLECTION_STATUS_OPTIONS,
@@ -94,7 +84,8 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
         && includes(book.title, conditions.title)
         && includes(book.author, conditions.author)
         && includes(book.publisher, conditions.publisher)
-        && exact(book.publishedAt, conditions.publishedAt)
+        && (!conditions.publishedFrom || book.publishedAt >= conditions.publishedFrom)
+        && (!conditions.publishedTo || book.publishedAt <= conditions.publishedTo)
         && (!conditions.loanStatus || book.loanStatus === conditions.loanStatus)
         && (!conditions.majorCategory || book.majorCategory === conditions.majorCategory)
         && (!conditions.minorCategory || book.minorCategory === conditions.minorCategory)
@@ -121,7 +112,7 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
     setMessage('検索を実行しました。')
   }
 
-  const toggleSort = (key: SortKey) => {
+  const toggleSort = (key: BookSearchSortKey) => {
     if (sortKey === key) {
       setAscending((current) => !current)
     } else {
@@ -144,7 +135,7 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
     <main className="page-shell search-page">
       <header className="search-header">
         <BackButton label="戻る" onClick={() => navigate('/mypage')} />
-        <h1>書籍管理画面</h1>
+        <h1>書籍検索</h1>
         <UserMenu
           role={role}
           items={menuItems}
@@ -159,8 +150,8 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
           <TextBox label="書籍名" value={form.title} onChange={(value) => setForm({ ...form, title: value })} placeholder="例：AWS入門" />
           <TextBox label="著者名" value={form.author} onChange={(value) => setForm({ ...form, author: value })} placeholder="例：山田太郎" />
           <TextBox label="出版社" value={form.publisher} onChange={(value) => setForm({ ...form, publisher: value })} placeholder="例：技術評論社" />
-          <TextBox label="出版日" type="date" value={form.publishedAt} onChange={(value) => setForm({ ...form, publishedAt: value })} />
-          <DropdownField label="貸出ステータス" value={form.loanStatus} onChange={(value) => setForm({ ...form, loanStatus: value })} options={LOAN_STATUS_OPTIONS} />
+          <TextBox label="出版日（開始）" type="date" value={form.publishedFrom} onChange={(value) => setForm({ ...form, publishedFrom: value })} />
+          <TextBox label="出版日（終了）" type="date" value={form.publishedTo} onChange={(value) => setForm({ ...form, publishedTo: value })} />
           <DropdownField
             label="カテゴリ1"
             value={form.majorCategory}
@@ -185,6 +176,7 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
               })),
             ]}
           />
+          <DropdownField label="貸出ステータス" value={form.loanStatus} onChange={(value) => setForm({ ...form, loanStatus: value })} options={LOAN_STATUS_OPTIONS} />
           <DropdownField label="配架分類" value={form.collectionStatus} onChange={(value) => setForm({ ...form, collectionStatus: value })} options={collectionOptions} />
         </div>
         <div className="search-submit">
@@ -260,10 +252,21 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
                     <button
                       type="button"
                       className="row-detail"
-                      aria-label={`${book.title}の詳細`}
-                      onClick={() => navigate(`/books/${book.id}`, {
-                        state: { from: '/search' },
-                      })}
+                        aria-label={`${book.title}の詳細`}
+                        onClick={() => navigate(`/books/${book.id}`, {
+                          state: {
+                            from: '/search',
+                            searchState: {
+                              form,
+                              conditions,
+                              hasSearched,
+                              sortKey,
+                              ascending,
+                              page: currentPage,
+                              pageSize,
+                            } satisfies BookSearchState,
+                          },
+                        })}
                     >
                       <ChevronIcon size={21} />
                     </button>

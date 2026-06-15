@@ -115,7 +115,7 @@ const roleProfiles: Record<UserRole, UserProfile> = {
     location: '東京',
   },
   operator: {
-    title: '貸出ユーザー情報',
+    title: 'ユーザー情報',
     label: '貸出ユーザー',
     userId: 'L0001',
     employeeNumber: 'S0101',
@@ -155,6 +155,7 @@ export const mockLibraryData: LibraryData = {
     },
     B0004: {
       reserverName: '佐藤花子',
+      reservationEmployeeNumber: 'S0002',
       reservationDate: '2026/04/01',
     },
   },

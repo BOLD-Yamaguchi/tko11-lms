@@ -44,7 +44,7 @@ function BookForm({
   // カテゴリと拠点の選択肢を、書籍管理データの共通クエリから取得する。
   const data = useLibraryDataValue()
   const isEdit = mode === 'edit'
-  const menuItems = getBookFormMenuItems(isEdit)
+  const menuItems = getBookFormMenuItems(isEdit, role)
 
   const updateField = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target
@@ -94,7 +94,7 @@ function BookForm({
     <main className="page-shell form-page">
       <header className="page-header form-header">
         <BackButton label="戻る" onClick={() => navigate(-1)} />
-        <h1>{isEdit ? '書籍編集画面' : '書籍登録画面'}</h1>
+        <h1>{isEdit ? '書籍編集' : '書籍登録'}</h1>
         <UserMenu
           role={role}
           items={menuItems}

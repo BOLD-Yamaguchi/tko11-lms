@@ -1,5 +1,6 @@
 export { ActionConfirmationModal } from './ActionConfirmationModal'
 export { BookActionModal } from './BookActionModal'
+export type { BookActionCredentials } from './BookActionModal'
 export { BulkReturnConfirmationModal } from './BulkReturnConfirmationModal'
 export { ModalDialog } from './ModalDialog'
 export type { ModalDialogProps } from './ModalDialog'

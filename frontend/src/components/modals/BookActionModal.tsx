@@ -10,8 +10,14 @@ type BookActionModalProps = {
   confirmLabel: string
   requireEmployeeId?: boolean
   requirePassword?: boolean
+  validateEmployeeId?: (employeeId: string) => string | undefined
   onClose: () => void
-  onConfirm: () => void
+  onConfirm: (credentials: BookActionCredentials) => void
+}
+
+export type BookActionCredentials = {
+  employeeId: string
+  password: string
 }
 
 export function BookActionModal({
@@ -21,6 +27,7 @@ export function BookActionModal({
   confirmLabel,
   requireEmployeeId = false,
   requirePassword = false,
+  validateEmployeeId,
   onClose,
   onConfirm,
 }: BookActionModalProps) {
@@ -40,8 +47,14 @@ export function BookActionModal({
       return
     }
 
+    const employeeIdError = validateEmployeeId?.(result.data.employeeId)
+    if (employeeIdError) {
+      setError(employeeIdError)
+      return
+    }
+
     setError('')
-    onConfirm()
+    onConfirm(result.data)
   }
 
   return (

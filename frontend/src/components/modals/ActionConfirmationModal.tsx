@@ -3,7 +3,7 @@ import { ModalDialog } from './ModalDialog'
 type ActionConfirmationModalProps = {
   open: boolean
   title: string
-  personLabel: string
+  personLabel?: string
   bookTitle: string
   returnDueDate?: string
   prompt: string
@@ -34,10 +34,12 @@ export function ActionConfirmationModal({
     >
       <div className="action-confirmation">
         <dl>
-          <div>
-            <dt>氏名：</dt>
-            <dd>{personLabel}</dd>
-          </div>
+          {personLabel && (
+            <div>
+              <dt>氏名：</dt>
+              <dd>{personLabel}</dd>
+            </div>
+          )}
           <div>
             <dt>書籍名：</dt>
             <dd>{bookTitle}</dd>

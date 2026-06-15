@@ -13,6 +13,7 @@ export {
   ReturnRequestModal,
 } from './modals'
 export type { ModalDialogProps } from './modals'
+export type { BookActionCredentials } from './modals'
 export { RadioButtonGroup } from './RadioButtonGroup'
 export { RegisterButton } from './RegisterButton'
 export { TextBox } from './TextBox'

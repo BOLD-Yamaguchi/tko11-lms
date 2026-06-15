@@ -37,6 +37,9 @@ export function TextBox({
       minRows={minRows}
       required={required}
       type={type}
+      slotProps={{
+        inputLabel: type === 'date' ? { shrink: true } : undefined,
+      }}
       sx={{
         '& .MuiInputLabel-root': {
           color: 'var(--text)',

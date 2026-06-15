@@ -23,9 +23,11 @@ import {
   Toast,
   UserMenu,
 } from '../../components'
+import type { BookActionCredentials } from '../../components'
 import { getBookDetailMenuItems } from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import { getReturnDueDate } from '../../dateUtils'
+import type { BookSearchState } from '../book-search/searchState'
 import type { LoanStatus, UserRole } from '../../types'
 
 type BookDetailProps = {
@@ -39,6 +41,7 @@ type BookDetailProps = {
 type LocationState = {
   message?: string
   from?: '/mypage' | '/search'
+  searchState?: BookSearchState
 }
 
 type BookAction =
@@ -196,6 +199,7 @@ function BookDetail({
   const [message, setMessage] = useState(routeMessage ?? '')
   const [pendingAction, setPendingAction] = useState<BookAction | null>(null)
   const [actionStep, setActionStep] = useState<ActionStep | null>(null)
+  const [authenticatedUserName, setAuthenticatedUserName] = useState('')
   const [editingHistory, setEditingHistory] = useState(false)
   const [draftVisibleHistoryIds, setDraftVisibleHistoryIds] = useState<string[]>([])
 
@@ -241,6 +245,7 @@ function BookDetail({
     setMessage(setting.message)
     setPendingAction(null)
     setActionStep(null)
+    setAuthenticatedUserName('')
   }
 
   const startHistoryEditing = () => {
@@ -264,16 +269,17 @@ function BookDetail({
 
   const requiresEmployeeId = (action: BookAction) => (
     (role === 'operator'
-      && ['loan', 'requestReturn', 'cancelReturnRequest'].includes(action))
+      && ['loan', 'requestReturn', 'cancelReturnRequest', 'cancelReservation'].includes(action))
     || (role === 'admin'
       && ['loan', 'return', 'requestReturn'].includes(action))
   )
   const requiresPassword = (action: BookAction) => (
     role === 'operator'
-    && ['loan', 'requestReturn', 'cancelReturnRequest'].includes(action)
+    && ['loan', 'requestReturn', 'cancelReturnRequest', 'cancelReservation'].includes(action)
   )
   const startAction = (action: BookAction) => {
     setPendingAction(action)
+    setAuthenticatedUserName('')
     if (action === 'approveReturn') {
       setActionStep('approval')
     } else if (requiresEmployeeId(action)) {
@@ -288,9 +294,53 @@ function BookDetail({
   const closeAction = () => {
     setPendingAction(null)
     setActionStep(null)
+    setAuthenticatedUserName('')
   }
 
-  const finishAuthentication = (action: BookAction) => {
+  const resolveUserName = (employeeId: string) => {
+    const reservation = data.reservationRecords.find((record) => (
+      record.employeeNumber === employeeId
+    ))
+    if (reservation) return reservation.reserver
+
+    const borrowing = data.borrowingRecords.find((record) => (
+      record.employeeNumber === employeeId
+    ))
+    if (borrowing) return borrowing.borrower
+
+    return Object.values(data.roleProfiles).find((candidate) => (
+      candidate.employeeNumber === employeeId
+    ))?.name
+  }
+
+  const validateActionEmployeeId = (
+    action: BookAction,
+    employeeId: string,
+  ) => {
+    if (!resolveUserName(employeeId)) {
+      return '入力された社員番号に紐づくユーザーが見つかりません。'
+    }
+
+    const isReservedBookOperatorAction = (
+      role === 'operator'
+      && book.loanStatus === '予約中'
+      && ['loan', 'cancelReservation'].includes(action)
+    )
+    if (
+      isReservedBookOperatorAction
+      && employeeId !== statusDetail?.reservationEmployeeNumber
+    ) {
+      return 'この書籍を予約したユーザーの社員番号を入力してください。'
+    }
+
+    return undefined
+  }
+
+  const finishAuthentication = (
+    action: BookAction,
+    credentials: BookActionCredentials,
+  ) => {
+    setAuthenticatedUserName(resolveUserName(credentials.employeeId) ?? '')
     setActionStep(action === 'requestReturn' ? 'returnRequest' : 'confirm')
   }
 
@@ -315,6 +365,16 @@ function BookDetail({
       onLogout()
       navigate('/login', { replace: true })
     }
+  }
+
+  const goBack = () => {
+    if (backPath === '/search') {
+      navigate('/search', {
+        state: { searchState: locationState?.searchState },
+      })
+      return
+    }
+    navigate(backPath)
   }
 
   const statusDescription = {
@@ -345,13 +405,15 @@ function BookDetail({
     : pendingAction === 'return'
       ? '直接返却確認'
       : modalSetting?.title ?? ''
-  const personLabel = `${profile?.name ?? '利用者'}さん`
+  const personLabel = pendingAction === 'cancelReservation' && role === 'general'
+    ? undefined
+    : `${authenticatedUserName || profile?.name || '利用者'}さん`
 
   return (
     <main className="page-shell detail-page">
       <header className="page-header detail-header">
-        <BackButton label="前の画面に戻る" onClick={() => navigate(backPath)} />
-        <h1>書籍詳細画面</h1>
+        <BackButton label="前の画面に戻る" onClick={goBack} />
+        <h1>書籍詳細</h1>
         <div className="detail-header-actions">
           {role === 'admin' && (
             <Link className="edit-button" to={`/books/${book.id}/edit`}>
@@ -485,8 +547,11 @@ function BookDetail({
           confirmLabel="内容を確認"
           requireEmployeeId={requiresEmployeeId(pendingAction)}
           requirePassword={requiresPassword(pendingAction)}
+          validateEmployeeId={(employeeId) => (
+            validateActionEmployeeId(pendingAction, employeeId)
+          )}
           onClose={closeAction}
-          onConfirm={() => finishAuthentication(pendingAction)}
+          onConfirm={(credentials) => finishAuthentication(pendingAction, credentials)}
         />
       )}
       {pendingAction && modalSetting && actionStep === 'confirm' && (
