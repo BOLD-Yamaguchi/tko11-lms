@@ -1,23 +1,22 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { fetchUsers } from "./api/usersApi";
 import "./UsersList.css";
 import Header from "./components/Header";
+import type { User } from "./schemas/userSchema";
 
-// Userオブジェクトの型を定義
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  employee_code: string;
-  role: number;
-  department: number;
-};
+const EMPTY_USERS: User[] = [];
 
 function UsersList() {
   const navigate = useNavigate();
 
-  // APIから取得した全ユーザー
-  const [users, setUsers] = useState<User[]>([]);
+  // ユーザー一覧をAPIから取得し、通信状態とキャッシュをReact Queryで管理する。
+  const usersQuery = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+  });
+  const users = usersQuery.data ?? EMPTY_USERS;
 
   // 現在表示中のページ番号
   const [currentPage, setCurrentPage] = useState(1);
@@ -25,7 +24,8 @@ function UsersList() {
   const itemsPerPage = 2;
 
   // 画面表示用ユーザー
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[] | null>(null);
+  const displayedUsers = filteredUsers ?? users;
 
   // 検索条件
   const [searchField, setSearchField] = useState("メールアドレス");
@@ -38,30 +38,6 @@ function UsersList() {
   const [sortField, setSortField] = useState<keyof User | null>(null);
 
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-
-  // 初回表示時
-  useEffect(() => {
-    let active = true;
-
-    void (async () => {
-      const response = await fetch(
-        "http://localhost:8080/users"
-      );
-
-      const data: User[] = await response.json();
-
-      if (!active) {
-        return;
-      }
-
-      setUsers(data);
-      setFilteredUsers(data);
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   // 検索
   const handleSearch = (): void => {
@@ -110,7 +86,7 @@ function UsersList() {
         ? "desc"
         : "asc";
 
-    const sortedUsers = [...filteredUsers].sort(
+    const sortedUsers = [...displayedUsers].sort(
       (a, b) => {
         const valueA = a[field] ?? "";
         const valueB = b[field] ?? "";
@@ -136,13 +112,13 @@ function UsersList() {
 
   // 総ページ数
   const totalPages = Math.ceil(
-    filteredUsers.length / itemsPerPage
+    displayedUsers.length / itemsPerPage
   );
   // 開始位置
   const startIndex =
     (currentPage - 1) * itemsPerPage;
   // 現在のページに表示するユーザー
-  const currentUsers = filteredUsers.slice(
+  const currentUsers = displayedUsers.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -206,7 +182,7 @@ function UsersList() {
         <div className="results-container">
           <h1 className="result-title">
             検索結果
-            <strong>{filteredUsers.length}</strong> 件
+            <strong>{displayedUsers.length}</strong> 件
           </h1>
 
           <table

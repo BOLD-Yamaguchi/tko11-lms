@@ -1,24 +1,26 @@
 import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { loginSchema } from "./schemas/loginSchema";
+import type { LoginFormValues } from "./schemas/loginSchema";
 import "./Login.css";
 
-type LoginFormValues = {
-  email: string;
-  password: string;
-};
-
 function Login() {
+  // パスワード表示と送信中表示をログインフォーム内で管理する。
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
+  // ZodスキーマをReact Hook Formへ接続し、送信前に入力値を検証する。
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormValues>();
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsSubmitting(true);
@@ -73,18 +75,11 @@ function Login() {
               <input className="login-input"
                 type="email"
                 placeholder="sample@example.com"
-                {...register("email", {
-                  required:
-                    "メールアドレスを入力してください",
-                })}/>
+                {...register("email")}/>
 
               {errors.email && (
                 <p className="error-message">
-                  {errors.email && (
-                    <p className="error-message">
-                      {String(errors.email.message)}
-                    </p>
-                  )}
+                  {String(errors.email.message)}
                 </p>
               )}
             </div>
@@ -103,10 +98,7 @@ function Login() {
                       : "password"
                   }
                   placeholder="********"
-                  {...register("password", {
-                    required:
-                      "パスワードを入力してください",
-                  })}/>
+                  {...register("password")}/>
 
                 <button className="password-toggle"
                   type="button"
@@ -125,11 +117,7 @@ function Login() {
 
               {errors.password && (
                 <p className="error-message">
-                  {errors.password && (
-                    <p className="error-message">
-                      {String(errors.password.message)}
-                    </p>
-                  )}
+                  {String(errors.password.message)}
                 </p>
               )}
             </div>

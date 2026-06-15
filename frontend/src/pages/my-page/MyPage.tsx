@@ -14,6 +14,7 @@ import {
   ActionConfirmationModal,
   BackButton,
   BookActionModal,
+  BulkReturnConfirmationModal,
   DropdownField,
   ModalDialog,
   ReturnRequestModal,
@@ -21,6 +22,8 @@ import {
   Toast,
   UserMenu,
 } from '../../components'
+import { BORROWING_FILTER_OPTIONS } from '../../constants/myPage'
+import { getMyPageMenuItems } from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
 import type {
@@ -68,9 +71,11 @@ function AccordionPanel({
 
 function MyPage({ role, onLogout }: MyPageProps) {
   const navigate = useNavigate()
+  // 権限別プロフィールと貸出・予約・履歴の初期データを共通クエリから取得する。
   const data = useLibraryDataValue()
   const profile = data.roleProfiles[role]
   const generalReservation = data.reservationRecords[0]
+  // 貸出・予約操作の進行状況と、管理者一覧の選択・検索状態を画面内で管理する。
   const [borrowings, setBorrowings] = useState<BorrowingRecord[]>(data.borrowingRecords)
   const [reservations, setReservations] = useState<ReservationRecord[]>(data.reservationRecords)
   const [pendingLoan, setPendingLoan] = useState<ReservationRecord | null>(null)
@@ -79,6 +84,7 @@ function MyPage({ role, onLogout }: MyPageProps) {
   const [pendingApproval, setPendingApproval] = useState<BorrowingRecord | null>(null)
   const [hasReservation, setHasReservation] = useState(true)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [bulkReturnOpen, setBulkReturnOpen] = useState(false)
   const [filterKey, setFilterKey] = useState('employeeNumber')
   const [keyword, setKeyword] = useState('')
   const [message, setMessage] = useState('')
@@ -87,6 +93,7 @@ function MyPage({ role, onLogout }: MyPageProps) {
     return data.books.find((book) => book.id === record.bookId)?.collectionStatus !== '廃棄'
   })
 
+  // 管理者が選択した検索対象とキーワードから借受一覧を絞り込む。
   const filteredBorrowings = useMemo(() => {
     const normalized = keyword.trim().toLowerCase()
     if (!normalized) return borrowings
@@ -100,14 +107,10 @@ function MyPage({ role, onLogout }: MyPageProps) {
     })
   }, [borrowings, filterKey, keyword])
 
-  const menuItems = [
-    { id: 'system', label: 'システムメニュー', description: '最初のメニューへ戻る' },
-    { id: 'search', label: '書籍検索', description: '蔵書を条件検索する' },
-    ...(role === 'admin'
-      ? [{ id: 'create', label: '書籍登録', description: '新しい書籍を登録する' }]
-      : []),
-    { id: 'logout', label: 'ログアウト', description: 'ログイン画面へ戻る' },
-  ]
+  const menuItems = getMyPageMenuItems(role)
+  const selectedBorrowings = borrowings.filter((record) => (
+    selectedIds.includes(record.employeeNumber)
+  ))
 
   const toggleSelected = (id: string) => {
     setSelectedIds((current) => (
@@ -134,14 +137,20 @@ function MyPage({ role, onLogout }: MyPageProps) {
     setPendingApproval(null)
   }
 
-  const bulkReturn = () => {
+  const openBulkReturnConfirmation = () => {
     if (selectedIds.length === 0) {
       setMessage('返却する行を選択してください。')
       return
     }
+
+    setBulkReturnOpen(true)
+  }
+
+  const bulkReturn = () => {
     setBorrowings((current) => current.filter((record) => !selectedIds.includes(record.employeeNumber)))
-    setMessage(`${selectedIds.length}件の一括返却登録を受け付けました。`)
+    setMessage(`${selectedIds.length}件の一括返却登録を実行しました。`)
     setSelectedIds([])
+    setBulkReturnOpen(false)
   }
 
   const requestReturn = (comment: string) => {
@@ -277,11 +286,7 @@ function MyPage({ role, onLogout }: MyPageProps) {
                 label="検索対象"
                 value={filterKey}
                 onChange={setFilterKey}
-                options={[
-                  { value: 'employeeNumber', label: '社員番号' },
-                  { value: 'name', label: '借受人名' },
-                  { value: 'title', label: '書籍名' },
-                ]}
+                options={BORROWING_FILTER_OPTIONS}
               />
               <TextBox label="キーワード" value={keyword} onChange={setKeyword} placeholder="キーワードを入力" />
               <button
@@ -346,7 +351,7 @@ function MyPage({ role, onLogout }: MyPageProps) {
                 </tbody>
               </table>
             </div>
-            <button type="button" className="bulk-return-button" onClick={bulkReturn}>
+            <button type="button" className="bulk-return-button" onClick={openBulkReturnConfirmation}>
               <BookIcon size={21} />一括返却登録
             </button>
           </section>
@@ -429,6 +434,12 @@ function MyPage({ role, onLogout }: MyPageProps) {
           </div>
         </ModalDialog>
       )}
+      <BulkReturnConfirmationModal
+        open={bulkReturnOpen}
+        records={selectedBorrowings}
+        onClose={() => setBulkReturnOpen(false)}
+        onConfirm={bulkReturn}
+      />
       <Toast open={Boolean(message)} message={message} severity="success" onClose={() => setMessage('')} />
     </main>
   )

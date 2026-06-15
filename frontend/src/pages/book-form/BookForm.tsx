@@ -1,8 +1,16 @@
 import { useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BackButton, RegisterButton, UserMenu } from '../../components'
+import {
+  BackButton,
+  ModalDialog,
+  RegisterButton,
+  UserMenu,
+} from '../../components'
+import { getBookFormMenuItems } from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
+import { bookSchema } from '../../schemas/bookSchema'
+import type { BookValidationErrors } from '../../schemas/bookSchema'
 import type {
   Book,
   CollectionStatus,
@@ -26,31 +34,41 @@ function BookForm({
   allowDisposal = false,
   onLogout,
 }: BookFormProps) {
+  // 入力内容、検証結果、CSV選択、破棄確認の各フォーム状態を管理する。
   const [form, setForm] = useState<Book>(initialValues)
   const [csvName, setCsvName] = useState('')
+  const [validationErrors, setValidationErrors] = useState<BookValidationErrors>({})
+  const [discardConfirmationOpen, setDiscardConfirmationOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
+  // カテゴリと拠点の選択肢を、書籍管理データの共通クエリから取得する。
   const data = useLibraryDataValue()
   const isEdit = mode === 'edit'
-  const menuItems = [
-    { id: 'mypage', label: 'マイページ', description: '利用状況を確認する' },
-    { id: 'search', label: '書籍検索', description: '蔵書を条件検索する' },
-    ...(!isEdit
-      ? []
-      : [{ id: 'create', label: '書籍登録', description: '新しい書籍を登録する' }]),
-    { id: 'system', label: 'システムメニュー', description: '最初のメニューへ戻る' },
-    { id: 'logout', label: 'ログアウト', description: 'ログイン画面へ戻る' },
-  ]
+  const menuItems = getBookFormMenuItems(isEdit)
 
   const updateField = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target
     setForm((current) => ({ ...current, [name]: value }))
+    setValidationErrors((current) => ({ ...current, [name]: undefined }))
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    onSubmit(form)
-    navigate(`/books/${form.id}`, {
+    const result = bookSchema.safeParse(form)
+
+    if (!result.success) {
+      const errors: BookValidationErrors = {}
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof Book
+        errors[field] ??= issue.message
+      })
+      setValidationErrors(errors)
+      return
+    }
+
+    setValidationErrors({})
+    onSubmit(result.data)
+    navigate(`/books/${result.data.id}`, {
       state: { message: isEdit ? '書籍情報を更新しました。' : '書籍を登録しました。' },
     })
   }
@@ -84,7 +102,7 @@ function BookForm({
         />
       </header>
 
-      <form className="book-form" onSubmit={handleSubmit}>
+      <form className="book-form" onSubmit={handleSubmit} noValidate>
         <div className="field field-full">
           <label htmlFor="title">
             書籍名 <span className="required">*</span>
@@ -95,8 +113,8 @@ function BookForm({
             value={form.title}
             onChange={updateField}
             placeholder="例：AWS入門"
-            required
           />
+          {validationErrors.title && <p className="field-error">{validationErrors.title}</p>}
         </div>
 
         <div className="field field-full">
@@ -120,8 +138,8 @@ function BookForm({
             value={form.author}
             onChange={updateField}
             placeholder="例：山田太郎"
-            required
           />
+          {validationErrors.author && <p className="field-error">{validationErrors.author}</p>}
         </div>
 
         <div className="field field-full">
@@ -134,8 +152,8 @@ function BookForm({
             value={form.publisher}
             onChange={updateField}
             placeholder="例：技術評論社"
-            required
           />
+          {validationErrors.publisher && <p className="field-error">{validationErrors.publisher}</p>}
         </div>
 
         <div className="field field-full">
@@ -236,8 +254,8 @@ function BookForm({
             value={form.shelfNumber}
             onChange={updateField}
             placeholder="例：3"
-            required
           />
+          {validationErrors.shelfNumber && <p className="field-error">{validationErrors.shelfNumber}</p>}
         </div>
 
         <div className="field">
@@ -264,7 +282,11 @@ function BookForm({
 
         <div className="form-footer field-full">
           {isEdit ? (
-            <button type="button" className="button button-danger" onClick={() => navigate(-1)}>
+            <button
+              type="button"
+              className="button button-danger"
+              onClick={() => setDiscardConfirmationOpen(true)}
+            >
               キャンセル
             </button>
           ) : (
@@ -289,6 +311,15 @@ function BookForm({
         </div>
         {csvName && <p className="csv-message field-full">{csvName}</p>}
       </form>
+      <ModalDialog
+        open={discardConfirmationOpen}
+        title="変更内容の破棄"
+        description="変更を破棄して良いですか。"
+        confirmLabel="破棄する"
+        tone="danger"
+        onClose={() => setDiscardConfirmationOpen(false)}
+        onConfirm={() => navigate(-1)}
+      />
     </main>
   )
 }

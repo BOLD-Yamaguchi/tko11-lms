@@ -1,16 +1,20 @@
-export { ActionConfirmationModal } from './ActionConfirmationModal'
 export { BackButton } from './BackButton'
-export { BookActionModal } from './BookActionModal'
 export { DeleteButton } from './DeleteButton'
 export { DropdownField } from './DropdownField'
 export { Footer } from './Footer'
 export { HamburgerMenu } from './HamburgerMenu'
 export type { HamburgerMenuItem } from './HamburgerMenu'
 export { Header } from './Header'
-export { ModalDialog } from './ModalDialog'
+export {
+  ActionConfirmationModal,
+  BookActionModal,
+  BulkReturnConfirmationModal,
+  ModalDialog,
+  ReturnRequestModal,
+} from './modals'
+export type { ModalDialogProps } from './modals'
 export { RadioButtonGroup } from './RadioButtonGroup'
 export { RegisterButton } from './RegisterButton'
-export { ReturnRequestModal } from './ReturnRequestModal'
 export { TextBox } from './TextBox'
 export { Toast } from './Toast'
 export type { ToastSeverity } from './Toast'

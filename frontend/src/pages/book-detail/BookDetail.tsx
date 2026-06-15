@@ -23,6 +23,7 @@ import {
   Toast,
   UserMenu,
 } from '../../components'
+import { getBookDetailMenuItems } from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import { getReturnDueDate } from '../../dateUtils'
 import type { LoanStatus, UserRole } from '../../types'
@@ -177,23 +178,28 @@ function BookDetail({
   onLogout,
 }: BookDetailProps) {
   const navigate = useNavigate()
+  // 遷移元と通知メッセージをlocation stateから復元し、戻り先を決定する。
   const location = useLocation()
+  // 詳細・状態・履歴表示に必要な書籍管理データを共通クエリから取得する。
   const data = useLibraryDataValue()
   const books = data.books
   const loanHistory = data.loanHistory
   const historyVisibility = data.historyVisibility
   const returnComments = data.returnComments
+  // URLの書籍IDから表示対象を特定し、存在しない場合は先頭データへフォールバックする。
   const { bookId } = useParams()
   const book = books.find((candidate) => candidate.id === bookId) ?? books[0]
   const locationState = location.state as LocationState | null
   const routeMessage = locationState?.message
   const backPath = locationState?.from === '/mypage' ? '/mypage' : '/search'
+  // 操作モーダルの進行状況、通知、管理者の履歴編集状態をまとめて管理する。
   const [message, setMessage] = useState(routeMessage ?? '')
   const [pendingAction, setPendingAction] = useState<BookAction | null>(null)
   const [actionStep, setActionStep] = useState<ActionStep | null>(null)
   const [editingHistory, setEditingHistory] = useState(false)
   const [draftVisibleHistoryIds, setDraftVisibleHistoryIds] = useState<string[]>([])
 
+  // 書籍詳細へ遷移するたびに、前画面のスクロール位置を引き継がず先頭へ戻す。
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [location.key])
@@ -227,15 +233,7 @@ function BookDetail({
   const displayedHistory = role === 'admin' && editingHistory
     ? loanHistory
     : loanHistory.filter((history) => visibleHistoryIds.includes(history.id))
-  const menuItems = [
-    { id: 'mypage', label: 'マイページ', description: '利用状況を確認する' },
-    { id: 'search', label: '書籍検索', description: '蔵書を条件検索する' },
-    ...(role === 'admin'
-      ? [{ id: 'create', label: '書籍登録', description: '新しい書籍を登録する' }]
-      : []),
-    { id: 'system', label: 'システムメニュー', description: '最初のメニューへ戻る' },
-    { id: 'logout', label: 'ログアウト', description: 'ログイン画面へ戻る' },
-  ]
+  const menuItems = getBookDetailMenuItems(role)
 
   const executeAction = (action: BookAction) => {
     const setting = actionSettings[action]

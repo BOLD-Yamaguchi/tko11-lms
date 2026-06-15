@@ -12,7 +12,7 @@ import {
   dangerContainedActionButtonSx,
   dangerOutlinedActionButtonSx,
   outlinedActionButtonSx,
-} from './buttonStyles'
+} from '../buttonStyles'
 
 export interface ModalDialogProps {
   open: boolean

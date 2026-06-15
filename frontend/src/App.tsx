@@ -25,7 +25,9 @@ function readStoredRole(): UserRole | null {
 }
 
 function App() {
+  // ログイン中の権限をセッションから復元し、画面全体の認可に利用する。
   const [role, setRole] = useState<UserRole | null>(readStoredRole)
+  // React Queryのキャッシュを画面操作に応じて更新し、各画面へ即時反映する。
   const queryClient = useQueryClient()
   const { data, isPending, isError } = useLibraryData()
 

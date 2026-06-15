@@ -34,6 +34,7 @@ const roles: Array<{
 ]
 
 function LoginPage({ onLogin }: LoginPageProps) {
+  // 選択した権限を保存した後、システムメニューへ置換遷移する。
   const navigate = useNavigate()
 
   const login = (role: UserRole) => {

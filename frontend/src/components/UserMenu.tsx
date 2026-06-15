@@ -16,6 +16,7 @@ export function UserMenu({
   onSelect,
   title = '書籍管理',
 }: UserMenuProps) {
+  // 共通データから現在の権限に対応するログインユーザー表示を取得する。
   const data = useLibraryDataValue()
   const user = data.roleProfiles[role]
 

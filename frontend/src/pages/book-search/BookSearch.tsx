@@ -9,6 +9,14 @@ import {
   Toast,
   UserMenu,
 } from '../../components'
+import {
+  ADMIN_COLLECTION_STATUS_OPTION,
+  COLLECTION_STATUS_OPTIONS,
+  DEFAULT_PAGE_SIZE,
+  LOAN_STATUS_OPTIONS,
+  PAGE_SIZE_OPTIONS,
+} from '../../constants/bookSearch'
+import { getBookSearchMenuItems } from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import type {
   LoanStatus,
@@ -25,6 +33,7 @@ type SearchConditions = {
   title: string
   author: string
   publisher: string
+  publishedAt: string
   loanStatus: string
   majorCategory: string
   minorCategory: string
@@ -38,6 +47,7 @@ const emptyConditions: SearchConditions = {
   title: '',
   author: '',
   publisher: '',
+  publishedAt: '',
   loanStatus: '',
   majorCategory: '',
   minorCategory: '',
@@ -46,30 +56,25 @@ const emptyConditions: SearchConditions = {
 
 function BookSearch({ role, onLogout }: BookSearchProps) {
   const navigate = useNavigate()
+  // 書籍・カテゴリ・ログインユーザーの拠点情報を共通クエリから取得する。
   const data = useLibraryDataValue()
   const userLocation = data.roleProfiles[role].location
+  // 入力中と適用済みの検索条件を分け、検索・ソート・ページング状態を管理する。
   const [form, setForm] = useState<SearchConditions>(emptyConditions)
   const [conditions, setConditions] = useState<SearchConditions>(emptyConditions)
   const [hasSearched, setHasSearched] = useState(false)
   const [sortKey, setSortKey] = useState<SortKey>('id')
   const [ascending, setAscending] = useState(true)
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [message, setMessage] = useState('')
   const collectionOptions = [
-    { value: '', label: '全て' },
-    { value: '開架', label: '開架' },
-    ...(role === 'admin' ? [{ value: '廃棄', label: '廃棄' }] : []),
+    ...COLLECTION_STATUS_OPTIONS,
+    ...(role === 'admin' ? [ADMIN_COLLECTION_STATUS_OPTION] : []),
   ]
-  const menuItems = [
-    { id: 'mypage', label: 'マイページ', description: '利用状況を確認する' },
-    ...(role === 'admin'
-      ? [{ id: 'create', label: '書籍登録', description: '新しい書籍を登録する' }]
-      : []),
-    { id: 'system', label: 'システムメニュー', description: '最初のメニューへ戻る' },
-    { id: 'logout', label: 'ログアウト', description: 'ログイン画面へ戻る' },
-  ]
+  const menuItems = getBookSearchMenuItems(role)
 
+  // 入力された全条件をAND検索し、現在の並び順に合わせた結果を生成する。
   const results = useMemo(() => {
     if (!hasSearched) return []
 
@@ -89,6 +94,7 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
         && includes(book.title, conditions.title)
         && includes(book.author, conditions.author)
         && includes(book.publisher, conditions.publisher)
+        && exact(book.publishedAt, conditions.publishedAt)
         && (!conditions.loanStatus || book.loanStatus === conditions.loanStatus)
         && (!conditions.majorCategory || book.majorCategory === conditions.majorCategory)
         && (!conditions.minorCategory || book.minorCategory === conditions.minorCategory)
@@ -112,7 +118,7 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
     setConditions(form)
     setHasSearched(true)
     setPage(1)
-    setMessage('検索条件を反映しました。')
+    setMessage('検索を実行しました。')
   }
 
   const toggleSort = (key: SortKey) => {
@@ -153,7 +159,8 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
           <TextBox label="書籍名" value={form.title} onChange={(value) => setForm({ ...form, title: value })} placeholder="例：AWS入門" />
           <TextBox label="著者名" value={form.author} onChange={(value) => setForm({ ...form, author: value })} placeholder="例：山田太郎" />
           <TextBox label="出版社" value={form.publisher} onChange={(value) => setForm({ ...form, publisher: value })} placeholder="例：技術評論社" />
-          <DropdownField label="貸出ステータス" value={form.loanStatus} onChange={(value) => setForm({ ...form, loanStatus: value })} options={loanOptions} />
+          <TextBox label="出版日" type="date" value={form.publishedAt} onChange={(value) => setForm({ ...form, publishedAt: value })} />
+          <DropdownField label="貸出ステータス" value={form.loanStatus} onChange={(value) => setForm({ ...form, loanStatus: value })} options={LOAN_STATUS_OPTIONS} />
           <DropdownField
             label="カテゴリ1"
             value={form.majorCategory}
@@ -185,10 +192,13 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
         </div>
       </form>
 
-      {hasSearched && (
-        <section className="search-results">
-          <div className="results-heading">
-            <h2>検索結果一覧 <span>{results.length}件</span></h2>
+      <section className="search-results">
+        <div className="results-heading">
+          <h2>
+            検索結果一覧
+            {hasSearched && <span>{results.length}件</span>}
+          </h2>
+          {hasSearched && (
             <div className="results-controls">
               <label className="page-size-control">
                 <span>1ページあたり</span>
@@ -199,9 +209,9 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
                     setPage(1)
                   }}
                 >
-                  <option value={10}>10件</option>
-                  <option value={20}>20件</option>
-                  <option value={50}>50件</option>
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <option key={size} value={size}>{size}件</option>
+                  ))}
                 </select>
               </label>
               <div className="pagination">
@@ -210,49 +220,63 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
                 <button type="button" disabled={currentPage === pageCount} onClick={() => setPage((current) => current + 1)}>›</button>
               </div>
             </div>
-          </div>
-          <div className="table-scroll">
-            <table className="data-table search-table">
-              <thead>
+          )}
+        </div>
+        <div className="table-scroll">
+          <table className="data-table search-table">
+            <thead>
+              <tr>
+                <SortableHeader label="書籍ID" active={sortKey === 'id'} ascending={ascending} onClick={() => toggleSort('id')} />
+                <SortableHeader label="書籍名" active={sortKey === 'title'} ascending={ascending} onClick={() => toggleSort('title')} />
+                <SortableHeader label="著者名" active={sortKey === 'author'} ascending={ascending} onClick={() => toggleSort('author')} />
+                <SortableHeader label="出版社" active={sortKey === 'publisher'} ascending={ascending} onClick={() => toggleSort('publisher')} />
+                <th>カテゴリ1</th><th>カテゴリ2</th><th>配架分類</th>
+                <SortableHeader label="貸出ステータス" active={sortKey === 'loanStatus'} ascending={ascending} onClick={() => toggleSort('loanStatus')} />
+                <th>詳細</th>
+              </tr>
+            </thead>
+            <tbody>
+              {!hasSearched && (
                 <tr>
-                  <SortableHeader label="書籍ID" active={sortKey === 'id'} ascending={ascending} onClick={() => toggleSort('id')} />
-                  <SortableHeader label="書籍名" active={sortKey === 'title'} ascending={ascending} onClick={() => toggleSort('title')} />
-                  <SortableHeader label="著者名" active={sortKey === 'author'} ascending={ascending} onClick={() => toggleSort('author')} />
-                  <SortableHeader label="出版社" active={sortKey === 'publisher'} ascending={ascending} onClick={() => toggleSort('publisher')} />
-                  <th>カテゴリ1</th><th>カテゴリ2</th><th>配架分類</th>
-                  <SortableHeader label="貸出ステータス" active={sortKey === 'loanStatus'} ascending={ascending} onClick={() => toggleSort('loanStatus')} />
-                  <th>詳細</th>
+                  <td colSpan={9} className="empty-result">
+                    検索条件を入力し「検索する」を押下してください
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {visibleBooks.map((book) => (
-                  <tr key={book.id}>
-                    <td>{book.id}</td><td>{book.title}</td><td>{book.author}</td><td>{book.publisher}</td>
-                    <td>{book.majorCategory}</td><td>{book.minorCategory}</td>
-                    <td>{book.collectionStatus === '開架' ? '○' : '×'}</td>
-                    <td><StatusBadge status={book.loanStatus} /></td>
-                    <td>
-                      <button
-                        type="button"
-                        className="row-detail"
-                        aria-label={`${book.title}の詳細`}
-                        onClick={() => navigate(`/books/${book.id}`, {
-                          state: { from: '/search' },
-                        })}
-                      >
-                        <ChevronIcon size={21} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {visibleBooks.length === 0 && (
-                  <tr><td colSpan={9} className="empty-result">書籍が見つかりませんでした</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
+              )}
+              {hasSearched && visibleBooks.map((book) => (
+                <tr
+                  key={book.id}
+                  title={`配架分類：${book.collectionStatus}`}
+                >
+                  <td>{book.id}</td><td>{book.title}</td><td>{book.author}</td><td>{book.publisher}</td>
+                  <td>{book.majorCategory}</td><td>{book.minorCategory}</td>
+                  <td>{book.collectionStatus === '開架' ? '○' : '×'}</td>
+                  <td>
+                    {book.collectionStatus === '廃棄'
+                      ? <span aria-label="廃棄済み">-</span>
+                      : <StatusBadge status={book.loanStatus} />}
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="row-detail"
+                      aria-label={`${book.title}の詳細`}
+                      onClick={() => navigate(`/books/${book.id}`, {
+                        state: { from: '/search' },
+                      })}
+                    >
+                      <ChevronIcon size={21} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {hasSearched && visibleBooks.length === 0 && (
+                <tr><td colSpan={9} className="empty-result">書籍が見つかりませんでした</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <Toast open={Boolean(message)} message={message} severity="success" onClose={() => setMessage('')} />
     </main>
@@ -289,12 +313,5 @@ function StatusBadge({ status }: { status: LoanStatus }) {
         : 'returning'
   return <span className={`loan-badge ${className}`}>{status}</span>
 }
-
-const loanOptions = [
-  { value: '', label: '指定なし' },
-  { value: '貸出可', label: '貸出可' },
-  { value: '貸出中', label: '貸出中' },
-  { value: '返却申請中', label: '返却申請中' },
-]
 
 export default BookSearch

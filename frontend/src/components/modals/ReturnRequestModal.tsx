@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ModalDialog } from './ModalDialog'
-import { TextBox } from './TextBox'
+import { TextBox } from '../TextBox'
 
 type ReturnRequestModalProps = {
   open: boolean
@@ -15,6 +15,7 @@ export function ReturnRequestModal({
   onClose,
   onConfirm,
 }: ReturnRequestModalProps) {
+  // 返却申請時に入力する任意の感想を、確定するまでモーダル内で保持する。
   const [comment, setComment] = useState(initialComment)
 
   return (

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BookIcon, UsersIcon } from '../../Icons'
 import { Toast, UserMenu } from '../../components'
+import { getHomeMenuItems } from '../../constants/navigation'
 import type { UserRole } from '../../types'
 
 type HomeProps = {
@@ -11,15 +12,10 @@ type HomeProps = {
 
 function Home({ role, onLogout }: HomeProps) {
   const navigate = useNavigate()
+  // 画面内操作の案内をトーストとして一時表示する。
   const [message, setMessage] = useState('')
   const isAdmin = role === 'admin'
-  const menuItems = [
-    { id: 'books', label: '書籍管理', description: 'マイページと書籍検索を開きます' },
-    ...(isAdmin
-      ? [{ id: 'users', label: 'ユーザー管理', description: 'ユーザー管理モックを確認します' }]
-      : []),
-    { id: 'logout', label: 'ログアウト', description: 'ログイン画面へ戻ります' },
-  ]
+  const menuItems = getHomeMenuItems(role)
 
   const openUsers = () => {
     setMessage('ユーザー管理画面は今回のモック対象外です。')

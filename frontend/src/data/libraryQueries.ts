@@ -10,9 +10,11 @@ const libraryDataQueryOptions = queryOptions({
 })
 
 export function useLibraryData() {
+  // 読み込み・エラー状態を含めて書籍管理データを取得する画面向けHook。
   return useQuery(libraryDataQueryOptions)
 }
 
 export function useLibraryDataValue() {
+  // Suspense配下で、取得済みの書籍管理データを直接利用する画面向けHook。
   return useSuspenseQuery(libraryDataQueryOptions).data
 }

@@ -9,6 +9,7 @@ type CreateBookProps = {
 }
 
 function CreateBook({ onCreate, role, onLogout }: CreateBookProps) {
+  // 新規登録フォームの初期値を共通の書籍管理データから取得する。
   const data = useLibraryDataValue()
 
   return (

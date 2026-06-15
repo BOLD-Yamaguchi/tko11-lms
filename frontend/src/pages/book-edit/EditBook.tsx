@@ -14,6 +14,7 @@ function EditBook({
   role,
   onLogout,
 }: EditBookProps) {
+  // URLの書籍IDと共通データを照合し、編集対象の書籍を特定する。
   const { bookId } = useParams()
   const data = useLibraryDataValue()
   const books = data.books

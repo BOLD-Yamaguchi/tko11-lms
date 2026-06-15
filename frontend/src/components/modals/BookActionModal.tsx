@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { createBookActionSchema } from '../../schemas/bookActionSchema'
 import { ModalDialog } from './ModalDialog'
-import { TextBox } from './TextBox'
+import { TextBox } from '../TextBox'
 
 type BookActionModalProps = {
   open: boolean
@@ -23,19 +24,23 @@ export function BookActionModal({
   onClose,
   onConfirm,
 }: BookActionModalProps) {
+  // 貸出・返却操作に必要な認証入力とZod検証エラーをモーダル内で管理する。
   const [employeeId, setEmployeeId] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
   const confirm = () => {
-    if (requireEmployeeId && !employeeId.trim()) {
-      setError('社員番号を入力してください。')
+    const result = createBookActionSchema(
+      requireEmployeeId,
+      requirePassword,
+    ).safeParse({ employeeId, password })
+
+    if (!result.success) {
+      setError(result.error.issues[0]?.message ?? '入力内容を確認してください。')
       return
     }
-    if (requirePassword && !password) {
-      setError('パスワードを入力してください。')
-      return
-    }
+
+    setError('')
     onConfirm()
   }
 
