@@ -360,7 +360,7 @@ function BookDetail({
     if (id === 'mypage') navigate('/mypage')
     if (id === 'search') navigate('/search')
     if (id === 'create') navigate('/create')
-    if (id === 'system') navigate('/')
+    if (id === 'system') navigate('/system')
     if (id === 'logout') {
       onLogout()
       navigate('/login', { replace: true })

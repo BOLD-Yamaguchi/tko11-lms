@@ -5,7 +5,7 @@ import { Header } from "./components/Header";
 import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 
 import { MenuCard } from "./components/MenuCard";
-import { ModalDialog } from "./components/ModalDialog";
+import { ModalDialog } from "./components/modals/ModalDialog";
 import { BookOpen, Users } from "lucide-react";
 
 export default function HomePage() {

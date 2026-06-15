@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Header from "./components/Header";
 import { TextBox } from "./components/TextBox";
 
 function UserEdit() {
   const navigate = useNavigate();
-  const { id } = useParams(); // 新規登録時は URL パラメータによって "create" などが入る想定
 
   // 操作選択 ("create" = 新規ユーザー登録, "reset" = パスワードリセット)
   const [operation, setOperation] = useState<"create" | "reset">("create");
@@ -75,8 +74,6 @@ function UserEdit() {
     // 完了後、ユーザー一覧画面へ戻る
     navigate("/users");
   };
-  // URLのユーザーIDを取得し、編集対象の識別に使用する。
-  const { id } = useParams();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#f9f9f9" }}>
