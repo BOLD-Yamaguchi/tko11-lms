@@ -1140,11 +1140,50 @@ svg {
   padding-top: 4px;
 }
 
-.csv-message {
+.csv-guidance {
   margin: -8px 0 0;
-  color: var(--green);
+  color: var(--muted);
   text-align: right;
   font-size: 14px;
+}
+
+.csv-result {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 14px;
+}
+
+.csv-result p {
+  margin: 0;
+}
+
+.csv-result.success {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.csv-result.has-errors {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.csv-result ul {
+  margin: 10px 0 0;
+  padding-left: 22px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.csv-result li + li {
+  margin-top: 4px;
+}
+
+.csv-confirmation-message {
+  margin: 8px 0 0;
+  color: var(--text);
+  line-height: 1.8;
 }
 
 /* Detail */

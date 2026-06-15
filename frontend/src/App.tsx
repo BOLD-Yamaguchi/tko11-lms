@@ -55,18 +55,27 @@ function App() {
     setRole(null)
   }
 
-  const createBook = (newBook: Book) => {
+  const createBooks = (newBooks: Book[]) => {
     updateLibraryData((current) => ({
       ...current,
       books: [
-        ...current.books.filter((book) => book.id !== newBook.id),
-        { ...newBook, loanStatus: '貸出可' },
+        ...current.books.filter((book) => (
+          !newBooks.some((newBook) => newBook.id === book.id)
+        )),
+        ...newBooks.map((book) => ({ ...book, loanStatus: '貸出可' as const })),
       ],
       historyVisibility: {
         ...current.historyVisibility,
-        [newBook.id]: current.loanHistory.map((history) => history.id),
+        ...Object.fromEntries(newBooks.map((book) => [
+          book.id,
+          current.loanHistory.map((history) => history.id),
+        ])),
       },
     }))
+  }
+
+  const createBook = (newBook: Book) => {
+    createBooks([newBook])
   }
 
   const updateBook = (updatedBook: Book) => {
@@ -140,7 +149,14 @@ function App() {
           path="/create"
           element={
             role === 'admin'
-              ? <CreateBook onCreate={createBook} role={role} onLogout={logout} />
+              ? (
+                <CreateBook
+                  onCreate={createBook}
+                  onCsvCreate={createBooks}
+                  role={role}
+                  onLogout={logout}
+                />
+              )
               : <Navigate to={role ? '/mypage' : '/login'} replace />
           }
         />

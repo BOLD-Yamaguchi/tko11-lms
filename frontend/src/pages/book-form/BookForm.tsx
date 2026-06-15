@@ -5,12 +5,15 @@ import {
   BackButton,
   ModalDialog,
   RegisterButton,
+  Toast,
   UserMenu,
 } from '../../components'
 import { getBookFormMenuItems } from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import { bookSchema } from '../../schemas/bookSchema'
 import type { BookValidationErrors } from '../../schemas/bookSchema'
+import { parseBookCsv } from './bookCsvParser'
+import type { BookCsvError } from './bookCsvParser'
 import type {
   Book,
   CollectionStatus,
@@ -21,6 +24,7 @@ type BookFormProps = {
   mode: 'create' | 'edit'
   initialValues: Book
   onSubmit: (book: Book) => void
+  onCsvSubmit?: (books: Book[]) => void
   role: UserRole
   allowDisposal?: boolean
   onLogout: () => void
@@ -30,13 +34,18 @@ function BookForm({
   mode,
   initialValues,
   onSubmit,
+  onCsvSubmit,
   role,
   allowDisposal = false,
   onLogout,
 }: BookFormProps) {
   // 入力内容、検証結果、CSV選択、破棄確認の各フォーム状態を管理する。
   const [form, setForm] = useState<Book>(initialValues)
-  const [csvName, setCsvName] = useState('')
+  const [csvMessage, setCsvMessage] = useState('')
+  const [csvErrors, setCsvErrors] = useState<BookCsvError[]>([])
+  const [pendingCsvBooks, setPendingCsvBooks] = useState<Book[]>([])
+  const [isParsingCsv, setIsParsingCsv] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
   const [validationErrors, setValidationErrors] = useState<BookValidationErrors>({})
   const [discardConfirmationOpen, setDiscardConfirmationOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -73,10 +82,52 @@ function BookForm({
     })
   }
 
-  const handleCsv = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleCsv = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-    setCsvName(`${file.name} を選択しました`)
+
+    setIsParsingCsv(true)
+    setCsvMessage(`${file.name} を解析しています。`)
+    setCsvErrors([])
+    setPendingCsvBooks([])
+
+    try {
+      const result = await parseBookCsv(
+        file,
+        data.books.map((book) => book.id),
+        data.categoryOptions.minor,
+      )
+      setCsvErrors(result.errors)
+
+      if (result.errors.length > 0) {
+        setCsvMessage(
+          `${file.name}に${result.errors.length}件のエラーがあります。登録は実施していません。`,
+        )
+      } else {
+        setCsvMessage(`${file.name}から${result.books.length}件を読み込みました。`)
+        setPendingCsvBooks(result.books)
+      }
+    } catch {
+      setCsvMessage(`${file.name}の読み込みに失敗しました。`)
+      setCsvErrors([{
+        rowNumber: 1,
+        message: 'UTF-8形式のCSVファイルか確認してください。',
+      }])
+    } finally {
+      setIsParsingCsv(false)
+      event.target.value = ''
+    }
+  }
+
+  const registerCsvBooks = () => {
+    if (pendingCsvBooks.length === 0) return
+
+    const registeredCount = pendingCsvBooks.length
+    onCsvSubmit?.(pendingCsvBooks)
+    setPendingCsvBooks([])
+    setCsvErrors([])
+    setCsvMessage(`${registeredCount}件の書籍を登録しました。`)
+    setToastMessage(`${registeredCount}件の書籍を登録しました。`)
   }
 
   const handleMenu = (id: string) => {
@@ -301,16 +352,49 @@ function BookForm({
               <button
                 type="button"
                 className="button button-csv"
+                disabled={isParsingCsv}
                 onClick={() => fileInputRef.current?.click()}
               >
-                CSV登録
+                {isParsingCsv ? 'CSV解析中...' : 'CSV登録'}
               </button>
             </>
           )}
           <RegisterButton type="submit" label={isEdit ? '更新する' : '登録する'} />
         </div>
-        {csvName && <p className="csv-message field-full">{csvName}</p>}
+        {!isEdit && (
+          <p className="csv-guidance field-full">
+            UTF-8・ヘッダーなし・12項目のCSVに対応しています。
+          </p>
+        )}
+        {csvMessage && (
+          <div className={`csv-result field-full ${csvErrors.length > 0 ? 'has-errors' : 'success'}`}>
+            <p>{csvMessage}</p>
+            {csvErrors.length > 0 && (
+              <ul>
+                {csvErrors.map((error, index) => (
+                  <li key={`${error.rowNumber}-${index}`}>
+                    {error.rowNumber}行目：{error.message}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </form>
+      <ModalDialog
+        open={pendingCsvBooks.length > 0}
+        title="CSV一括登録"
+        confirmLabel="はい"
+        cancelLabel="いいえ"
+        onClose={() => setPendingCsvBooks([])}
+        onConfirm={registerCsvBooks}
+      >
+        <p className="csv-confirmation-message">
+          {pendingCsvBooks.length}件の書籍を登録します。
+          <br />
+          よろしいですか？
+        </p>
+      </ModalDialog>
       <ModalDialog
         open={discardConfirmationOpen}
         title="変更内容の破棄"
@@ -319,6 +403,12 @@ function BookForm({
         tone="danger"
         onClose={() => setDiscardConfirmationOpen(false)}
         onConfirm={() => navigate(-1)}
+      />
+      <Toast
+        open={Boolean(toastMessage)}
+        message={toastMessage}
+        severity="success"
+        onClose={() => setToastMessage('')}
       />
     </main>
   )
