@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-function Home() {
+//型定義を追加
+interface Book {
+  id: number;
+  title: string;
+}
 
-  const [books, setBooks] = useState([]);
+function Home() {
+  const [books, setBooks] = useState<Book[]>([]);
 
   useEffect(() => {
     fetchBooks();
@@ -21,7 +26,7 @@ function Home() {
 
   return (
     <div>
-      <h1>蔵書管理システム</h1>
+      <h1>蔵書管理システムマイページ</h1>
 
       <table border="1">
         <thead>
@@ -44,6 +49,9 @@ function Home() {
       <Link to="/create">登録ページへ</Link>
       <br />
       <Link to="/delete">削除ページへ</Link>
+      <br />
+      <Link to="/home">Ｔｏｐページへ</Link>
+      <br />
     </div>
   );
 }
