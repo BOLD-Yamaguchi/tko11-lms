@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 
 function UserEdit() {
+  // URLのユーザーIDを取得し、編集対象の識別に使用する。
   const { id } = useParams();
 
   return (

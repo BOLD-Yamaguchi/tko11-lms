@@ -15,13 +15,13 @@ public class User {
     private Long id;
 
     private String name;
-    
+
     private String email;
-    
+
     private String employee_code;
-    
+
     private Long role;
-    
+
     private Long depertment;
 
     public Long getId() {
@@ -35,7 +35,7 @@ public class User {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getEmail() {
         return email;
     }
@@ -43,7 +43,7 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
-    
+
     public String getEmployee_code() {
         return employee_code;
     }
@@ -51,7 +51,7 @@ public class User {
     public void setEmployee_code(String employee_code) {
         this.employee_code = employee_code;
     }
-    
+
     public Long getRole() {
         return role;
     }
@@ -59,7 +59,7 @@ public class User {
     public void setRole(Long role) {
         this.role = role;
     }
-    
+
     public Long getDepartment() {
         return depertment;
     }
