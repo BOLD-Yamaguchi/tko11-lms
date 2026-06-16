@@ -1,5 +1,4 @@
 package com.bold.application.controller.users;
-
 import java.util.HashMap;
 import java.util.Map;
 

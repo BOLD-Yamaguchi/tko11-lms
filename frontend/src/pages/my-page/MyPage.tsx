@@ -210,7 +210,7 @@ function MyPage({ role, onLogout }: MyPageProps) {
   }
 
   const handleMenu = (id: string) => {
-    if (id === 'system') navigate('/')
+    if (id === 'system') navigate('/system')
     if (id === 'search') navigate('/search')
     if (id === 'create') navigate('/create')
     if (id === 'logout') logout()
@@ -219,7 +219,7 @@ function MyPage({ role, onLogout }: MyPageProps) {
   return (
     <main className="page-shell mypage">
       <div className="mypage-nav">
-        <BackButton label="メニューへ戻る" onClick={() => navigate('/')} />
+        <BackButton label="メニューへ戻る" onClick={() => navigate('/system')} />
         <UserMenu
           role={role}
           items={menuItems}

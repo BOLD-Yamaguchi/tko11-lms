@@ -1,18 +1,7 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import AppRouter from './AppRouter'
 import { libraryDataQueryKey, useLibraryData } from './data/libraryQueries'
-import Login from './Login'
-import PasswordReset from './passwordReset'
-import UserEdit from './UserEdit'
-import UserList from './UsersList'
-import CreateBook from './pages/book-create/CreateBook'
-import EditBook from './pages/book-edit/EditBook'
-import BookDetail from './pages/book-detail/BookDetail'
-import BookSearch from './pages/book-search/BookSearch'
-import Home from './pages/home/Home'
-import LoginPage from './pages/login/LoginPage'
-import MyPage from './pages/my-page/MyPage'
 import type { Book, LibraryData, LoanStatus, UserRole } from './types'
 
 const roleStorageKey = 'tko11-mock-user-role'
@@ -110,78 +99,16 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/login"
-          element={role ? <Navigate to="/" replace /> : <LoginPage onLogin={login} />}
-        />
-        <Route
-          path="/"
-          element={role ? <Home role={role} onLogout={logout} /> : <Navigate to="/login" replace />}
-        />
-        <Route
-          path="/mypage"
-          element={
-            role
-              ? <MyPage role={role} onLogout={logout} />
-              : <Navigate to="/login" replace />
-          }
-        />
-        <Route
-          path="/search"
-          element={
-            role
-              ? <BookSearch role={role} onLogout={logout} />
-              : <Navigate to="/login" replace />
-          }
-        />
-        <Route
-          path="/create"
-          element={
-            role === 'admin'
-              ? <CreateBook onCreate={createBook} role={role} onLogout={logout} />
-              : <Navigate to={role ? '/mypage' : '/login'} replace />
-          }
-        />
-        <Route
-          path="/books/:bookId"
-          element={
-            role
-              ? (
-                <BookDetail
-                  role={role}
-                  onStatusChange={updateLoanStatus}
-                  onHistoryVisibilityChange={updateHistoryVisibility}
-                  onReturnCommentChange={updateReturnComment}
-                  onLogout={logout}
-                />
-              )
-              : <Navigate to="/login" replace />
-          }
-        />
-        <Route
-          path="/books/:bookId/edit"
-          element={
-            role === 'admin'
-              ? (
-                <EditBook
-                  onUpdate={updateBook}
-                  role={role}
-                  onLogout={logout}
-                />
-              )
-              : <Navigate to={role ? '/mypage' : '/login'} replace />
-          }
-        />
-        <Route path="/delete" element={<Navigate to={role ? '/' : '/login'} replace />} />
-        <Route path="/user-login" element={<Login />} />
-        <Route path="/UsersList" element={<UserList />} />
-        <Route path="/users/:id" element={<UserEdit />} />
-        <Route path="/passwordReset" element={<PasswordReset />} />
-        <Route path="*" element={<Navigate to={role ? '/' : '/login'} replace />} />
-      </Routes>
-    </BrowserRouter>
+    <AppRouter
+      role={role}
+      onLogin={login}
+      onLogout={logout}
+      onCreateBook={createBook}
+      onUpdateBook={updateBook}
+      onLoanStatusChange={updateLoanStatus}
+      onHistoryVisibilityChange={updateHistoryVisibility}
+      onReturnCommentChange={updateReturnComment}
+    />
   )
 }
 

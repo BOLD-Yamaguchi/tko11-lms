@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BookIcon, UserIcon, UsersIcon } from '../../Icons'
+import { BackButton } from '../../components'
 import type { UserRole } from '../../types'
 
 type LoginPageProps = {
@@ -39,11 +40,16 @@ function LoginPage({ onLogin }: LoginPageProps) {
 
   const login = (role: UserRole) => {
     onLogin(role)
-    navigate('/', { replace: true })
+    navigate('/system', { replace: true })
   }
 
   return (
     <main className="login-page">
+      <BackButton
+        className="login-back-button"
+        label="ログイン画面に戻る"
+        onClick={() => navigate('/home')}
+      />
       <section className="login-panel">
         <p className="eyebrow">LIBRARY MANAGEMENT MOCK</p>
         <h1>モックログイン</h1>
