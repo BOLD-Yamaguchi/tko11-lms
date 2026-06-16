@@ -1,6 +1,7 @@
 package com.bold.application.entity.books;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +16,7 @@ public class TrnBookStatus {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int bookId;
-    private String lendUserId;
+    private UUID lendUserId;
     private String lendStatus;
     private LocalDateTime returnedAt;
     private LocalDateTime createdAt;
