@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import com.bold.application.entity.books.MstCategoryLevel1;
 
 @Repository
-public interface MstCategoryLevel1Repository extends JpaRepository<MstCategoryLevel1, int> {
+public interface MstCategoryLevel1Repository extends JpaRepository<MstCategoryLevel1, Integer> {
 }
