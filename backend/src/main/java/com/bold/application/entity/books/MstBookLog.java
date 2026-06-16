@@ -20,7 +20,7 @@ public class MstBookLog {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String review;
-    private int hiddenFlg;
+    private String hiddenFlg;
 
     public int getLendId() {
         return lendId;
@@ -70,11 +70,11 @@ public class MstBookLog {
         this.review = review;
     }
 
-    public int getHiddenFlg() {
+    public String getHiddenFlg() {
         return hiddenFlg;
     }
 
-    public void setHiddenFlg(int hiddenFlg) {
+    public void setHiddenFlg(String hiddenFlg) {
         this.hiddenFlg = hiddenFlg;
     }
 }
