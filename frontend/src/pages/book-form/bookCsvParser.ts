@@ -125,7 +125,7 @@ export async function parseBookCsv(
       hasRowError = true
       errors.push({
         rowNumber,
-        message: '配架分類は0、1または2を指定してください。',
+        message: '配架分類は0または1を指定してください。',
       })
     }
 

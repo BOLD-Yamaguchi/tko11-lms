@@ -360,7 +360,7 @@ function BookForm({
         </div>
         {!isEdit && (
           <p className="csv-guidance field-full">
-            UTF-8・ヘッダーなし・12項目のCSVに対応しています。
+            UTF-8・ヘッダーなし・12項目のCSVに対応しています。配架分類は開架・閉架のみ登録できます。
           </p>
         )}
         {csvMessage && (

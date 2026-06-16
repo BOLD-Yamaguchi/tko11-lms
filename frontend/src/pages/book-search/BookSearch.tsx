@@ -92,20 +92,24 @@ function BookSearch({ role }: BookSearchProps) {
       || value.toLowerCase().includes(query.trim().toLowerCase())
     )
     return data.books
-      .filter((book) => (
-        book.location === userLocation
-        && (role === 'admin' || book.collectionStatus !== '廃棄')
-        && exact(book.id, conditions.id)
-        && includes(book.title, conditions.title)
-        && includes(book.author, conditions.author)
-        && includes(book.publisher, conditions.publisher)
-        && (!conditions.publishedFrom || book.publishedAt >= conditions.publishedFrom)
-        && (!conditions.publishedTo || book.publishedAt <= conditions.publishedTo)
-        && (!conditions.loanStatus || book.loanStatus === conditions.loanStatus)
-        && (!conditions.majorCategory || book.majorCategory === conditions.majorCategory)
-        && (!conditions.minorCategory || book.minorCategory === conditions.minorCategory)
-        && (!conditions.collectionStatus || book.collectionStatus === conditions.collectionStatus)
-      ))
+      .filter((book) => {
+        const isDisposed = book.collectionStatus === '廃棄'
+
+        return (
+          book.location === userLocation
+          && (role === 'admin' || !isDisposed)
+          && exact(book.id, conditions.id)
+          && includes(book.title, conditions.title)
+          && includes(book.author, conditions.author)
+          && includes(book.publisher, conditions.publisher)
+          && (!conditions.publishedFrom || book.publishedAt >= conditions.publishedFrom)
+          && (!conditions.publishedTo || book.publishedAt <= conditions.publishedTo)
+          && (!conditions.loanStatus || (!isDisposed && book.loanStatus === conditions.loanStatus))
+          && (!conditions.majorCategory || book.majorCategory === conditions.majorCategory)
+          && (!conditions.minorCategory || book.minorCategory === conditions.minorCategory)
+          && (!conditions.collectionStatus || book.collectionStatus === conditions.collectionStatus)
+        )
+      })
       .toSorted((left, right) => {
         const compared = left[sortKey].localeCompare(right[sortKey], 'ja')
         return ascending ? compared : -compared
@@ -247,7 +251,7 @@ function BookSearch({ role }: BookSearchProps) {
                   <td>{book.collectionStatus === '開架' ? '○' : '×'}</td>
                   <td>
                     {book.collectionStatus === '廃棄'
-                      ? <span aria-label="廃棄済み">-</span>
+                      ? <span className="loan-badge disposed">廃棄済</span>
                       : <StatusBadge status={book.loanStatus} />}
                   </td>
                   <td>

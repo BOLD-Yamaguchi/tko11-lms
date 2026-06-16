@@ -706,6 +706,10 @@ svg {
   color: #d94f00;
 }
 
+.record-status.disposed {
+  color: #4b5563;
+}
+
 .list-action-button {
   min-height: 34px;
   padding: 5px 12px;
@@ -963,6 +967,10 @@ svg {
 
 .loan-badge.reserved {
   background: #7654c6;
+}
+
+.loan-badge.disposed {
+  background: #6b7280;
 }
 
 .empty-result {
@@ -1381,6 +1389,20 @@ svg {
 
 .loan-status.status-予約中 strong {
   color: #6541bd;
+}
+
+.loan-status.status-disposed {
+  border-color: #6b7280;
+  background: linear-gradient(110deg, #fff 20%, #f3f4f6 100%);
+}
+
+.loan-status.status-disposed .loan-status-icon {
+  background: linear-gradient(145deg, #7a8491, #4b5563);
+  box-shadow: 0 7px 16px rgba(75, 85, 99, 0.18);
+}
+
+.loan-status.status-disposed strong {
+  color: #4b5563;
 }
 
 .book-action-auth-fields {

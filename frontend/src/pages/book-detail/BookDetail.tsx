@@ -229,6 +229,7 @@ function BookDetail({
   if (book.collectionStatus === '廃棄' && role !== 'admin') {
     return <Navigate to="/search" replace />
   }
+  const isDisposed = book.collectionStatus === '廃棄'
 
   const details = [
     ['書籍ID', book.id],
@@ -245,7 +246,7 @@ function BookDetail({
     ['拠点', book.location],
     ['備考', book.notes || '付録なし'],
   ]
-  const actions = getActions(role, book.loanStatus)
+  const actions = isDisposed ? [] : getActions(role, book.loanStatus)
   const profile = data?.roleProfiles[role]
   const statusDetail = data?.bookStatusDetails[book.id]
   const visibleHistoryIds = historyVisibility[book.id] ?? loanHistory.map((history) => history.id)
@@ -407,27 +408,31 @@ function BookDetail({
     navigate(backPath)
   }
 
-  const statusDescription = {
-    貸出可: <p>現在、この書籍は貸出できます。</p>,
-    貸出中: (
-      <>
-        <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
-        <p>返却予定日：{statusDetail?.returnDueDate ?? getReturnDueDate()}</p>
-      </>
-    ),
-    返却申請中: (
-      <>
-        <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
-        <p>返却申請を確認中です。</p>
-      </>
-    ),
-    予約中: (
-      <>
-        <p>予約者：{statusDetail?.reserverName ?? profile?.name}さん</p>
-        <p>予約日：{statusDetail?.reservationDate ?? '未設定'}</p>
-      </>
-    ),
-  }[book.loanStatus]
+  const statusDescription = isDisposed
+    ? <p>この書籍は廃棄済みのため、貸出・予約操作はできません。</p>
+    : {
+      貸出可: <p>現在、この書籍は貸出できます。</p>,
+      貸出中: (
+        <>
+          <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
+          <p>返却予定日：{statusDetail?.returnDueDate ?? getReturnDueDate()}</p>
+        </>
+      ),
+      返却申請中: (
+        <>
+          <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
+          <p>返却申請を確認中です。</p>
+        </>
+      ),
+      予約中: (
+        <>
+          <p>予約者：{statusDetail?.reserverName ?? profile?.name}さん</p>
+          <p>予約日：{statusDetail?.reservationDate ?? '未設定'}</p>
+        </>
+      ),
+    }[book.loanStatus]
+  const displayStatus = isDisposed ? '廃棄済' : book.loanStatus
+  const statusClassName = isDisposed ? 'status-disposed' : `status-${book.loanStatus}`
 
   const modalSetting = pendingAction ? actionSettings[pendingAction] : null
   const confirmationTitle = pendingAction === 'loan'
@@ -469,10 +474,10 @@ function BookDetail({
 
         <div className="book-actions-panel">
           <h2 className="section-title">現在の状態</h2>
-          <div className={`loan-status status-${book.loanStatus}`}>
+          <div className={`loan-status ${statusClassName}`}>
             <span className="loan-status-icon"><BookIcon size={34} /></span>
             <div>
-              <strong>{book.loanStatus}</strong>
+              <strong>{displayStatus}</strong>
               {statusDescription}
             </div>
           </div>

@@ -39,6 +39,7 @@ import { useLibraryDataValue } from '../../data/libraryQueries'
 import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
 import type {
   BorrowingRecord,
+  CatalogBook,
   ReservationRecord,
   UserLoanHistory,
   UserRole,
@@ -293,7 +294,7 @@ function MyPage({ role }: MyPageProps) {
             <SimpleBorrowingTable records={borrowings} />
           </AccordionPanel>
           <AccordionPanel title="予約リスト（全員分）" tone="orange" icon={<BookmarkIcon />}>
-            <ReservationTable records={reservations} onLoan={startLoan} />
+            <ReservationTable records={reservations} books={data.books} onLoan={startLoan} />
           </AccordionPanel>
           <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
             <HistoryTable records={visibleLoanHistory} />
@@ -603,11 +604,21 @@ function SimpleBorrowingTable({ records }: { records: BorrowingRecord[] }) {
 
 function ReservationTable({
   records,
+  books = [],
   onLoan,
 }: {
   records: ReservationRecord[]
+  books?: CatalogBook[]
   onLoan?: (record: ReservationRecord) => void
 }) {
+  const isDisposedRecord = (record: ReservationRecord) => (
+    books.some((book) => (
+      book.collectionStatus === '廃棄'
+      && book.title === record.title
+      && book.author === record.author
+    ))
+  )
+
   return (
     <div className="table-scroll">
       <table className="data-table">
@@ -618,27 +629,35 @@ function ReservationTable({
           </tr>
         </thead>
         <tbody>
-          {records.map((record) => (
-            <tr key={`${record.title}-${record.reserver}`}>
-              <td>{record.title}</td>
-              <td>{record.author}</td>
-              <td>{record.reserver}</td>
-              <td>{record.reservationDate}</td>
-              <td>{record.shelfNumber}</td>
-              <td>{record.tierNumber}</td>
-              {onLoan && (
-                <td>
-                  <button
-                    type="button"
-                    className="list-action-button loan"
-                    onClick={() => onLoan(record)}
-                  >
-                    貸出
-                  </button>
-                </td>
-              )}
-            </tr>
-          ))}
+          {records.map((record) => {
+            const isDisposed = isDisposedRecord(record)
+
+            return (
+              <tr key={`${record.title}-${record.reserver}`}>
+                <td>{record.title}</td>
+                <td>{record.author}</td>
+                <td>{record.reserver}</td>
+                <td>{record.reservationDate}</td>
+                <td>{record.shelfNumber}</td>
+                <td>{record.tierNumber}</td>
+                {onLoan && (
+                  <td>
+                    {isDisposed ? (
+                      <span className="record-status disposed">廃棄済</span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="list-action-button loan"
+                        onClick={() => onLoan(record)}
+                      >
+                        貸出
+                      </button>
+                    )}
+                  </td>
+                )}
+              </tr>
+            )
+          })}
           {records.length === 0 && (
             <tr><td colSpan={onLoan ? 7 : 6}>予約中の書籍はありません。</td></tr>
           )}
