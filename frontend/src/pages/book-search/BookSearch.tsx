@@ -110,6 +110,7 @@ function BookSearch({ role }: BookSearchProps) {
           && (!conditions.majorCategory || book.majorCategory === conditions.majorCategory)
           && (!conditions.minorCategory || book.minorCategory === conditions.minorCategory)
           && (!conditions.collectionStatus || book.collectionStatus === conditions.collectionStatus)
+          && (!conditions.location || book.location === conditions.location)
         )
       })
       .toSorted((left, right) => {
@@ -196,6 +197,16 @@ function BookSearch({ role }: BookSearchProps) {
           />
           <DropdownField label="貸出ステータス" value={form.loanStatus} onChange={(value) => setForm({ ...form, loanStatus: value })} options={LOAN_STATUS_OPTIONS} />
           <DropdownField label="配架分類" value={form.collectionStatus} onChange={(value) => setForm({ ...form, collectionStatus: value })} options={collectionOptions} />
+          <DropdownField
+            label="拠点"
+            value={form.location}
+            onChange={(value) => setForm({ ...form, location: value })}
+            options={[
+              { value: '', label: '全て' },
+              { value: '東京', label: '東京' },
+              { value: '大阪', label: '大阪' },
+            ]}
+          />
         </div>
         <div className="search-submit">
           <button type="submit" className="button button-primary" disabled={isSearching}>
