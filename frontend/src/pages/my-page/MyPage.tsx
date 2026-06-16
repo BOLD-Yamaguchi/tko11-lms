@@ -257,7 +257,7 @@ function MyPage({ role }: MyPageProps) {
         </span>
         <h2>ユーザー情報</h2>
         <div className="user-meta">
-          <p>ユーザーID：{profile.userId}</p>
+          <p>社員番号：{profile.userId}</p>
           <p>名前：{profile.name}</p>
         </div>
         <span className={`role-chip ${role}`}>{profile.label}</span>

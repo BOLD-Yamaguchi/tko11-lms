@@ -44,6 +44,7 @@ function BookForm({
   const [toastMessage, setToastMessage] = useState('')
   const [validationErrors, setValidationErrors] = useState<BookValidationErrors>({})
   const [discardConfirmationOpen, setDiscardConfirmationOpen] = useState(false)
+  const [csvGuideOpen, setCsvGuideOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
   // カテゴリと拠点の選択肢を、書籍管理データの共通クエリから取得する。
@@ -140,6 +141,11 @@ function BookForm({
     setCsvErrors([])
     setCsvMessage(`${registeredCount}件の書籍を登録しました。`)
     setToastMessage(`${registeredCount}件の書籍を登録しました。`)
+  }
+
+  const openCsvFileDialog = () => {
+    setCsvGuideOpen(false)
+    fileInputRef.current?.click()
   }
 
   return (
@@ -350,7 +356,7 @@ function BookForm({
                 type="button"
                 className="button button-csv"
                 disabled={isParsingCsv}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => setCsvGuideOpen(true)}
               >
                 {isParsingCsv ? 'CSV解析中...' : 'CSV登録'}
               </button>
@@ -378,6 +384,39 @@ function BookForm({
           </div>
         )}
       </form>
+      <ModalDialog
+        open={csvGuideOpen}
+        title="CSVファイル仕様"
+        confirmLabel="ファイルを選択"
+        cancelLabel="キャンセル"
+        maxWidth="md"
+        onClose={() => setCsvGuideOpen(false)}
+        onConfirm={openCsvFileDialog}
+      >
+        <div className="csv-format-guide">
+          <p>UTF-8・ヘッダーなし・12項目のCSVファイルを選択してください。</p>
+          <dl className="csv-format-list">
+            <div><dt>1. 書籍名</dt><dd>必須</dd></div>
+            <div><dt>2. ISBN</dt><dd>任意</dd></div>
+            <div><dt>3. 著者名</dt><dd>必須</dd></div>
+            <div><dt>4. 配架分類</dt><dd>必須。0=開架、1=閉架</dd></div>
+            <div><dt>5. 出版社</dt><dd>必須</dd></div>
+            <div><dt>6. 出版日</dt><dd>YYYY-MM-DD形式で入力</dd></div>
+            <div><dt>7. 備考</dt><dd>任意</dd></div>
+            <div><dt>8. 大分類</dt><dd>0=技術書、1=自己啓発、2=その他</dd></div>
+            <div><dt>9. 中分類</dt><dd>番号で指定します。中分類マスタに存在しない場合は未設定になります。</dd></div>
+            <div><dt>10. 拠点</dt><dd>必須。0=東京、1=大阪</dd></div>
+            <div><dt>11. 棚番号</dt><dd>必須</dd></div>
+            <div><dt>12. 段番号</dt><dd>数値で入力</dd></div>
+          </dl>
+          <p className="csv-format-note">
+            廃棄はCSV登録では選択できません。廃棄にする場合は登録後に編集画面から変更してください。
+          </p>
+          <code>
+            クラウド設計入門,978-4-111111-11-1,佐々木健,0,技術評論社,2024-06-01,初回登録テスト,0,0,0,5,2
+          </code>
+        </div>
+      </ModalDialog>
       <ModalDialog
         open={pendingCsvBooks.length > 0}
         title="CSV一括登録"

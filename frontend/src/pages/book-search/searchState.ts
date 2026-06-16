@@ -11,6 +11,7 @@ export type SearchConditions = {
   majorCategory: string
   minorCategory: string
   collectionStatus: string
+  location: string
 }
 
 export type BookSearchSortKey =
@@ -41,6 +42,7 @@ export const emptySearchConditions: SearchConditions = {
   majorCategory: '',
   minorCategory: '',
   collectionStatus: '',
+  location: '',
 }
 
 export const initialBookSearchState: BookSearchState = {
