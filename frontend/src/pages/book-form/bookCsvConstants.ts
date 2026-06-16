@@ -23,7 +23,6 @@ export const BOOK_CSV_COLUMN = {
 export const COLLECTION_STATUS_BY_CODE: Record<string, CollectionStatus> = {
   '0': '開架',
   '1': '閉架',
-  '2': '廃棄',
 }
 
 export const LOCATION_BY_CODE: Record<string, LibraryLocation> = {
