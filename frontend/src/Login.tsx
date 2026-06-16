@@ -4,6 +4,16 @@ import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
+type User = {
+  userId: string;       
+  username: string;     
+  mailAddress: string;  
+  employeeCode: string; 
+  adminKbn: number; 
+  affiliationKbn: number; 
+  password?: string;
+};
+
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,13 +28,26 @@ function Login() {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
 
-    console.log(data);
+    try {
+      const response = await fetch("http://localhost:8080/users");
+      const users: User[] = await response.json();
 
-    setTimeout(() => {
+      const matchedUser = users.find(
+        (user) => user.mailAddress === data.email && user.password === data.password
+      );
+
+      if (matchedUser) {
+        alert("ログイン成功");
+        navigate("/home");
+      } else {
+        alert("メールアドレスまたはパスワードが正しくありません");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("通信エラーが発生しました");
+    } finally {
       setIsSubmitting(false);
-      alert("ログイン成功");
-      navigate("/home");
-    }, 1000);
+    }
   };
 
   const onNavigateToSignup = () => {

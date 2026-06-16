@@ -18,13 +18,13 @@ function App() {
 
         {/* ユーザー管理（main） */}
         <Route path="/UsersList" element={<UserList />} />
-        <Route path="/users/:id" element={<UserEdit />} />
+        <Route path="/users/create" element={<UserManagement />} />
         <Route path="/passwordReset" element={<PasswordReset />} />
 
         {/* 書籍管理（feature/oka） */}
         <Route path="/home" element={<HomePage />} />
         <Route path="/books" element={<Home />} />
-        <Route path="/users" element={<UserManagement />} />
+        <Route path="/users/:employeeCode" element={<UserEdit />} />
       </Routes>
     </BrowserRouter>
   );

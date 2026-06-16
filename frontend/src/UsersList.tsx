@@ -5,12 +5,12 @@ import Header from "./components/Header";
 
 // Userオブジェクトの型を定義
 type User = {
-  id: number;
-  name: string;
-  email: string;
-  employee_code: string;
-  role: number;
-  department: number;
+  userId: string;       
+  username: string;     
+  mailAddress: string;  
+  employeeCode: string; 
+  adminKbn: number; 
+  affiliationKbn: number; 
 };
 
 function UsersList() {
@@ -22,7 +22,7 @@ function UsersList() {
   // 現在表示中のページ番号
   const [currentPage, setCurrentPage] = useState(1);
   // 1ページあたりの表示件数
-  const itemsPerPage = 2;
+  const itemsPerPage = 5;
 
   // 画面表示用ユーザー
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -66,22 +66,22 @@ function UsersList() {
       if (query) {
         switch (searchField) {
           case "メールアドレス":
-            matchesKeyword = user.email.toLowerCase().includes(query);
+            matchesKeyword = user.mailAddress.toLowerCase().includes(query);
             break;
 
           case "氏名":
-            matchesKeyword = user.name.includes(searchValue.trim());
+            matchesKeyword = user.username.includes(searchValue.trim());
             break;
 
           case "社員コード":
-            matchesKeyword = user.employee_code.toLowerCase().includes(query);
+            matchesKeyword = user.employeeCode.toLowerCase().includes(query);
             break;
         }
       }
       // 所属拠点の絞り込み
       const matchesDepartment =
         department === "" ||
-        String(user.department) === department;
+        String(user.affiliationKbn) === department;
 
       return (
         matchesKeyword &&
@@ -207,14 +207,14 @@ function UsersList() {
             className="user-table">
             <thead className="user-table thead">
               <tr>
-                <th>ID</th>
+                <th>No.</th>
 
                 <th className="sortable-header"
                   onClick={() =>
-                    handleSort("name")
+                    handleSort("username")
                   }>
                   名前
-                  {sortField === "name" &&
+                  {sortField === "username" &&
                     (sortOrder === "asc"
                       ? " ▲"
                       : " ▼")}
@@ -225,12 +225,12 @@ function UsersList() {
                 <th className="sortable-header"
                   onClick={() =>
                     handleSort(
-                      "employee_code"
+                      "employeeCode"
                     )
                   }>
                   社員コード
                   {sortField ===
-                    "employee_code" &&
+                    "employeeCode" &&
                     (sortOrder === "asc"
                       ? " ▲"
                       : " ▼")}
@@ -243,32 +243,41 @@ function UsersList() {
             </thead>
 
             <tbody>
-              {currentUsers.map((user) => (
-                <tr className="user-row "
-                  key={user.id}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      "#f0f8ff")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      "white")
-                  }
-                  onClick={() => navigate(`/users/${user.id}`)}
-                >
-                  <td style={{ padding: "15px" }}>{user.id}</td>
+              {currentUsers.map((user, index) => {
+                const getAdminLabel = (kbn: number) => {
+                  if (kbn === 0) return "一般ユーザー";
+                  if (kbn === 1) return "貸出ユーザー";
+                  if (kbn === 2) return "管理者";
+                  return "未設定";
+                };
 
-                  <td>{user.name}</td>
+                return (
+                  <tr className="user-row "
+                    key={user.userId}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor =
+                        "#f0f8ff")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor =
+                        "white")
+                    }
+                    onClick={() => navigate(`/users/${user.employeeCode}`)}
+                  >
+                    <td style={{ padding: "15px" }}>{startIndex + index + 1}</td>
 
-                  <td>{user.email}</td>
+                    <td>{user.username}</td>
 
-                  <td>{user.employee_code}</td>
+                    <td>{user.mailAddress}</td>
 
-                  <td>{user.role === 1 ? "管理者" : "一般社員"}</td>
+                    <td>{user.employeeCode}</td>
 
-                  <td>{user.department === 1 ? "大阪": "東京"}</td>
-                </tr>
-              ))}
+                    <td>{getAdminLabel(user.adminKbn)}</td>
+
+                    <td>{user.affiliationKbn === 1 ? "大阪" : "東京"}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
           <div className="pagination">
