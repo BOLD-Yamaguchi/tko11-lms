@@ -1,9 +1,12 @@
 package com.bold.application.repository.books;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import src.main.java.com.bold.application.entity.books.MstBookLog;
+import com.bold.application.entity.books.MstBookLog;
 
 @Repository
 public interface MstBookLogRepository extends JpaRepository<MstBookLog, Integer> {

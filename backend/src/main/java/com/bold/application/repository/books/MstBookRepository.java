@@ -1,14 +1,15 @@
 package com.bold.application.repository.books;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import src.main.java.com.bold.application.entity.books.MstBook;
+import com.bold.application.entity.books.MstBook;
 
 @Repository
-public interface BookRepository extends JpaRepository<MstBook, Integer> {
+public interface MstBookRepository extends JpaRepository<MstBook, Integer> {
 	
 	List<MstBook> search(String bookId,
 			String bookName,
