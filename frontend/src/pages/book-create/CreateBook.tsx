@@ -4,11 +4,17 @@ import type { Book, UserRole } from '../../types'
 
 type CreateBookProps = {
   onCreate: (book: Book) => void
+  onCsvCreate: (books: Book[]) => void
   role: UserRole
   onLogout: () => void
 }
 
-function CreateBook({ onCreate, role, onLogout }: CreateBookProps) {
+function CreateBook({
+  onCreate,
+  onCsvCreate,
+  role,
+  onLogout,
+}: CreateBookProps) {
   // 新規登録フォームの初期値を共通の書籍管理データから取得する。
   const data = useLibraryDataValue()
 
@@ -17,6 +23,7 @@ function CreateBook({ onCreate, role, onLogout }: CreateBookProps) {
       mode="create"
       initialValues={data.emptyBook}
       onSubmit={onCreate}
+      onCsvSubmit={onCsvCreate}
       role={role}
       onLogout={onLogout}
     />

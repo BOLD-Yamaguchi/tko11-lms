@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Header } from "./components/Header";
+import { Footer } from "./components/Footer";
 import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 
 import { MenuCard } from "./components/MenuCard";
@@ -37,10 +38,10 @@ export default function HomePage() {
   const handleMenuSelect = (item: HamburgerMenuItem) => {
     switch (item.id) {
       case "home":
-        navigate("/");
+        navigate("/home");
         break;
       case "books":
-        navigate("/books");
+        navigate("/login");
         break;
       case "UsersList":
         navigate("/UsersList"); 
@@ -68,6 +69,8 @@ export default function HomePage() {
       display: "flex",
       flexDirection: "column",
       minHeight: "100vh",
+      paddingTop: "76px",
+      paddingBottom: "112px",
       backgroundColor: "#f3f4f6"
     }}>
       {/* ヘッダーエリア */}
@@ -120,7 +123,7 @@ export default function HomePage() {
                 icon={BookOpen}
                 title="書籍管理"
                 description="書籍の検索・登録・削除"
-                onClick={() => navigate("/books")}
+                onClick={() => navigate("/login")}
               />
             </div>
 
@@ -159,6 +162,10 @@ export default function HomePage() {
         tone="danger"
         onClose={() => setIsModalDialogOpen(false)}
         onConfirm={handleLogout}
+      />
+      <Footer
+        title="書籍貸出管理システム"
+        description="テスト段階のモック画面です。"
       />
     </div>
   );

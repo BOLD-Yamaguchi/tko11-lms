@@ -73,6 +73,16 @@ svg {
   min-height: 100vh;
 }
 
+.app-screen-layout {
+  min-height: 100vh;
+  padding-top: var(--header-height);
+  padding-bottom: 112px;
+}
+
+.app-screen-content {
+  min-height: calc(100vh - var(--header-height) - 112px);
+}
+
 .page-shell {
   width: min(1480px, calc(100% - 40px));
   margin: 0 auto;
@@ -107,6 +117,7 @@ svg {
 .logged-in-user {
   display: inline-flex;
   align-items: center;
+  min-width: 0;
   padding: 8px 12px;
   border: 1px solid #a9c2eb;
   border-radius: 999px;
@@ -114,6 +125,19 @@ svg {
   background: rgba(255, 255, 255, 0.84);
   font-size: 13px;
   white-space: nowrap;
+}
+
+.header-login-user {
+  max-width: min(360px, 42vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-login-user strong,
+.header-login-user .logged-in-id {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .logged-in-user.operator {
@@ -220,15 +244,21 @@ svg {
 }
 
 /* Mock login */
-.login-page {
-  position: relative;
+.mock-screen-layout {
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 40px 24px;
+  padding-top: var(--header-height);
+  padding-bottom: 112px;
   background:
     radial-gradient(circle at 15% 10%, rgba(8, 109, 240, 0.18), transparent 34%),
     linear-gradient(135deg, #f8fbff, #edf3fc);
+}
+
+.login-page {
+  position: relative;
+  min-height: calc(100vh - var(--header-height) - 112px);
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
 }
 
 .login-back-button {
@@ -1148,11 +1178,50 @@ svg {
   padding-top: 4px;
 }
 
-.csv-message {
+.csv-guidance {
   margin: -8px 0 0;
-  color: var(--green);
+  color: var(--muted);
   text-align: right;
   font-size: 14px;
+}
+
+.csv-result {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 14px;
+}
+
+.csv-result p {
+  margin: 0;
+}
+
+.csv-result.success {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.csv-result.has-errors {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.csv-result ul {
+  margin: 10px 0 0;
+  padding-left: 22px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.csv-result li + li {
+  margin-top: 4px;
+}
+
+.csv-confirmation-message {
+  margin: 8px 0 0;
+  color: var(--text);
+  line-height: 1.8;
 }
 
 /* Detail */
@@ -1642,10 +1711,6 @@ svg {
     grid-template-columns: minmax(150px, 1fr) auto minmax(300px, 1fr);
   }
 
-  .logged-in-prefix,
-  .logged-in-id {
-    display: none;
-  }
 }
 
 @media (max-width: 760px) {
@@ -1813,6 +1878,10 @@ svg {
   .logged-in-user {
     padding: 7px 9px;
     font-size: 11px;
+  }
+
+  .header-login-user {
+    max-width: 46vw;
   }
 
   .user-menu {

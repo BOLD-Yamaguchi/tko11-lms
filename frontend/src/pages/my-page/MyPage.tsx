@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -20,13 +20,21 @@ import {
   ReturnRequestModal,
   TextBox,
   Toast,
-  UserMenu,
 } from '../../components'
-import { BORROWING_FILTER_OPTIONS } from '../../constants/myPage'
 import {
-  getMyPageMenuItems,
-  getMyPageTitle,
-} from '../../constants/navigation'
+  approveBookReturn,
+  bulkReturnBooks,
+  cancelBookReservation,
+  fetchBorrowLists,
+  fetchHistoryLists,
+  fetchMyPageInformation,
+  fetchReservationLists,
+  lendBook,
+  rejectBookReturnRequest,
+  requestBookReturn,
+} from '../../api/booksApi'
+import { BORROWING_FILTER_OPTIONS } from '../../constants/myPage'
+import { getMyPageTitle } from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
 import type {
@@ -72,7 +80,7 @@ function AccordionPanel({
   )
 }
 
-function MyPage({ role, onLogout }: MyPageProps) {
+function MyPage({ role }: MyPageProps) {
   const navigate = useNavigate()
   // 権限別プロフィールと貸出・予約・履歴の初期データを共通クエリから取得する。
   const data = useLibraryDataValue()
@@ -96,6 +104,13 @@ function MyPage({ role, onLogout }: MyPageProps) {
     return data.books.find((book) => book.id === record.bookId)?.collectionStatus !== '廃棄'
   })
 
+  useEffect(() => {
+    void fetchMyPageInformation()
+    void fetchBorrowLists()
+    void fetchReservationLists()
+    void fetchHistoryLists()
+  }, [])
+
   // 管理者が選択した検索対象とキーワードから借受一覧を絞り込む。
   const filteredBorrowings = useMemo(() => {
     const normalized = keyword.trim().toLowerCase()
@@ -110,7 +125,6 @@ function MyPage({ role, onLogout }: MyPageProps) {
     })
   }, [borrowings, filterKey, keyword])
 
-  const menuItems = getMyPageMenuItems(role)
   const selectedBorrowings = borrowings.filter((record) => (
     selectedIds.includes(record.employeeNumber)
   ))
@@ -124,6 +138,11 @@ function MyPage({ role, onLogout }: MyPageProps) {
   }
 
   const approveReturn = (employeeNumber: string) => {
+    const record = borrowings.find((current) => current.employeeNumber === employeeNumber)
+    void approveBookReturn({
+      employeeNumber,
+      bookTitle: record?.title,
+    })
     setBorrowings((current) => current.filter((record) => record.employeeNumber !== employeeNumber))
     setSelectedIds((current) => current.filter((selectedId) => selectedId !== employeeNumber))
     setMessage('返却を承認しました。')
@@ -131,6 +150,12 @@ function MyPage({ role, onLogout }: MyPageProps) {
   }
 
   const rejectReturn = (employeeNumber: string) => {
+    const record = borrowings.find((current) => current.employeeNumber === employeeNumber)
+    void rejectBookReturnRequest({
+      employeeNumber,
+      bookTitle: record?.title,
+      comment: record?.returnComment,
+    })
     setBorrowings((current) => current.map((record) => (
       record.employeeNumber === employeeNumber
         ? { ...record, status: '貸出中', returnComment: undefined }
@@ -150,6 +175,7 @@ function MyPage({ role, onLogout }: MyPageProps) {
   }
 
   const bulkReturn = () => {
+    void bulkReturnBooks(selectedBorrowings)
     setBorrowings((current) => current.filter((record) => !selectedIds.includes(record.employeeNumber)))
     setMessage(`${selectedIds.length}件の一括返却登録を実行しました。`)
     setSelectedIds([])
@@ -157,6 +183,10 @@ function MyPage({ role, onLogout }: MyPageProps) {
   }
 
   const requestReturn = (comment: string) => {
+    void requestBookReturn({
+      employeeNumber: profile.employeeNumber,
+      comment,
+    })
     setBorrowings((current) => current.map((record) => (
       record.employeeNumber === profile.employeeNumber
         ? { ...record, status: '返却申請中', returnComment: comment }
@@ -167,6 +197,10 @@ function MyPage({ role, onLogout }: MyPageProps) {
   }
 
   const cancelReservation = () => {
+    void cancelBookReservation({
+      employeeNumber: profile.employeeNumber,
+      bookTitle: generalReservation?.title,
+    })
     setHasReservation(false)
     setMessage('予約を取り消しました。')
     setPendingGeneralAction(null)
@@ -175,6 +209,10 @@ function MyPage({ role, onLogout }: MyPageProps) {
   const loanReservedBook = () => {
     if (!pendingLoan) return
 
+    void lendBook({
+      employeeNumber: pendingLoan.employeeNumber,
+      bookTitle: pendingLoan.title,
+    })
     setReservations((current) => current.filter((record) => record !== pendingLoan))
     setBorrowings((current) => [
       ...current,
@@ -204,27 +242,10 @@ function MyPage({ role, onLogout }: MyPageProps) {
     setLoanStep(null)
   }
 
-  const logout = () => {
-    onLogout()
-    navigate('/login', { replace: true })
-  }
-
-  const handleMenu = (id: string) => {
-    if (id === 'system') navigate('/system')
-    if (id === 'search') navigate('/search')
-    if (id === 'create') navigate('/create')
-    if (id === 'logout') logout()
-  }
-
   return (
     <main className="page-shell mypage">
       <div className="mypage-nav">
-        <BackButton label="メニューへ戻る" onClick={() => navigate('/system')} />
-        <UserMenu
-          role={role}
-          items={menuItems}
-          onSelect={(item) => handleMenu(item.id)}
-        />
+        <BackButton label="トップへ戻る" onClick={() => navigate('/home')} />
       </div>
 
       <h1 className="standalone-title">{getMyPageTitle(role)}</h1>

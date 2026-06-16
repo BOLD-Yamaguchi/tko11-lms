@@ -7,15 +7,14 @@ import {
   DropdownField,
   TextBox,
   Toast,
-  UserMenu,
 } from '../../components'
+import { searchBooks } from '../../api/booksApi'
 import {
   ADMIN_COLLECTION_STATUS_OPTION,
   COLLECTION_STATUS_OPTIONS,
   LOAN_STATUS_OPTIONS,
   PAGE_SIZE_OPTIONS,
 } from '../../constants/bookSearch'
-import { getBookSearchMenuItems } from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import type {
   LoanStatus,
@@ -39,7 +38,7 @@ type SearchLocationState = {
   searchState?: BookSearchState
 }
 
-function BookSearch({ role, onLogout }: BookSearchProps) {
+function BookSearch({ role }: BookSearchProps) {
   const navigate = useNavigate()
   // 詳細画面から戻った場合、遷移時に渡した検索条件・並び順・ページを復元する。
   const location = useLocation()
@@ -62,7 +61,23 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
     ...COLLECTION_STATUS_OPTIONS,
     ...(role === 'admin' ? [ADMIN_COLLECTION_STATUS_OPTION] : []),
   ]
-  const menuItems = getBookSearchMenuItems(role)
+  const getMinorCategoryOptions = (majorCategory: string) => (
+    majorCategory
+      ? data.categoryOptions.minorByMajor?.[majorCategory] ?? data.categoryOptions.minor
+      : data.categoryOptions.minor
+  )
+  const minorCategoryOptions = getMinorCategoryOptions(form.majorCategory)
+
+  const updateMajorCategory = (value: string) => {
+    const nextMinorOptions = getMinorCategoryOptions(value)
+    setForm((current) => ({
+      ...current,
+      majorCategory: value,
+      minorCategory: nextMinorOptions.includes(current.minorCategory)
+        ? current.minorCategory
+        : '',
+    }))
+  }
 
   // 入力された全条件をAND検索し、現在の並び順に合わせた結果を生成する。
   const results = useMemo(() => {
@@ -106,6 +121,7 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    void searchBooks(form.id.trim() || 'all', form)
     setConditions(form)
     setHasSearched(true)
     setPage(1)
@@ -121,26 +137,12 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
     }
   }
 
-  const handleMenu = (id: string) => {
-    if (id === 'mypage') navigate('/mypage')
-    if (id === 'create') navigate('/create')
-    if (id === 'system') navigate('/system')
-    if (id === 'logout') {
-      onLogout()
-      navigate('/login', { replace: true })
-    }
-  }
-
   return (
     <main className="page-shell search-page">
       <header className="search-header">
         <BackButton label="戻る" onClick={() => navigate('/mypage')} />
         <h1>書籍検索</h1>
-        <UserMenu
-          role={role}
-          items={menuItems}
-          onSelect={(item) => handleMenu(item.id)}
-        />
+        <span className="header-spacer" />
       </header>
 
       <form className="search-form" onSubmit={submitSearch}>
@@ -155,7 +157,7 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
           <DropdownField
             label="カテゴリ1"
             value={form.majorCategory}
-            onChange={(value) => setForm({ ...form, majorCategory: value })}
+            onChange={updateMajorCategory}
             options={[
               { value: '', label: '全て' },
               ...data.categoryOptions.major.map((category) => ({
@@ -170,7 +172,7 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
             onChange={(value) => setForm({ ...form, minorCategory: value })}
             options={[
               { value: '', label: '全て' },
-              ...data.categoryOptions.minor.map((category) => ({
+              ...minorCategoryOptions.map((category) => ({
                 value: category,
                 label: category,
               })),

@@ -21,10 +21,19 @@ import {
   ModalDialog,
   ReturnRequestModal,
   Toast,
-  UserMenu,
 } from '../../components'
 import type { BookActionCredentials } from '../../components'
-import { getBookDetailMenuItems } from '../../constants/navigation'
+import {
+  approveBookReturn,
+  cancelBookReservation,
+  directlyReturnBook,
+  fetchBookDetail,
+  fetchHistoryLists,
+  lendBook,
+  rejectBookReturnRequest,
+  requestBookReturn,
+  reserveBook,
+} from '../../api/booksApi'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import { getReturnDueDate } from '../../dateUtils'
 import type { BookSearchState } from '../book-search/searchState'
@@ -178,7 +187,6 @@ function BookDetail({
   onStatusChange,
   onHistoryVisibilityChange,
   onReturnCommentChange,
-  onLogout,
 }: BookDetailProps) {
   const navigate = useNavigate()
   // 遷移元と通知メッセージをlocation stateから復元し、戻り先を決定する。
@@ -207,6 +215,13 @@ function BookDetail({
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [location.key])
+
+  useEffect(() => {
+    if (!book) return
+
+    void fetchBookDetail(book.id)
+    void fetchHistoryLists()
+  }, [book])
 
   if (!book) {
     return null
@@ -237,10 +252,31 @@ function BookDetail({
   const displayedHistory = role === 'admin' && editingHistory
     ? loanHistory
     : loanHistory.filter((history) => visibleHistoryIds.includes(history.id))
-  const menuItems = getBookDetailMenuItems(role)
+  const callBookActionApi = (
+    action: BookAction,
+    payload: Record<string, unknown> = {},
+  ) => {
+    const requestPayload = {
+      bookId: book.id,
+      bookTitle: book.title,
+      ...payload,
+    }
 
-  const executeAction = (action: BookAction) => {
+    if (action === 'reserve') void reserveBook(requestPayload)
+    if (action === 'cancelReservation') void cancelBookReservation(requestPayload)
+    if (action === 'loan') void lendBook(requestPayload)
+    if (action === 'return') void directlyReturnBook(requestPayload)
+    if (action === 'requestReturn') void requestBookReturn(requestPayload)
+    if (action === 'cancelReturnRequest') void rejectBookReturnRequest(requestPayload)
+    if (action === 'approveReturn') void approveBookReturn(requestPayload)
+  }
+
+  const executeAction = (
+    action: BookAction,
+    payload: Record<string, unknown> = {},
+  ) => {
     const setting = actionSettings[action]
+    callBookActionApi(action, payload)
     onStatusChange(book.id, setting.nextStatus)
     setMessage(setting.message)
     setPendingAction(null)
@@ -346,25 +382,19 @@ function BookDetail({
 
   const submitReturnRequest = (comment: string) => {
     onReturnCommentChange(book.id, comment)
-    executeAction('requestReturn')
+    executeAction('requestReturn', { comment })
   }
 
   const rejectReturnRequest = () => {
+    void rejectBookReturnRequest({
+      bookId: book.id,
+      bookTitle: book.title,
+      comment: returnComments[book.id] ?? '',
+    })
     onStatusChange(book.id, '貸出中')
     onReturnCommentChange(book.id, '')
     setMessage('返却申請を却下しました。')
     closeAction()
-  }
-
-  const handleMenu = (id: string) => {
-    if (id === 'mypage') navigate('/mypage')
-    if (id === 'search') navigate('/search')
-    if (id === 'create') navigate('/create')
-    if (id === 'system') navigate('/system')
-    if (id === 'logout') {
-      onLogout()
-      navigate('/login', { replace: true })
-    }
   }
 
   const goBack = () => {
@@ -421,7 +451,6 @@ function BookDetail({
               書籍編集
             </Link>
           )}
-          <UserMenu role={role} items={menuItems} onSelect={(item) => handleMenu(item.id)} />
         </div>
       </header>
 

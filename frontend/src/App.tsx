@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import AppRouter from './AppRouter'
+import {
+  importBooksFromCsv,
+  registerBook,
+  updateBookHistoryVisibility,
+  updateBookInformation,
+} from './api/booksApi'
 import { libraryDataQueryKey, useLibraryData } from './data/libraryQueries'
 import type { Book, LibraryData, LoanStatus, UserRole } from './types'
 
@@ -44,21 +50,37 @@ function App() {
     setRole(null)
   }
 
-  const createBook = (newBook: Book) => {
+  const addBooksToCache = (newBooks: Book[]) => {
     updateLibraryData((current) => ({
       ...current,
       books: [
-        ...current.books.filter((book) => book.id !== newBook.id),
-        { ...newBook, loanStatus: '貸出可' },
+        ...current.books.filter((book) => (
+          !newBooks.some((newBook) => newBook.id === book.id)
+        )),
+        ...newBooks.map((book) => ({ ...book, loanStatus: '貸出可' as const })),
       ],
       historyVisibility: {
         ...current.historyVisibility,
-        [newBook.id]: current.loanHistory.map((history) => history.id),
+        ...Object.fromEntries(newBooks.map((book) => [
+          book.id,
+          current.loanHistory.map((history) => history.id),
+        ])),
       },
     }))
   }
 
+  const createBook = (newBook: Book) => {
+    void registerBook(newBook)
+    addBooksToCache([newBook])
+  }
+
+  const createBooks = (newBooks: Book[]) => {
+    void importBooksFromCsv(newBooks)
+    addBooksToCache(newBooks)
+  }
+
   const updateBook = (updatedBook: Book) => {
+    void updateBookInformation(updatedBook.id, updatedBook)
     updateLibraryData((current) => ({
       ...current,
       books: current.books.map((book) => (
@@ -79,6 +101,7 @@ function App() {
   }
 
   const updateHistoryVisibility = (bookId: string, visibleIds: string[]) => {
+    void updateBookHistoryVisibility(bookId, visibleIds)
     updateLibraryData((current) => ({
       ...current,
       historyVisibility: {
@@ -104,6 +127,7 @@ function App() {
       onLogin={login}
       onLogout={logout}
       onCreateBook={createBook}
+      onCreateBooks={createBooks}
       onUpdateBook={updateBook}
       onLoanStatusChange={updateLoanStatus}
       onHistoryVisibilityChange={updateHistoryVisibility}

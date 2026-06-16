@@ -75,7 +75,11 @@ export function Header({
             <Stack
               direction='row'
               spacing={1.25}
-              sx={{ display: { xs: 'none', md: 'flex' } }}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                minWidth: 0,
+              }}
             >
               {children}
             </Stack>
