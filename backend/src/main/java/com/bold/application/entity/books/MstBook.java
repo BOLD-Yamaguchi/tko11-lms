@@ -14,140 +14,140 @@ import jakarta.persistence.Table;
 public class MstBook {
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int bookId;
-    private String bookName;
-    private String isbn;
-    private String autherName;
-    private String status;
-    private String publisher;
-    private LocalDate publishedAt;
-    private String memo;
-    private int categoryLevel1;
-    private int categoryLevel2;
-    private String region;
-    private String shelfNo;
-    private String tierNo;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int bookId;
+	private String bookName;
+	private String isbn;
+	private String authorName;
+	private String status;
+	private String publisher;
+	private LocalDate publishedAt;
+	private String memo;
+	private int categoryLevel1Id;
+	private int categoryLevel2Id;
+	private String region;
+	private String shelfNo;
+	private String tierNo;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 
-    public int getBookId() {
-        return bookId;
-    }
+	public int getBookId() {
+		return bookId;
+	}
 
 	public void setBookId(int bookId) {
 		this.bookId = bookId;
 	}
 
-    public String getBookName() {
-        return bookName;
-    }
+	public String getBookName() {
+		return bookName;
+	}
 
-    public void setBookName(String bookName) {
-        this.bookName = bookName;
-    }
+	public void setBookName(String bookName) {
+		this.bookName = bookName;
+	}
 
-    public String getIsbn() {
-        return isbn;
-    }
+	public String getIsbn() {
+		return isbn;
+	}
 
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
+	public void setIsbn(String isbn) {
+		this.isbn = isbn;
+	}
 
-    public String getAutherName() {
-        return autherName;
-    }
+	public String getAutherName() {
+		return authorName;
+	}
 
-    public void setAutherName(String autherName) {
-        this.autherName = autherName;
-    }
+	public void setAutherName(String autherName) {
+		this.authorName = autherName;
+	}
 
-    public String getStatus() {
-        return status;
-    }
+	public String getStatus() {
+		return status;
+	}
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+	public void setStatus(String status) {
+		this.status = status;
+	}
 
-    public String getPublisher() {
-        return publisher;
-    }
+	public String getPublisher() {
+		return publisher;
+	}
 
-    public void setPublisher(String publisher) {
-        this.publisher = publisher;
-    }
+	public void setPublisher(String publisher) {
+		this.publisher = publisher;
+	}
 
-    public LocalDate getPublished_at() {
-        return publishedAt;
-    }
+	public LocalDate getPublished_at() {
+		return publishedAt;
+	}
 
-    public void setPublished_at(LocalDate publishedAt) {
-        this.publishedAt = publishedAt;
-    }
+	public void setPublished_at(LocalDate publishedAt) {
+		this.publishedAt = publishedAt;
+	}
 
-    public String getMemo() {
-        return memo;
-    }
+	public String getMemo() {
+		return memo;
+	}
 
-    public void setMemo(String memo) {
-        this.memo = memo;
-    }
+	public void setMemo(String memo) {
+		this.memo = memo;
+	}
 
-    public int getCategoryLevel1() {
-        return categoryLevel1;
-    }
+	public int getCategoryLevel1() {
+		return categoryLevel1Id;
+	}
 
-    public void setCategoryLevel1(int categoryLevel1) {
-        this.categoryLevel1 = categoryLevel1;
-    }
+	public void setCategoryLevel1(int categoryLevel1) {
+		this.categoryLevel1Id = categoryLevel1;
+	}
 
-    public int getCategoryLevel2() {
-        return categoryLevel2;
-    }
+	public int getCategoryLevel2() {
+		return categoryLevel2Id;
+	}
 
-    public void setCategoryLevel2(int categoryLevel2) {
-        this.categoryLevel2 = categoryLevel2;
-    }
+	public void setCategoryLevel2(int categoryLevel2) {
+		this.categoryLevel2Id = categoryLevel2;
+	}
 
-    public String getRegion() {
-        return region;
-    }
+	public String getRegion() {
+		return region;
+	}
 
-    public void setRegion(String region) {
-        this.region = region;
-    }
+	public void setRegion(String region) {
+		this.region = region;
+	}
 
-    public String getShelfNo() {
-        return shelfNo;
-    }
+	public String getShelfNo() {
+		return shelfNo;
+	}
 
-    public void setShelfNo(String shelfNo) {
-        this.shelfNo = shelfNo;
-    }
+	public void setShelfNo(String shelfNo) {
+		this.shelfNo = shelfNo;
+	}
 
-    public String getTierNo() {
-        return tierNo;
-    }
+	public String getTierNo() {
+		return tierNo;
+	}
 
-    public void setTierNo(String tierNo) {
-        this.tierNo = tierNo;
-    }
+	public void setTierNo(String tierNo) {
+		this.tierNo = tierNo;
+	}
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
 }

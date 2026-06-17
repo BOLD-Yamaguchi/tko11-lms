@@ -1,5 +1,6 @@
 HELP.md
 .gradle
+.project
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
@@ -8,7 +9,7 @@ build/
 ### STS ###
 .apt_generated
 .factorypath
-
+.classpath
 .settings
 .springBeans
 .sts4-cache

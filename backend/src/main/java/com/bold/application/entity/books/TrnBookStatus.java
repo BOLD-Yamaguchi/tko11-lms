@@ -30,13 +30,13 @@ public class TrnBookStatus {
 		this.bookId = bookId;
 	}
 
-    public String getLendUserId() {
-        return lendUserId;
-    }
-
-    public void setLendUserId(String lendUserId) {
-        this.lendUserId = lendUserId;
-    }
+	    public UUID getLendUserId() {
+	        return lendUserId;
+	    }
+	
+	    public void setLendUserId(UUID lendUserId) {
+	        this.lendUserId = lendUserId;
+	    }
 
 	public String getLendStatus() {
         return lendStatus;
