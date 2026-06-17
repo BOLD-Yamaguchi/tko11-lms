@@ -13,13 +13,13 @@ function UsersList() {
   const navigate = useNavigate();
 
   const usersQuery = useQuery({
-  queryKey: ["users"],
-  queryFn: fetchUsers,
-});
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+  });
   useEffect(() => {
     console.log("APIレスポンス:", usersQuery.data);
   }, [usersQuery.data]);
-  
+
 
   const users = usersQuery.data ?? EMPTY_USERS;
 
@@ -210,12 +210,12 @@ function UsersList() {
                   <tr className="user-row "
                     key={user.userId}
                     onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor =
-                        "#f0f8ff")
+                    (e.currentTarget.style.backgroundColor =
+                      "#f0f8ff")
                     }
                     onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor =
-                        "white")
+                    (e.currentTarget.style.backgroundColor =
+                      "white")
                     }
                     onClick={() => navigate(`/users/${user.employeeCode}`)}
                   >
@@ -239,6 +239,7 @@ function UsersList() {
 
           <div className="pagination">
             <button
+              className="page-button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
             >
@@ -249,19 +250,14 @@ function UsersList() {
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                style={{
-                  padding: "5px 10px",
-                  border: "1px solid #ccc",
-                  cursor: "pointer",
-                  backgroundColor: page === currentPage ? "#2C5A9C" : "white",
-                  color: page === currentPage ? "white" : "black",
-                }}
+                className={`page-button ${page === currentPage ? "active" : ""}`}
               >
                 {page}
               </button>
             ))}
 
             <button
+              className="page-button"
               disabled={currentPage === totalPages || totalPages === 0}
               onClick={() => setCurrentPage(currentPage + 1)}
             >

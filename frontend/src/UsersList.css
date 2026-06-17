@@ -107,19 +107,29 @@
 /* ページネーション */
 .pagination {
   display: flex;
-  justify-content: center;
+  justify-content: center; 
   align-items: center;
-  gap: 5px;
-  margin-top: 20px;
+  margin: 20px 0; 
+  gap: 10px 5px;  
   flex-wrap: wrap;
 }
 
-.page-button {
-  padding: 5px 10px;
+.pagination .page-button {
+  width: auto;
+  min-width: 36px;
+  height: 32px;
+  border-radius: 4px;
+  white-space: nowrap;
+  
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px;
   border: 1px solid #ccc;
   cursor: pointer;
   background-color: white;
   color: black;
+  font-size: 14px;
 }
 
 .page-button.active {
