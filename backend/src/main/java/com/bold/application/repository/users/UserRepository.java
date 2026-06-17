@@ -15,6 +15,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     // ログイン用
     Optional<User> findByEmployeeCode(String employeeCode);
 
+    // 検索用
+    Optional<User> findByMailAddress(String mailAddress);
+
     // 重複チェック用
     boolean existsByMailAddress(String mailAddress);
     boolean existsByEmployeeCode(String employeeCode);

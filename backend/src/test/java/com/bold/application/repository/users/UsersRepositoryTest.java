@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bold.application.entity.users.Users;
+import com.bold.application.entity.users.User;
 
 @SpringBootTest
 @Transactional
@@ -22,7 +22,7 @@ public class UsersRepositoryTest {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private UsersRepository usersRepository;
+    private UserRepository userRepository; 
 
     @Test
     public void ユーザーの保存と取得テスト() {
@@ -50,13 +50,15 @@ public class UsersRepositoryTest {
             LocalDateTime.now()
         );
 
-        // 3. データベースからリポジトリ経由で検索
-        Optional<Users> foundUserOpt = usersRepository.findById(randomUserId);
+        // 3. データベースからリポジトリ経由で検索userRepositoryTest
+        // 修正：Optional<User> の閉じカッコを追加、リポジトリの変数名を修正
+        Optional<User> foundUserOpt = userRepository.findById(randomUserId);
         
         // 4. 検証
         assertThat(foundUserOpt).isPresent();
         assertThat(foundUserOpt.get().getUsername()).isEqualTo("テスト太郎");
-        assertThat(foundUserOpt.get().getMail_address()).isEqualTo("test_user@example.com");
-        assertThat(foundUserOpt.get().getUser_id()).isEqualTo(randomUserId);
+        // 修正：UserControllerの記述「getMailAddress()」「getUserId()」に合わせてキャメルケースのメソッド名に修正
+        assertThat(foundUserOpt.get().getMailAddress()).isEqualTo("test_user@example.com");
+        assertThat(foundUserOpt.get().getUserId()).isEqualTo(randomUserId);
     }
 }

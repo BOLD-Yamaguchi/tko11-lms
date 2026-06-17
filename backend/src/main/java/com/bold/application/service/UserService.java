@@ -9,21 +9,21 @@ import com.bold.application.repository.users.UserRepository;
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
+private final UserRepository userRepository;
+    
+    // BCryptエンコーダーの用意
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    // コンストラクタ注入
     public UserService(UserRepository userRepository) {
-
         this.userRepository = userRepository;
     }
 
     public boolean login(LoginRequest request) {
-
-        User user =userRepository.findByEmployeeCode(request.getEmployeeCode()).orElse(null);
-
-        if (user == null) {
-            return false;
-        }
-
-        return user.getPassword().equals(request.getPassword());
+        return userRepository.findByEmployeeCode(request.getEmployeeCode())
+            .map(user -> {
+                return passwordEncoder.matches(request.getPassword(), user.getPassword());
+            })
+            .orElse(false); 
     }
 }
