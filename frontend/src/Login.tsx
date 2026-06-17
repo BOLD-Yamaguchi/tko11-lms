@@ -22,16 +22,62 @@ function Login() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
-    setIsSubmitting(true);
+  const onSubmit = async (
+    data: LoginFormValues
+    ) => {
 
-    console.log(data);
+    try {
 
-    setTimeout(() => {
+      setIsSubmitting(true);
+
+      const response = await fetch(
+        "http://localhost:8080/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            employeeCode: data.employeeCode,
+            password: data.password,
+          }),
+        }
+      );
+
+      const result =
+        await response.json();
+
+      if (response.ok) {
+
+        sessionStorage.setItem(
+          "isLogin",
+          "true"
+        );
+
+        alert("ログイン成功");
+
+        navigate("/home");
+
+      } else {
+
+        alert(result.message);
+
+      }
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "サーバーとの通信に失敗しました"
+      );
+
+    } finally {
+
       setIsSubmitting(false);
-      alert("ログイン成功");
-      navigate("/home");
-    }, 1000);
+
+    }
   };
 
   const onNavigateToSignup = () => {
@@ -66,20 +112,20 @@ function Login() {
           </h2>
 
           <form onSubmit={handleSubmit(onSubmit)}>
-            {/* メールアドレス */}
+            {/* 社員コード */}
             <div className="form-group">
               <label className="form-group-label">
-                ユーザーID（メールアドレス）
+                社員コード
               </label>
 
               <input className="login-input"
-                type="email"
-                placeholder="sample@example.com"
-                {...register("email")}/>
+                type="text"
+                placeholder="社員コードを入力してください"
+                {...register("employeeCode")}/>
 
-              {errors.email && (
+              {errors.employeeCode && (
                 <p className="error-message">
-                  {String(errors.email.message)}
+                  {String(errors.employeeCode.message)}
                 </p>
               )}
             </div>
