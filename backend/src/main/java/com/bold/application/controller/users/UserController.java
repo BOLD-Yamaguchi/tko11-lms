@@ -2,6 +2,7 @@ package com.bold.application.controller.users;
 
 import java.util.List;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,8 +13,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-// 1. ハッシュ化用のクラスをインポート
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.bold.application.entity.users.User;
@@ -27,7 +26,6 @@ public class UserController {
     @Autowired
     private UserRepository repository;
 
-    // 2. エンコーダーのインスタンスを作成
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @GetMapping
@@ -37,7 +35,8 @@ public class UserController {
 
     @PutMapping("/{employeeCode}")
     public User updateUser(@PathVariable String employeeCode, @RequestBody User updatedUser) {
-        return repository.findById(UUID.fromString(employeeCode))
+        // findByIdではなく、社員コード(String)で検索するように修正
+        return repository.findByEmployeeCode(employeeCode)
             .map(user -> {
                 user.setUsername(updatedUser.getUsername());
                 user.setMailAddress(updatedUser.getMailAddress());
@@ -45,13 +44,14 @@ public class UserController {
                 user.setAdminKbn(updatedUser.getAdminKbn());
                 return repository.save(user);
             })
-            .orElseThrow(() -> new RuntimeException("User not found with id " + employeeCode));
+            .orElseThrow(() -> new RuntimeException("User not found with employeeCode " + employeeCode));
     }
 
     @PostMapping
     public User createUser(@RequestBody User newUser) {
+        // UUIDに isEmpty() は使えないため、nullチェックに修正
         if (newUser.getUserId() == null) {
-            newUser.setUserId(java.util.UUID.randomUUID());
+            newUser.setUserId(UUID.randomUUID());
         }
         
         if (newUser.getPassword() != null) {
@@ -59,7 +59,7 @@ public class UserController {
             newUser.setPassword(hashedPassword);
         }
 
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
         newUser.setCreatedAt(now);
         newUser.setUpdatedAt(now);
         return repository.save(newUser);
@@ -71,9 +71,8 @@ public class UserController {
             .map(user -> {
                 String hashedPassword = passwordEncoder.encode(resetData.getPassword());
                 user.setPassword(hashedPassword);
-                
                 return repository.save(user);
             })
-            .orElseThrow(() -> new RuntimeException("該当するメールアドレスのユーザーが見つかりません: " + resetData.getMailAddress()));
+            .orElseThrow(() -> new RuntimeException("該当するメールアドレスが見つかりません: " + resetData.getMailAddress()));
     }
 }
