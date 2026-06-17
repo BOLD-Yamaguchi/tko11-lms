@@ -45,12 +45,19 @@ function Login({ role, onLogin, onLogout }: LoginProps) {
       const result = await response.json();
 
       if (response.ok) {
+        sessionStorage.setItem("adminKbn", String(result.adminKbn));
+        sessionStorage.setItem("employeeCode", result.employeeCode);
+        sessionStorage.setItem("username", result.username);
         sessionStorage.setItem("isLogin", "true");
+
         alert("ログイン成功");
 
-        // 非構造化要素 (onLogin) を呼び出し、ログイン状態をApp層に伝える
-        // ※ 実際のレスポンスに含まれる権限、または要件に応じた値を指定してください
-        onLogin("admin"); 
+        // 環境変数（VITE_DEFAULT_ROLE）があれば最優先、なければadminKbnが2なら"admin"、それ以外は"user"
+        const envRole = import.meta.env?.VITE_DEFAULT_ROLE as UserRole;
+        const determinedRole: UserRole = envRole || (result.adminKbn === 2 ? "admin" : "user");
+
+        // ログイン状態をApp層に伝える
+        onLogin(determinedRole); 
 
         navigate("/home");
       } else {

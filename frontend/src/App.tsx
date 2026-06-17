@@ -1,16 +1,8 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AppRouter from './AppRouter'
 import { libraryDataQueryKey, useLibraryData } from './data/libraryQueries'
 import type { Book, LibraryData, LoanStatus, UserRole } from './types'
-
-import UserList from "./UsersList";
-import UserEdit from "./UserEdit";
-import Login from "./Login";
-import PasswordReset from "./passwordReset";
-
-import HomePage from "./HomePage";
-import UserManagement from "./UserManagement";
 
 const roleStorageKey = 'tko11-mock-user-role'
 
@@ -107,40 +99,16 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* ログイン画面 */}
-        {/* エラーを回避するため、Login側の型定義に合わせてPropsの渡し方を調整してください。 */}
-        {/* もしLoginコンポーネントがPropsを受け取らない実装であれば、単に element={<Login />} に戻してください。 */}
-        <Route 
-          path="/" 
-          element={
-            <Login 
-              role={role}
-              onLogin={login}
-              onLogout={logout}
-            />
-          } 
-        />
-
-        {/* ユーザー管理（main） */}
-        <Route path="/UsersList" element={<UserList />} />
-        <Route path="/users/create" element={<UserManagement />} />
-        <Route path="/passwordReset" element={<PasswordReset />} />
-
-        {/* 書籍管理（feature/oka） */}
-        <Route 
-          path="/home" 
-          element={
-            <HomePage 
-              role={role}
-              onLogout={logout}
-            />
-          } 
-        />
-        <Route path="/users/:employeeCode" element={<UserEdit />} />
-      </Routes>
-    </BrowserRouter>
+    <AppRouter
+      role={role}
+      onLogin={login}
+      onLogout={logout}
+      onCreateBook={createBook}
+      onUpdateBook={updateBook}
+      onLoanStatusChange={updateLoanStatus}
+      onHistoryVisibilityChange={updateHistoryVisibility}
+      onReturnCommentChange={updateReturnComment}
+    />
   )
 }
 

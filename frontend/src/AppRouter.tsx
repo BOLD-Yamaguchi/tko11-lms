@@ -13,6 +13,7 @@ import Home from './pages/home/Home'
 import LoginPage from './pages/login/LoginPage'
 import MyPage from './pages/my-page/MyPage'
 import type { Book, LoanStatus, UserRole } from './types'
+import ProtectedRoute from "./components/ProtectedRoute";
 
 type AppRouterProps = {
   role: UserRole | null
@@ -38,7 +39,6 @@ function AppRouter({
   return (
     <BrowserRouter>
       <Routes>
-        {/* チーム2の既存ルート */}
         <Route
           path="/login"
           element={role ? <Navigate to="/system" replace /> : <LoginPage onLogin={onLogin} />}
@@ -104,18 +104,16 @@ function AppRouter({
         <Route path="/books" element={<Navigate to={role ? '/mypage' : '/login'} replace />} />
         <Route path="/delete" element={<Navigate to={role ? '/system' : '/login'} replace />} />
 
-        {/* ユーザー管理 / 現在のマシンのメインルート */}
-        <Route path="/" element={<Login role={role} onLogin={onLogin} onLogout={onLogout} />} />
-        <Route path="/user-login" element={<Navigate to="/" replace />} />
-        
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/user-login" element={<Login role={role} onLogin={onLogin} onLogout={onLogout} />} />
+
         <Route path="/home" element={<HomePage role={role} onLogout={onLogout} />} />
-        <Route path="/UsersList" element={<UserList />} />
-        <Route path="/users/:id" element={<UserEdit />} />
-        <Route path="/users" element={<UserManagement />} />
+        <Route path="/UsersList" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
+        <Route path="/users/:employeeCode" element={<ProtectedRoute><UserEdit /></ProtectedRoute>} />
+        <Route path="/users/create" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
         <Route path="/passwordReset" element={<PasswordReset />} />
 
-        {/* いずれにも一致しない場合はホーム（または仕様に応じてルート）へ */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </BrowserRouter>
   )
