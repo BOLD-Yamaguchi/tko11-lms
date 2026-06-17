@@ -108,8 +108,8 @@ function AppRouter({
         <Route path="/home" element={<HomePage />} />
         <Route path="/user-login" element={<Login />} />
         <Route path="/UsersList" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
-        <Route path="/users/:id" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
-        <Route path="/users" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
+        <Route path="/users/:id" element={<ProtectedRoute><UserEdit /></ProtectedRoute>} />
+        <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
         <Route path="/passwordReset" element={<PasswordReset />} />
 
         <Route path="*" element={<Navigate to="/home" replace />} />
