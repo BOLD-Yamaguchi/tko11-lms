@@ -1,6 +1,7 @@
 package com.bold.application.entity.books;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,7 +17,7 @@ public class MstBookLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int lendId;
     private int bookId;
-    private String lendUserId;
+    private UUID lendUserId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String review;
@@ -38,11 +39,11 @@ public class MstBookLog {
 		this.bookId = bookId;
 	}
 
-    public String getLendUserId() {
+    public UUID getLendUserId() {
         return lendUserId;
     }
 
-    public void setLendUserId(String lendUserId) {
+    public void setLendUserId(UUID lendUserId) {
         this.lendUserId = lendUserId;
     }
 
