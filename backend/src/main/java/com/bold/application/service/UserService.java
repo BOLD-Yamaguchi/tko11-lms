@@ -12,18 +12,26 @@ public class UserService {
     private final UserRepository userRepository;
 
     public UserService(UserRepository userRepository) {
-
         this.userRepository = userRepository;
     }
 
-    public boolean login(LoginRequest request) {
+    public User login(LoginRequest request) {
 
-        User user =userRepository.findByEmployeeCode(request.getEmployeeCode()).orElse(null);
+        User user =
+                userRepository
+                        .findByEmployeeCode(
+                                request.getEmployeeCode())
+                        .orElse(null);
 
         if (user == null) {
-            return false;
+            return null;
         }
 
-        return user.getPassword().equals(request.getPassword());
+        if (!user.getPassword().equals(
+                request.getPassword())) {
+            return null;
+        }
+
+        return user;
     }
 }

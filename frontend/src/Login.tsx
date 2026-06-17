@@ -51,8 +51,18 @@ function Login() {
       if (response.ok) {
 
         sessionStorage.setItem(
-          "isLogin",
-          "true"
+          "adminKbn",
+          String(result.adminKbn)
+        );
+
+        sessionStorage.setItem(
+          "employeeCode",
+          result.employeeCode
+        );
+
+        sessionStorage.setItem(
+          "username",
+          result.username
         );
 
         alert("ログイン成功");

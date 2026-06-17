@@ -3,15 +3,26 @@ package com.bold.application.dto;
 public class LoginResponse {
 
     private boolean success;
-
     private String message;
+    private Integer adminKbn;
+    private String employeeCode;
+    private String username;
 
     public LoginResponse() {
     }
 
-    public LoginResponse(boolean success, String message) {
+    public LoginResponse(
+            boolean success,
+            String message,
+            Integer adminKbn,
+            String employeeCode,
+            String username) {
+
         this.success = success;
         this.message = message;
+        this.adminKbn = adminKbn;
+        this.employeeCode = employeeCode;
+        this.username = username;
     }
 
     public boolean isSuccess() {
@@ -28,5 +39,29 @@ public class LoginResponse {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+    
+    public Integer getAdminKbn() {
+		return adminKbn;
+	}
+    
+    public void setAdminKbn(Integer adminKbn) {
+		this.adminKbn = adminKbn;
+	}
+    
+    public String getEmployeeCode() {
+        return employeeCode;
+    }
+
+    public void setEmployeeCode(String employeeCode) {
+        this.employeeCode = employeeCode;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
