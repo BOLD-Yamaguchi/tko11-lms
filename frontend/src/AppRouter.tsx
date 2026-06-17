@@ -13,6 +13,7 @@ import Home from './pages/home/Home'
 import LoginPage from './pages/login/LoginPage'
 import MyPage from './pages/my-page/MyPage'
 import type { Book, LoanStatus, UserRole } from './types'
+import ProtectedRoute from "./components/ProtectedRoute";
 
 type AppRouterProps = {
   role: UserRole | null
@@ -106,9 +107,9 @@ function AppRouter({
 
         <Route path="/home" element={<HomePage />} />
         <Route path="/user-login" element={<Login />} />
-        <Route path="/UsersList" element={<UserList />} />
-        <Route path="/users/:id" element={<UserEdit />} />
-        <Route path="/users" element={<UserManagement />} />
+        <Route path="/UsersList" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
+        <Route path="/users/:id" element={<ProtectedRoute><UserEdit /></ProtectedRoute>} />
+        <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
         <Route path="/passwordReset" element={<PasswordReset />} />
 
         <Route path="*" element={<Navigate to="/home" replace />} />
