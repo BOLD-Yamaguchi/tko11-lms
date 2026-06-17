@@ -1,9 +1,9 @@
 package com.bold.application.service;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.bold.application.dto.LoginRequest;
-import com.bold.application.entity.users.User;
 import com.bold.application.repository.users.UserRepository;
 
 @Service
