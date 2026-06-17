@@ -23,8 +23,8 @@ public class MstBook {
 	private String publisher;
 	private LocalDate publishedAt;
 	private String memo;
-	private int categoryLevel1;
-	private int categoryLevel2;
+	private int categoryLevel1Id;
+	private int categoryLevel2Id;
 	private String region;
 	private String shelfNo;
 	private String tierNo;
@@ -96,19 +96,19 @@ public class MstBook {
 	}
 
 	public int getCategoryLevel1() {
-		return categoryLevel1;
+		return categoryLevel1Id;
 	}
 
 	public void setCategoryLevel1(int categoryLevel1) {
-		this.categoryLevel1 = categoryLevel1;
+		this.categoryLevel1Id = categoryLevel1;
 	}
 
 	public int getCategoryLevel2() {
-		return categoryLevel2;
+		return categoryLevel2Id;
 	}
 
 	public void setCategoryLevel2(int categoryLevel2) {
-		this.categoryLevel2 = categoryLevel2;
+		this.categoryLevel2Id = categoryLevel2;
 	}
 
 	public String getRegion() {
