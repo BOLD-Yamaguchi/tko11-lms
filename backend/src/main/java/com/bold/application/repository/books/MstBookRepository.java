@@ -4,32 +4,43 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.bold.application.entity.books.MstBook;
 
 @Repository
 public interface MstBookRepository extends JpaRepository<MstBook, Integer> {
-	
-	List<MstBook> search(String bookId,
-			String bookName,
-			String isbn,
-			String authorName,
-			String status,
-			String publisher,
-			LocalDate publishedAtStart,
-			LocalDate publishedAtEnd,
-			int categoryLevel1,
-			int categoryLevel2,
-			String rigion,
-			String shelfNo,
-			int tierNo
-			);
 
-	MstBook findByBookId(String bookId);
-
-	void setMstBook(MstBook mstBook, String bookId);
-
-	void insertMstBook(MstBook mstBook);
+	// 書籍検索クエリ
+	@Query("""
+			SELECT b
+			FROM MstBook b
+			LEFT JOIN TrnBookStatus t ON b.bookId = t.bookId
+			WHERE (:bookId IS NULL OR b.bookId = :bookId)
+			AND (:bookName IS NULL OR b.bookName LIKE CONCAT('%', :bookName, '%'))
+			AND (:authorName IS NULL OR b.authorName LIKE CONCAT('%', :authorName, '%'))
+			AND (:publisher IS NULL OR b.publisher LIKE CONCAT('%', :publisher, '%'))
+			AND (:publishedAtStart IS NULL OR b.publishedAt >= :publishedAtStart)
+			AND (:publishedAtEnd IS NULL OR b.publishedAt <= :publishedAtEnd)
+			AND (:categoryLevel1 IS NULL OR b.categoryLevel1 = :categoryLevel1)
+			AND (:categoryLevel2 IS NULL OR b.categoryLevel2 = :categoryLevel2)
+			AND (:lendStatus IS NULL OR t.lendStatus LIKE CONCAT('%', :lendStatus, '%'))
+			AND (:status IS NULL OR b.status = :status)
+			AND (:region IS NULL OR b.region = :region)
+			""")
+	List<MstBook> search(
+			@Param("bookId") Integer bookId,
+			@Param("bookName") String bookName,
+			@Param("authorName") String authorName,
+			@Param("publisher") String publisher,
+			@Param("publishedAtStart") LocalDate publishedAtStart,
+			@Param("publishedAtEnd") LocalDate publishedAtEnd,
+			@Param("categoryLevel1") Integer categoryLevel1,
+			@Param("categoryLevel2") Integer categoryLevel2,
+			@Param("lendStatus") String lendStatus,
+			@Param("status") String status,
+			@Param("region") String region);
 
 }
