@@ -10,8 +10,10 @@ import com.bold.application.entity.books.TrnBookStatus;
 @Repository
 public interface TrnBookStatusRepository extends JpaRepository<TrnBookStatus, Integer> {
 
+	// 状態による書籍リスト取得
 	List<TrnBookStatus> findByStatus(String status);
 
-	void setStatus(String bookId, String status);
+	// 状態更新
+	TrnBookStatus save(int bookId, String status);
 }
 

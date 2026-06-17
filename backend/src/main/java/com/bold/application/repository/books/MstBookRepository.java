@@ -10,8 +10,12 @@ import com.bold.application.entity.books.MstBook;
 
 @Repository
 public interface MstBookRepository extends JpaRepository<MstBook, Integer> {
-	
-	List<MstBook> search(String bookId,
+
+	// 一覧取得
+	List<MstBook> findAll();
+
+	// 条件付き一覧取得
+	List<MstBook> search(int bookId,
 			String bookName,
 			String isbn,
 			String authorName,
@@ -26,10 +30,10 @@ public interface MstBookRepository extends JpaRepository<MstBook, Integer> {
 			int tierNo
 			);
 
-	MstBook findByBookId(String bookId);
+	// 書籍情報取得（１件）
+	MstBook findByBookId(int bookId);
 
-	void setMstBook(MstBook mstBook, String bookId);
-
-	void insertMstBook(MstBook mstBook);
+	// 登録・更新
+	MstBook save(MstBook mstBook, int bookId);
 
 }

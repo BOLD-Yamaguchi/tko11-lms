@@ -1,6 +1,5 @@
 package com.bold.application.repository.books;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,20 +10,21 @@ import com.bold.application.entity.books.MstBookLog;
 @Repository
 public interface MstBookLogRepository extends JpaRepository<MstBookLog, Integer> {
 
+	// 全リスト取得
+	List<MstBookLog> findAll();
+
+	// ユーザ単位リスト取得
 	List<MstBookLog> findByLendUserId(String lendUserId);
 
-	MstBookLog findByBookId(String bookId);
+	// 書籍単位リスト取得
+	List<MstBookLog> findByBookId(int bookId);
 
-	void setReviewByLendId(String lendId, String review);
-	void setUpdatedAtByLendId(String lendId, LocalDate updatedAt);
-	void setHiddenFlgByLendId(String lendId, String hiddenFlg);
+	// 貸出IDによるレコード取得
+	MstBookLog findByLendId(int lendId);
 
-	void insertMstBookLog(int lendId,
-			String bookId,
-			String lendUserId,
-			LocalDate createdAt,
-			LocalDate updatedAt,
-			String review,
-			String hiddenFlg
-			);
+	// レコード登録・更新
+	void save(MstBookLog mstBookLog, int lendId);
+
+	// 複数レコード登録・更新
+	void saveAll(List<MstBookLog> mstBookLogList);
 }
