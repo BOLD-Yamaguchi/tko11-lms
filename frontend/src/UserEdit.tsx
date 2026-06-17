@@ -59,7 +59,8 @@ function UserEdit() {
   }, [employeeCode, navigate]);
 
   // 更新確認ボタン押下時（モーダルを開く）
-  const handleOpenModal = (e: React.SubmitEvent) => {
+  // 修正点: 型を React.FormEvent<HTMLFormElement> に変更
+  const handleOpenModal = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email || !name) {
       alert("ユーザーID（メールアドレス）および氏名は必須です。");
@@ -76,14 +77,15 @@ function UserEdit() {
       userId,
       username: name,
       mailAddress: email,
-      employeeCode: employeeCode, // URLパラメーターの値をそのまま保持
+      employeeCode: employeeCode, 
       affiliationKbn: Number(department),
       adminKbn: Number(role),
     };
 
     console.log("更新実行:", payload);
     try {
-      const response = await fetch(`http://localhost:8080/users/`, {
+      // 修正点: コントローラーの仕様（UUIDパース）に合わせ、URL末尾に userId を追加
+      const response = await fetch(`http://localhost:8080/users/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -95,15 +97,16 @@ function UserEdit() {
         throw new Error("更新に失敗しました");
       }
 
-      alert("ユーザーを情報を更新しました。");
+      alert("ユーザー情報を更新しました。");
+      setIsModalOpen(false);
+      navigate("/UsersList");
     } catch (error) {
       console.error(error);
       alert("通信エラーが発生しました。");
-      return;
+      navigate("/UsersList");
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsModalOpen(false);
-    setIsSubmitting(false);
-    navigate("/UsersList");
   };
 
   return (

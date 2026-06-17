@@ -1,5 +1,6 @@
 HELP.md
 .gradle
+.project
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
@@ -9,7 +10,7 @@ build/
 .apt_generated
 .classpath
 .factorypath
-.project
+
 .settings
 .springBeans
 .sts4-cache
@@ -36,3 +37,13 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+## logs ##
+logs/
+
+## DB ##
+bin/main/application.properties

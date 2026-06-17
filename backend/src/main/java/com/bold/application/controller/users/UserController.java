@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 //このクラスをREST APIのコントローラとして扱うアノテーション
 import org.springframework.web.bind.annotation.RestController;
-import com.bold.application.repository.users.UserRepository;
+
 import com.bold.application.entity.users.User;
+import com.bold.application.repository.users.UserRepository;
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/users")
 public class UserController {

@@ -1,0 +1,607 @@
+import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router-dom'
+import {
+  BookIcon,
+  CalendarIcon,
+  ClockIcon,
+  EditIcon,
+  ReturnIcon,
+} from '../../Icons'
+import {
+  ActionConfirmationModal,
+  BackButton,
+  BookActionModal,
+  ModalDialog,
+  ReturnRequestModal,
+  Toast,
+  UserMenu,
+} from '../../components'
+import type { BookActionCredentials } from '../../components'
+import { getBookDetailMenuItems } from '../../constants/navigation'
+import { useLibraryDataValue } from '../../data/libraryQueries'
+import { getReturnDueDate } from '../../dateUtils'
+import type { BookSearchState } from '../book-search/searchState'
+import type { LoanStatus, UserRole } from '../../types'
+
+type BookDetailProps = {
+  role: UserRole
+  onStatusChange: (bookId: string, status: LoanStatus) => void
+  onHistoryVisibilityChange: (bookId: string, visibleIds: string[]) => void
+  onReturnCommentChange: (bookId: string, comment: string) => void
+  onLogout: () => void
+}
+
+type LocationState = {
+  message?: string
+  from?: '/mypage' | '/search'
+  searchState?: BookSearchState
+}
+
+type BookAction =
+  | 'reserve'
+  | 'cancelReservation'
+  | 'loan'
+  | 'return'
+  | 'requestReturn'
+  | 'cancelReturnRequest'
+  | 'approveReturn'
+
+type ActionStep = 'auth' | 'confirm' | 'returnRequest' | 'approval'
+
+type ActionDefinition = {
+  id: BookAction
+  label: string
+  icon: ReactNode
+}
+
+const actionSettings: Record<BookAction, {
+  title: string
+  description: string
+  confirmLabel: string
+  nextStatus: LoanStatus
+  message: string
+}> = {
+  reserve: {
+    title: '予約の確認',
+    description: 'この書籍を予約します。よろしいですか？',
+    confirmLabel: '予約する',
+    nextStatus: '予約中',
+    message: '予約を受け付けました。',
+  },
+  cancelReservation: {
+    title: '予約取消の確認',
+    description: 'この書籍の予約を取り消します。よろしいですか？',
+    confirmLabel: '予約を取り消す',
+    nextStatus: '貸出可',
+    message: '予約を取り消しました。',
+  },
+  loan: {
+    title: '貸出登録',
+    description: '貸出対象者を確認して、貸出登録を行います。',
+    confirmLabel: '貸出する',
+    nextStatus: '貸出中',
+    message: '貸出登録を受け付けました。',
+  },
+  return: {
+    title: '直接返却',
+    description: '社員番号を入力して、直接返却を行います。',
+    confirmLabel: '直接返却する',
+    nextStatus: '貸出可',
+    message: '直接返却を受け付けました。',
+  },
+  requestReturn: {
+    title: '返却申請',
+    description: 'この書籍の返却申請を行います。',
+    confirmLabel: '返却申請する',
+    nextStatus: '返却申請中',
+    message: '返却申請を受け付けました。',
+  },
+  cancelReturnRequest: {
+    title: '返却申請取消の確認',
+    description: 'この書籍の返却申請を取り消します。よろしいですか？',
+    confirmLabel: '申請を取り消す',
+    nextStatus: '貸出中',
+    message: '返却申請を取り消しました。',
+  },
+  approveReturn: {
+    title: '返却承認',
+    description: 'この書籍の返却を承認します。',
+    confirmLabel: '承認する',
+    nextStatus: '貸出可',
+    message: '返却を承認しました。',
+  },
+}
+
+const actionConfirmationPrompts: Record<BookAction, string> = {
+  reserve: '上記の書籍を予約しますか？',
+  cancelReservation: '上記の書籍の予約を取り消しますか？',
+  loan: '上記の内容で貸出を実施しますか？',
+  return: '上記の内容で直接返却を実施しますか？',
+  requestReturn: '上記の書籍の返却を申請しますか？',
+  cancelReturnRequest: '上記の書籍の返却申請を取り消しますか？',
+  approveReturn: '上記の書籍の返却を承認しますか？',
+}
+
+function formatDate(date: string) {
+  return date ? date.replaceAll('-', '/') : '未設定'
+}
+
+function getActions(role: UserRole, status: LoanStatus): ActionDefinition[] {
+  if (status === '貸出可') {
+    if (role === 'general') {
+      return [{ id: 'reserve', label: '予約', icon: <CalendarIcon /> }]
+    }
+    if (role === 'operator') {
+      return [{ id: 'loan', label: '貸出', icon: <BookIcon /> }]
+    }
+    return [{ id: 'loan', label: '貸出', icon: <BookIcon /> }]
+  }
+
+  if (status === '貸出中') {
+    if (role === 'admin') {
+      return [
+        { id: 'return', label: '直接返却', icon: <ReturnIcon /> },
+        { id: 'requestReturn', label: '返却申請', icon: <ReturnIcon /> },
+      ]
+    }
+    return [{ id: 'requestReturn', label: '返却申請', icon: <ReturnIcon /> }]
+  }
+
+  if (status === '返却申請中') {
+    if (role === 'admin') {
+      return [
+        { id: 'cancelReturnRequest', label: '返却申請取消', icon: <ReturnIcon /> },
+        { id: 'approveReturn', label: '返却承認', icon: <ReturnIcon /> },
+      ]
+    }
+    return [{ id: 'cancelReturnRequest', label: '返却申請取消', icon: <ReturnIcon /> }]
+  }
+
+  if (role === 'general') {
+    return [{ id: 'cancelReservation', label: '予約取消', icon: <CalendarIcon /> }]
+  }
+  return [
+    { id: 'loan', label: '貸出', icon: <BookIcon /> },
+    { id: 'cancelReservation', label: '予約取消', icon: <CalendarIcon /> },
+  ]
+}
+
+function BookDetail({
+  role,
+  onStatusChange,
+  onHistoryVisibilityChange,
+  onReturnCommentChange,
+  onLogout,
+}: BookDetailProps) {
+  const navigate = useNavigate()
+  // 遷移元と通知メッセージをlocation stateから復元し、戻り先を決定する。
+  const location = useLocation()
+  // 詳細・状態・履歴表示に必要な書籍管理データを共通クエリから取得する。
+  const data = useLibraryDataValue()
+  const books = data.books
+  const loanHistory = data.loanHistory
+  const historyVisibility = data.historyVisibility
+  const returnComments = data.returnComments
+  // URLの書籍IDから表示対象を特定し、存在しない場合は先頭データへフォールバックする。
+  const { bookId } = useParams()
+  const book = books.find((candidate) => candidate.id === bookId) ?? books[0]
+  const locationState = location.state as LocationState | null
+  const routeMessage = locationState?.message
+  const backPath = locationState?.from === '/mypage' ? '/mypage' : '/search'
+  // 操作モーダルの進行状況、通知、管理者の履歴編集状態をまとめて管理する。
+  const [message, setMessage] = useState(routeMessage ?? '')
+  const [pendingAction, setPendingAction] = useState<BookAction | null>(null)
+  const [actionStep, setActionStep] = useState<ActionStep | null>(null)
+  const [authenticatedUserName, setAuthenticatedUserName] = useState('')
+  const [editingHistory, setEditingHistory] = useState(false)
+  const [draftVisibleHistoryIds, setDraftVisibleHistoryIds] = useState<string[]>([])
+
+  // 書籍詳細へ遷移するたびに、前画面のスクロール位置を引き継がず先頭へ戻す。
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.key])
+
+  if (!book) {
+    return null
+  }
+  if (book.collectionStatus === '廃棄' && role !== 'admin') {
+    return <Navigate to="/search" replace />
+  }
+
+  const details = [
+    ['書籍ID', book.id],
+    ['書籍名', book.title],
+    ['ISBN', book.isbn || '未設定'],
+    ['著者名', book.author],
+    ['カテゴリ1', book.majorCategory || '未設定'],
+    ['カテゴリ2', book.minorCategory || '未設定'],
+    ['出版社', book.publisher],
+    ['出版日', formatDate(book.publishedAt)],
+    ['配架分類', book.collectionStatus],
+    ['棚番号', book.shelfNumber],
+    ['段番号', book.tierNumber || '未設定'],
+    ['拠点', book.location],
+    ['備考', book.notes || '付録なし'],
+  ]
+  const actions = getActions(role, book.loanStatus)
+  const profile = data?.roleProfiles[role]
+  const statusDetail = data?.bookStatusDetails[book.id]
+  const visibleHistoryIds = historyVisibility[book.id] ?? loanHistory.map((history) => history.id)
+  const displayedHistory = role === 'admin' && editingHistory
+    ? loanHistory
+    : loanHistory.filter((history) => visibleHistoryIds.includes(history.id))
+  const menuItems = getBookDetailMenuItems(role)
+
+  const executeAction = (action: BookAction) => {
+    const setting = actionSettings[action]
+    onStatusChange(book.id, setting.nextStatus)
+    setMessage(setting.message)
+    setPendingAction(null)
+    setActionStep(null)
+    setAuthenticatedUserName('')
+  }
+
+  const startHistoryEditing = () => {
+    setDraftVisibleHistoryIds(visibleHistoryIds)
+    setEditingHistory(true)
+  }
+
+  const toggleHistoryVisibility = (historyId: string) => {
+    setDraftVisibleHistoryIds((current) => (
+      current.includes(historyId)
+        ? current.filter((id) => id !== historyId)
+        : [...current, historyId]
+    ))
+  }
+
+  const saveHistoryVisibility = () => {
+    onHistoryVisibilityChange(book.id, draftVisibleHistoryIds)
+    setEditingHistory(false)
+    setMessage('貸出履歴の表示設定を更新しました。')
+  }
+
+  const requiresEmployeeId = (action: BookAction) => (
+    (role === 'operator'
+      && ['loan', 'requestReturn', 'cancelReturnRequest', 'cancelReservation'].includes(action))
+    || (role === 'admin'
+      && ['loan', 'return', 'requestReturn'].includes(action))
+  )
+  const requiresPassword = (action: BookAction) => (
+    role === 'operator'
+    && ['loan', 'requestReturn', 'cancelReturnRequest', 'cancelReservation'].includes(action)
+  )
+  const startAction = (action: BookAction) => {
+    setPendingAction(action)
+    setAuthenticatedUserName('')
+    if (action === 'approveReturn') {
+      setActionStep('approval')
+    } else if (requiresEmployeeId(action)) {
+      setActionStep('auth')
+    } else if (action === 'requestReturn') {
+      setActionStep('returnRequest')
+    } else {
+      setActionStep('confirm')
+    }
+  }
+
+  const closeAction = () => {
+    setPendingAction(null)
+    setActionStep(null)
+    setAuthenticatedUserName('')
+  }
+
+  const resolveUserName = (employeeId: string) => {
+    const reservation = data.reservationRecords.find((record) => (
+      record.employeeNumber === employeeId
+    ))
+    if (reservation) return reservation.reserver
+
+    const borrowing = data.borrowingRecords.find((record) => (
+      record.employeeNumber === employeeId
+    ))
+    if (borrowing) return borrowing.borrower
+
+    return Object.values(data.roleProfiles).find((candidate) => (
+      candidate.employeeNumber === employeeId
+    ))?.name
+  }
+
+  const validateActionEmployeeId = (
+    action: BookAction,
+    employeeId: string,
+  ) => {
+    if (!resolveUserName(employeeId)) {
+      return '入力された社員番号に紐づくユーザーが見つかりません。'
+    }
+
+    const isReservedBookOperatorAction = (
+      role === 'operator'
+      && book.loanStatus === '予約中'
+      && ['loan', 'cancelReservation'].includes(action)
+    )
+    if (
+      isReservedBookOperatorAction
+      && employeeId !== statusDetail?.reservationEmployeeNumber
+    ) {
+      return 'この書籍を予約したユーザーの社員番号を入力してください。'
+    }
+
+    return undefined
+  }
+
+  const finishAuthentication = (
+    action: BookAction,
+    credentials: BookActionCredentials,
+  ) => {
+    setAuthenticatedUserName(resolveUserName(credentials.employeeId) ?? '')
+    setActionStep(action === 'requestReturn' ? 'returnRequest' : 'confirm')
+  }
+
+  const submitReturnRequest = (comment: string) => {
+    onReturnCommentChange(book.id, comment)
+    executeAction('requestReturn')
+  }
+
+  const rejectReturnRequest = () => {
+    onStatusChange(book.id, '貸出中')
+    onReturnCommentChange(book.id, '')
+    setMessage('返却申請を却下しました。')
+    closeAction()
+  }
+
+  const handleMenu = (id: string) => {
+    if (id === 'mypage') navigate('/mypage')
+    if (id === 'search') navigate('/search')
+    if (id === 'create') navigate('/create')
+    if (id === 'system') navigate('/system')
+    if (id === 'logout') {
+      onLogout()
+      navigate('/login', { replace: true })
+    }
+  }
+
+  const goBack = () => {
+    if (backPath === '/search') {
+      navigate('/search', {
+        state: { searchState: locationState?.searchState },
+      })
+      return
+    }
+    navigate(backPath)
+  }
+
+  const statusDescription = {
+    貸出可: <p>現在、この書籍は貸出できます。</p>,
+    貸出中: (
+      <>
+        <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
+        <p>返却予定日：{statusDetail?.returnDueDate ?? getReturnDueDate()}</p>
+      </>
+    ),
+    返却申請中: (
+      <>
+        <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
+        <p>返却申請を確認中です。</p>
+      </>
+    ),
+    予約中: (
+      <>
+        <p>予約者：{statusDetail?.reserverName ?? profile?.name}さん</p>
+        <p>予約日：{statusDetail?.reservationDate ?? '未設定'}</p>
+      </>
+    ),
+  }[book.loanStatus]
+
+  const modalSetting = pendingAction ? actionSettings[pendingAction] : null
+  const confirmationTitle = pendingAction === 'loan'
+    ? '貸出確認'
+    : pendingAction === 'return'
+      ? '直接返却確認'
+      : modalSetting?.title ?? ''
+  const personLabel = pendingAction === 'cancelReservation' && role === 'general'
+    ? undefined
+    : `${authenticatedUserName || profile?.name || '利用者'}さん`
+
+  return (
+    <main className="page-shell detail-page">
+      <header className="page-header detail-header">
+        <BackButton label="前の画面に戻る" onClick={goBack} />
+        <h1>書籍詳細</h1>
+        <div className="detail-header-actions">
+          {role === 'admin' && (
+            <Link className="edit-button" to={`/books/${book.id}/edit`}>
+              <EditIcon />
+              書籍編集
+            </Link>
+          )}
+          <UserMenu role={role} items={menuItems} onSelect={(item) => handleMenu(item.id)} />
+        </div>
+      </header>
+
+      <section className="detail-card">
+        <div className="book-information">
+          <h2 className="section-title"><BookIcon />書籍情報</h2>
+          <dl className="detail-list">
+            {details.map(([label, value]) => (
+              <div className="detail-row" key={label}>
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div className="book-actions-panel">
+          <h2 className="section-title">現在の状態</h2>
+          <div className={`loan-status status-${book.loanStatus}`}>
+            <span className="loan-status-icon"><BookIcon size={34} /></span>
+            <div>
+              <strong>{book.loanStatus}</strong>
+              {statusDescription}
+            </div>
+          </div>
+
+          <div className="detail-actions">
+            {actions.map((action) => (
+              <button key={action.id} type="button" onClick={() => startAction(action.id)}>
+                {action.icon}
+                {action.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="loan-history">
+          <div className="loan-history-heading">
+            <h2 className="section-title"><ClockIcon />貸出履歴</h2>
+            {role === 'admin' && (
+              <div className="history-edit-actions">
+                {editingHistory ? (
+                  <>
+                    <button
+                      type="button"
+                      className="history-button secondary"
+                      onClick={() => setEditingHistory(false)}
+                    >
+                      キャンセル
+                    </button>
+                    <button type="button" className="history-button primary" onClick={saveHistoryVisibility}>
+                      更新
+                    </button>
+                  </>
+                ) : (
+                  <button type="button" className="history-button" onClick={startHistoryEditing}>
+                    <EditIcon size={20} />編集
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+          {editingHistory && (
+            <p className="history-edit-guidance">
+              チェックした履歴が詳細画面に表示されます。非表示中の履歴を含め、全件を表示しています。
+            </p>
+          )}
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  {editingHistory && <th>表示</th>}
+                  <th>貸出者</th>
+                  <th>貸出日</th>
+                  <th>返却日</th>
+                  <th>感想</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayedHistory.map((loan) => (
+                  <tr
+                    key={loan.id}
+                    className={
+                      editingHistory && !draftVisibleHistoryIds.includes(loan.id)
+                        ? 'history-hidden-row'
+                        : ''
+                    }
+                  >
+                    {editingHistory && (
+                      <td>
+                        <input
+                          type="checkbox"
+                          aria-label={`${loan.id}を表示`}
+                          checked={draftVisibleHistoryIds.includes(loan.id)}
+                          onChange={() => toggleHistoryVisibility(loan.id)}
+                        />
+                      </td>
+                    )}
+                    <td>{loan.borrower}</td>
+                    <td>{loan.loanDate}</td>
+                    <td>{loan.returnDate}</td>
+                    <td>{loan.comment}</td>
+                  </tr>
+                ))}
+                {displayedHistory.length === 0 && (
+                  <tr>
+                    <td colSpan={editingHistory ? 5 : 4} className="empty-history">
+                      表示する貸出履歴はありません。
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {pendingAction && modalSetting && actionStep === 'auth' && (
+        <BookActionModal
+          open
+          title={modalSetting.title}
+          description={modalSetting.description}
+          confirmLabel="内容を確認"
+          requireEmployeeId={requiresEmployeeId(pendingAction)}
+          requirePassword={requiresPassword(pendingAction)}
+          validateEmployeeId={(employeeId) => (
+            validateActionEmployeeId(pendingAction, employeeId)
+          )}
+          onClose={closeAction}
+          onConfirm={(credentials) => finishAuthentication(pendingAction, credentials)}
+        />
+      )}
+      {pendingAction && modalSetting && actionStep === 'confirm' && (
+        <ActionConfirmationModal
+          open
+          title={confirmationTitle}
+          personLabel={personLabel}
+          bookTitle={book.title}
+          returnDueDate={pendingAction === 'loan' ? getReturnDueDate() : undefined}
+          prompt={actionConfirmationPrompts[pendingAction]}
+          confirmLabel="確定"
+          onClose={closeAction}
+          onConfirm={() => executeAction(pendingAction)}
+        />
+      )}
+      {pendingAction === 'requestReturn' && actionStep === 'returnRequest' && (
+        <ReturnRequestModal
+          open
+          initialComment={returnComments[book.id] ?? ''}
+          onClose={closeAction}
+          onConfirm={submitReturnRequest}
+        />
+      )}
+      {pendingAction === 'approveReturn' && actionStep === 'approval' && (
+        <ModalDialog
+          open
+          title="返却承認確認"
+          confirmLabel="返却を承認"
+          secondaryActionLabel="却下"
+          maxWidth="sm"
+          onClose={closeAction}
+          onConfirm={() => executeAction('approveReturn')}
+          onSecondaryAction={rejectReturnRequest}
+        >
+          <div className="return-approval-confirmation">
+            <dl>
+              <div><dt>申請者：</dt><dd>{statusDetail?.borrowerName ?? profile?.name}さん</dd></div>
+              <div><dt>書籍名：</dt><dd>{book.title}</dd></div>
+            </dl>
+            <div className="return-comment-preview">
+              <strong>返却申請時の感想</strong>
+              <p>{returnComments[book.id] || '感想は入力されていません。'}</p>
+            </div>
+            <p>内容を確認し、返却申請の承認または却下を選択してください。</p>
+          </div>
+        </ModalDialog>
+      )}
+      <Toast open={Boolean(message)} message={message} severity="success" onClose={() => setMessage('')} />
+    </main>
+  )
+}
+
+export default BookDetail

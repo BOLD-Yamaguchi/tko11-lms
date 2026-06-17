@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Header from "./components/Header";
 import { TextBox } from "./components/TextBox";
 
 function UserManagement() {
   const navigate = useNavigate();
-  const { id } = useParams(); // 新規登録時は URL パラメータによって "create" などが入る想定
 
   // 操作選択 ("create" = 新規ユーザー登録, "reset" = パスワードリセット)
   const [operation, setOperation] = useState<"create" | "reset">("create");
@@ -23,7 +22,8 @@ function UserManagement() {
   const isPasswordMismatch = password !== "" && confirmPassword !== "" && password !== confirmPassword;
 
   // サブミット時の処理
-  const handleSubmit = async (e: React.SubmitEvent) => {
+  // 修正点：型を React.FormEvent<HTMLFormElement> に修正
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // 簡単なバリデーション
@@ -46,7 +46,7 @@ function UserManagement() {
         return;
       }
 
-      // 新規登録のAPIリクエストを想定
+      // 新規登録のAPIリクエスト（Controllerの @PostMapping に対応）
       const payload = {
         username: name,
         mailAddress: email,
@@ -54,7 +54,6 @@ function UserManagement() {
         employeeCode: employeeCode,
         affiliationKbn: Number(department),
         adminKbn: Number(role),
-        // UUID, 登録日、更新日はサーバーサイドで自動設定される想定
       };
 
       console.log("新規登録実行:", payload);
@@ -75,10 +74,10 @@ function UserManagement() {
       } catch (error) {
         console.error(error);
         alert("通信エラーが発生しました。");
-        return; // エラー時は一覧に戻らないようにする
+        return; 
       }
     } else {
-      // パスワードリセットのAPIリクエストを想定
+      // パスワードリセットのAPIリクエスト（Controllerの @PutMapping("/password-reset") に対応）
       const payload = {
         mailAddress: email,
         password: password,
@@ -100,6 +99,7 @@ function UserManagement() {
       } catch (error) {
         console.error(error);
         alert("通信エラーが発生しました。");
+        return;
       }
     }
 
@@ -109,7 +109,6 @@ function UserManagement() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#f9f9f9" }}>
-      {/* ヘッダーの配置 */}
       <Header title="書籍貸出管理システム" menuItems={[]} />
 
       <main style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px 20px" }}>
@@ -157,7 +156,7 @@ function UserManagement() {
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               <h3 style={{ margin: 0, fontSize: "16px", color: "#666" }}>ユーザー情報入力エリア</h3>
 
-              {/* ユーザーID (メールアドレス) - 常に必須 */}
+              {/* ユーザーID (メールアドレス) */}
               <TextBox
                 label="ユーザーID（メールアドレス）"
                 value={email}
@@ -166,7 +165,7 @@ function UserManagement() {
                 required={true}
               />
 
-              {/* パスワード / 新パスワード - 常に必須 */}
+              {/* パスワード / 新パスワード */}
               <TextBox
                 label={operation === "create" ? "パスワード" : "新パスワード"}
                 value={password}
@@ -175,7 +174,7 @@ function UserManagement() {
                 required={true}
               />
 
-              {/* パスワード再入力 - 常に必須 */}
+              {/* パスワード再入力 */}
               <TextBox
                 label={operation === "create" ? "パスワード再入力" : "新パスワード再入力"}
                 value={confirmPassword}
@@ -233,7 +232,7 @@ function UserManagement() {
                     </div>
                   </div>
 
-                  {/* 管理者区分（一般ユーザー: 0, 貸出ユーザー: 1, 管理者: 2） */}
+                  {/* 管理者区分 */}
                   <div>
                     <label style={{ fontWeight: "bold", marginBottom: "6px", display: "block", fontSize: "14px" }}>管理者区分</label>
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -271,7 +270,6 @@ function UserManagement() {
                   </div>
                 </>
               ) : (
-                /* パスワードリセット時は氏名、社員コード、拠点、管理者区分を非表示（または非活性）にする要件に基づき、ここでは非表示に制御しています */
                 <div style={{ padding: "10px", backgroundColor: "#f0f0f0", borderRadius: "4px", fontSize: "13px", color: "#777" }}>
                   ※パスワードリセットモードでは、氏名・社員コード・拠点支部・管理者区分は変更できません。
                 </div>
@@ -298,7 +296,6 @@ function UserManagement() {
                 {operation === "create" ? "登録する" : "パスワードをリセットする"}
               </button>
 
-              {/* ユーザー一覧画面へ戻るリンク */}
               <button
                 type="button"
                 onClick={() => navigate("/UsersList")}
@@ -317,7 +314,6 @@ function UserManagement() {
           </form>
         </div>
       </main>
-
     </div>
   );
 }

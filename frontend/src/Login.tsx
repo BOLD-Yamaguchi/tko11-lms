@@ -1,20 +1,20 @@
 import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { loginSchema } from "./schemas/loginSchema";
+import type { LoginFormValues } from "./schemas/loginSchema";
 import "./Login.css";
+import type { UserRole } from './types'
 
-type User = {
-  userId: string;       
-  username: string;     
-  mailAddress: string;  
-  employeeCode: string; 
-  adminKbn: number; 
-  affiliationKbn: number; 
-  password?: string;
+type LoginProps = {
+  role: UserRole | null;
+  onLogin: (nextRole: UserRole) => void;
+  onLogout: () => void;
 };
 
-function Login() {
+function Login({ role, onLogin, onLogout }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -23,28 +23,42 @@ function Login() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const onSubmit = async (data) => {
-    setIsSubmitting(true);
-
+  const onSubmit = async (data: LoginFormValues) => {
     try {
-      const response = await fetch("http://localhost:8080/users");
-      const users: User[] = await response.json();
+      setIsSubmitting(true);
 
-      const matchedUser = users.find(
-        (user) => user.mailAddress === data.email && user.password === data.password
-      );
+      const response = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          employeeCode: data.employeeCode,
+          password: data.password,
+        }),
+      });
 
-      if (matchedUser) {
+      const result = await response.json();
+
+      if (response.ok) {
+        sessionStorage.setItem("isLogin", "true");
         alert("ログイン成功");
+
+        // 非構造化要素 (onLogin) を呼び出し、ログイン状態をApp層に伝える
+        // ※ 実際のレスポンスに含まれる権限、または要件に応じた値を指定してください
+        onLogin("admin"); 
+
         navigate("/home");
       } else {
-        alert("メールアドレスまたはパスワードが正しくありません");
+        alert(result.message);
       }
     } catch (error) {
       console.error(error);
-      alert("通信エラーが発生しました");
+      alert("サーバーとの通信に失敗しました");
     } finally {
       setIsSubmitting(false);
     }
@@ -56,7 +70,6 @@ function Login() {
 
   return (
     <div className="login-container">
-      {/* ヘッダー */}
       <header
         style={{
           backgroundColor: "#2C5A9C",
@@ -67,118 +80,78 @@ function Login() {
           alignItems: "center",
         }}
       >
-        <h2 style={{ margin: 0 }}>
-          書籍貸出管理システム
-        </h2>
-
-        <span>ようこそ</span>
+        <h2 style={{ margin: 0 }}>書籍貸出管理システム</h2>
+        <span>{role ? `ログイン中 (${role})` : "ようこそ"}</span>
       </header>
 
-      {/* メイン */}
       <div className="login-main">
         <div className="login-card">
-          <h2 className="login-title">
-            ログイン
-          </h2>
+          <h2 className="login-title">ログイン</h2>
 
           <form onSubmit={handleSubmit(onSubmit)}>
-            {/* メールアドレス */}
             <div className="form-group">
-              <label className="form-group-label">
-                ユーザーID（メールアドレス）
-              </label>
-
-              <input className="login-input"
-                type="email"
-                placeholder="sample@example.com"
-                {...register("email", {
-                  required:
-                    "メールアドレスを入力してください",
-                })}/>
-
-              {errors.email && (
+              <label className="form-group-label">社員コード</label>
+              <input 
+                className="login-input"
+                type="text"
+                placeholder="社員コードを入力してください"
+                {...register("employeeCode")} 
+              />
+              {errors.employeeCode && (
                 <p className="error-message">
-                  {errors.email && (
-                    <p className="error-message">
-                      {String(errors.email.message)}
-                    </p>
-                  )}
+                  {String(errors.employeeCode.message)}
                 </p>
               )}
             </div>
 
-            {/* パスワード */}
             <div className="form-group">
-              <label className="form-group-label">
-                パスワード
-              </label>
-
+              <label className="form-group-label">パスワード</label>
               <div className="password-wrapper">
-                <input className="password-input"
-                  type={
-                    showPassword
-                      ? "text"
-                      : "password"
-                  }
+                <input 
+                  className="password-input"
+                  type={showPassword ? "text" : "password"}
                   placeholder="********"
-                  {...register("password", {
-                    required:
-                      "パスワードを入力してください",
-                  })}/>
-
-                <button className="password-toggle"
+                  {...register("password")} 
+                />
+                <button 
+                  className="password-toggle"
                   type="button"
-                  onClick={() =>
-                    setShowPassword(
-                      !showPassword
-                    )
-                  }>
-                  {showPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-
               {errors.password && (
                 <p className="error-message">
-                  {errors.password && (
-                    <p className="error-message">
-                      {String(errors.password.message)}
-                    </p>
-                  )}
+                  {String(errors.password.message)}
                 </p>
               )}
             </div>
 
-            {/* ログインボタン */}
-            <button className="login-button"
-              type="submit"
-              disabled={isSubmitting}>
-              {isSubmitting
-                ? "ログイン中..."
-                : "ログインする"}
+            {role && (
+              <button 
+                type="button" 
+                onClick={onLogout} 
+                style={{ marginBottom: "10px", color: "red", background: "none", border: "none", cursor: "pointer" }}
+              >
+                一度ログアウトする
+              </button>
+            )}
+
+            <button className="login-button" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "ログイン中..." : "ログインする"}
             </button>
           </form>
 
-          {/* 下部リンク */}
           <div className="login-links">
             <p>
               アカウントをお持ちでない方は
-              <button className="link-button"
-                type="button"
-                onClick={
-                  onNavigateToSignup
-                }>
+              <button className="link-button" type="button" onClick={onNavigateToSignup}>
                 新規ユーザー登録
               </button>
             </p>
-
             <p>
-              <button className="link-button"
-                type="button"
-                onClick={() => navigate("/passwordReset")}>
+              <button className="link-button" type="button" onClick={() => navigate("/passwordReset")}>
                 パスワードを忘れた方
               </button>
             </p>

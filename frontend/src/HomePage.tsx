@@ -5,10 +5,16 @@ import { Header } from "./components/Header";
 import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 
 import { MenuCard } from "./components/MenuCard";
-import { ModalDialog } from "./components/ModalDialog";
+import { ModalDialog } from "./components/modals/ModalDialog";
 import { BookOpen, Users } from "lucide-react";
+import type { UserRole } from './types'
 
-export default function HomePage() {
+type HomePageProps = {
+  role: UserRole | null;
+  onLogout: () => void;
+};
+
+function HomePage({ role, onLogout }: HomePageProps) {
   const navigate = useNavigate();
   const [isModalDialogOpen, setIsModalDialogOpen] = useState(false);
 
@@ -50,6 +56,7 @@ export default function HomePage() {
 
   const handleLogout = () => {
     console.log("ログアウトしました");
+    onLogout(); // propsから受け取った非構造化要素（onLogout）を使用するように修正
     setIsModalDialogOpen(false);
   };
 
@@ -94,6 +101,13 @@ export default function HomePage() {
           width: "100%",
           maxWidth: "800px"
         }}>
+
+          {/* ログイン中の権限を表示（roleを利用して非構造化要素のエラーを完全に防ぐ） */}
+          {role && (
+            <div style={{ fontSize: "14px", color: "#4b5563" }}>
+              権限: {role}
+            </div>
+          )}
 
           {/* メニューグリッド：2カラムレイアウト */}
           <div style={{
@@ -163,3 +177,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+export default HomePage;

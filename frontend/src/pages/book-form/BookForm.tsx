@@ -1,0 +1,327 @@
+import { useRef, useState } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  BackButton,
+  ModalDialog,
+  RegisterButton,
+  UserMenu,
+} from '../../components'
+import { getBookFormMenuItems } from '../../constants/navigation'
+import { useLibraryDataValue } from '../../data/libraryQueries'
+import { bookSchema } from '../../schemas/bookSchema'
+import type { BookValidationErrors } from '../../schemas/bookSchema'
+import type {
+  Book,
+  CollectionStatus,
+  UserRole,
+} from '../../types'
+
+type BookFormProps = {
+  mode: 'create' | 'edit'
+  initialValues: Book
+  onSubmit: (book: Book) => void
+  role: UserRole
+  allowDisposal?: boolean
+  onLogout: () => void
+}
+
+function BookForm({
+  mode,
+  initialValues,
+  onSubmit,
+  role,
+  allowDisposal = false,
+  onLogout,
+}: BookFormProps) {
+  // 入力内容、検証結果、CSV選択、破棄確認の各フォーム状態を管理する。
+  const [form, setForm] = useState<Book>(initialValues)
+  const [csvName, setCsvName] = useState('')
+  const [validationErrors, setValidationErrors] = useState<BookValidationErrors>({})
+  const [discardConfirmationOpen, setDiscardConfirmationOpen] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
+  // カテゴリと拠点の選択肢を、書籍管理データの共通クエリから取得する。
+  const data = useLibraryDataValue()
+  const isEdit = mode === 'edit'
+  const menuItems = getBookFormMenuItems(isEdit, role)
+
+  const updateField = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = event.target
+    setForm((current) => ({ ...current, [name]: value }))
+    setValidationErrors((current) => ({ ...current, [name]: undefined }))
+  }
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const result = bookSchema.safeParse(form)
+
+    if (!result.success) {
+      const errors: BookValidationErrors = {}
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof Book
+        errors[field] ??= issue.message
+      })
+      setValidationErrors(errors)
+      return
+    }
+
+    setValidationErrors({})
+    onSubmit(result.data)
+    navigate(`/books/${result.data.id}`, {
+      state: { message: isEdit ? '書籍情報を更新しました。' : '書籍を登録しました。' },
+    })
+  }
+
+  const handleCsv = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setCsvName(`${file.name} を選択しました`)
+  }
+
+  const handleMenu = (id: string) => {
+    if (id === 'mypage') navigate('/mypage')
+    if (id === 'search') navigate('/search')
+    if (id === 'create') navigate('/create')
+    if (id === 'system') navigate('/system')
+    if (id === 'logout') {
+      onLogout()
+      navigate('/login', { replace: true })
+    }
+  }
+
+  return (
+    <main className="page-shell form-page">
+      <header className="page-header form-header">
+        <BackButton label="戻る" onClick={() => navigate(-1)} />
+        <h1>{isEdit ? '書籍編集' : '書籍登録'}</h1>
+        <UserMenu
+          role={role}
+          items={menuItems}
+          onSelect={(item) => handleMenu(item.id)}
+        />
+      </header>
+
+      <form className="book-form" onSubmit={handleSubmit} noValidate>
+        <div className="field field-full">
+          <label htmlFor="title">
+            書籍名 <span className="required">*</span>
+          </label>
+          <input
+            id="title"
+            name="title"
+            value={form.title}
+            onChange={updateField}
+            placeholder="例：AWS入門"
+          />
+          {validationErrors.title && <p className="field-error">{validationErrors.title}</p>}
+        </div>
+
+        <div className="field field-full">
+          <label htmlFor="isbn">ISBN</label>
+          <input
+            id="isbn"
+            name="isbn"
+            value={form.isbn}
+            onChange={updateField}
+            placeholder="例：978-4-123456-78-9"
+          />
+        </div>
+
+        <div className="field field-full">
+          <label htmlFor="author">
+            著者名 <span className="required">*</span>
+          </label>
+          <input
+            id="author"
+            name="author"
+            value={form.author}
+            onChange={updateField}
+            placeholder="例：山田太郎"
+          />
+          {validationErrors.author && <p className="field-error">{validationErrors.author}</p>}
+        </div>
+
+        <div className="field field-full">
+          <label htmlFor="publisher">
+            出版社 <span className="required">*</span>
+          </label>
+          <input
+            id="publisher"
+            name="publisher"
+            value={form.publisher}
+            onChange={updateField}
+            placeholder="例：技術評論社"
+          />
+          {validationErrors.publisher && <p className="field-error">{validationErrors.publisher}</p>}
+        </div>
+
+        <div className="field field-full">
+          <label htmlFor="publishedAt">出版日</label>
+          <input
+            id="publishedAt"
+            name="publishedAt"
+            type="date"
+            value={form.publishedAt}
+            onChange={updateField}
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="majorCategory">大分類</label>
+          <select
+            id="majorCategory"
+            name="majorCategory"
+            value={form.majorCategory}
+            onChange={updateField}
+          >
+            <option value="">選択してください</option>
+            {data.categoryOptions.major.map((category) => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="field">
+          <label htmlFor="minorCategory">中分類</label>
+          <select
+            id="minorCategory"
+            name="minorCategory"
+            value={form.minorCategory}
+            onChange={updateField}
+          >
+            <option value="">選択してください</option>
+            {data.categoryOptions.minor.map((category) => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+        </div>
+
+        <fieldset className="field field-full radio-field">
+          <legend>配架分類</legend>
+          <div className="radio-row">
+            {([
+              '開架',
+              '閉架',
+              ...(isEdit ? ['廃棄'] : []),
+            ] as CollectionStatus[]).map((status) => (
+              <label
+                key={status}
+                className={`radio-option ${status === '廃棄' && !allowDisposal ? 'disabled' : ''}`}
+              >
+                <input
+                  type="radio"
+                  name="collectionStatus"
+                  value={status}
+                  checked={form.collectionStatus === status}
+                  onChange={updateField}
+                  disabled={status === '廃棄' && !allowDisposal}
+                />
+                {status}
+              </label>
+            ))}
+          </div>
+          {isEdit && !allowDisposal && (
+            <p className="field-guidance">「廃棄」は貸出ステータスが「貸出可」の書籍のみ選択できます。</p>
+          )}
+        </fieldset>
+
+        <fieldset className="field field-full radio-field">
+          <legend>拠点</legend>
+          <div className="radio-row">
+            {data.locations.map((location) => (
+              <label key={location} className="radio-option">
+                <input
+                  type="radio"
+                  name="location"
+                  value={location}
+                  checked={form.location === location}
+                  onChange={updateField}
+                />
+                {location}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <div className="field">
+          <label htmlFor="shelfNumber">
+            棚番号 <span className="required">*</span>
+          </label>
+          <input
+            id="shelfNumber"
+            name="shelfNumber"
+            value={form.shelfNumber}
+            onChange={updateField}
+            placeholder="例：3"
+          />
+          {validationErrors.shelfNumber && <p className="field-error">{validationErrors.shelfNumber}</p>}
+        </div>
+
+        <div className="field">
+          <label htmlFor="tierNumber">段番号</label>
+          <input
+            id="tierNumber"
+            name="tierNumber"
+            value={form.tierNumber}
+            onChange={updateField}
+            placeholder="例：2"
+          />
+        </div>
+
+        <div className="field field-full">
+          <label htmlFor="notes">備考</label>
+          <textarea
+            id="notes"
+            name="notes"
+            value={form.notes}
+            onChange={updateField}
+            rows={3}
+          />
+        </div>
+
+        <div className="form-footer field-full">
+          {isEdit ? (
+            <button
+              type="button"
+              className="button button-danger"
+              onClick={() => setDiscardConfirmationOpen(true)}
+            >
+              キャンセル
+            </button>
+          ) : (
+            <>
+              <input
+                ref={fileInputRef}
+                className="visually-hidden"
+                type="file"
+                accept=".csv,text/csv"
+                onChange={handleCsv}
+              />
+              <button
+                type="button"
+                className="button button-csv"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                CSV登録
+              </button>
+            </>
+          )}
+          <RegisterButton type="submit" label={isEdit ? '更新する' : '登録する'} />
+        </div>
+        {csvName && <p className="csv-message field-full">{csvName}</p>}
+      </form>
+      <ModalDialog
+        open={discardConfirmationOpen}
+        title="変更内容の破棄"
+        description="変更を破棄して良いですか。"
+        confirmLabel="破棄する"
+        tone="danger"
+        onClose={() => setDiscardConfirmationOpen(false)}
+        onConfirm={() => navigate(-1)}
+      />
+    </main>
+  )
+}
+
+export default BookForm

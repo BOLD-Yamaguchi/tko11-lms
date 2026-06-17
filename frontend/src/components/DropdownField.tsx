@@ -23,6 +23,7 @@ export function DropdownField({
   onChange,
   options,
 }: DropdownFieldProps) {
+  // ラベルとselectを一意に関連付け、複数配置時もアクセシビリティを保つ。
   const labelId = useId()
 
   return (

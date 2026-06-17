@@ -1,12 +1,7 @@
-import { Routes, Route } from "react-router-dom";
-import Home from "./Home";
+import { Navigate } from "react-router-dom";
 
 function BookManagement() {
-  return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-    </Routes>
-  );
+  return <Navigate to="/mypage" replace />;
 }
 
 export default BookManagement;
