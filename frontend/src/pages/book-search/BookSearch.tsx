@@ -45,9 +45,8 @@ function BookSearch({ role }: BookSearchProps) {
   const restoredState = (
     location.state as SearchLocationState | null
   )?.searchState ?? initialBookSearchState
-  // 書籍・カテゴリ・ログインユーザーの拠点情報を共通クエリから取得する。
+  // 書籍とカテゴリ情報を共通クエリから取得する。
   const data = useLibraryDataValue()
-  const userLocation = data.roleProfiles[role].location
   // 入力中と適用済みの検索条件を分け、検索・ソート・ページング状態を管理する。
   const [form, setForm] = useState<SearchConditions>(restoredState.form)
   const [conditions, setConditions] = useState<SearchConditions>(restoredState.conditions)
@@ -96,8 +95,7 @@ function BookSearch({ role }: BookSearchProps) {
         const isDisposed = book.collectionStatus === '廃棄'
 
         return (
-          book.location === userLocation
-          && (role === 'admin' || !isDisposed)
+          (role === 'admin' || !isDisposed)
           && exact(book.id, conditions.id)
           && includes(book.title, conditions.title)
           && includes(book.author, conditions.author)
@@ -115,7 +113,7 @@ function BookSearch({ role }: BookSearchProps) {
         const compared = left[sortKey].localeCompare(right[sortKey], 'ja')
         return ascending ? compared : -compared
       })
-  }, [ascending, conditions, data.books, hasSearched, role, sortKey, userLocation])
+  }, [ascending, conditions, data.books, hasSearched, role, sortKey])
 
   const pageCount = Math.max(1, Math.ceil(results.length / pageSize))
   const currentPage = Math.min(page, pageCount)
