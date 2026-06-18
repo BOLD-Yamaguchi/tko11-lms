@@ -219,7 +219,7 @@ function UsersList() {
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
             >
-              前へ
+              ◀
             </button>
 
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -227,11 +227,12 @@ function UsersList() {
                 key={page}
                 onClick={() => setCurrentPage(page)}
                 style={{
-                  padding: "5px 10px",
+                  padding: "0px 0px",
                   border: "1px solid #ccc",
                   cursor: "pointer",
                   backgroundColor: page === currentPage ? "#2C5A9C" : "white",
                   color: page === currentPage ? "white" : "black",
+                  fontSize:20
                 }}
               >
                 {page}
@@ -242,7 +243,7 @@ function UsersList() {
               disabled={currentPage === totalPages || totalPages === 0}
               onClick={() => setCurrentPage(currentPage + 1)}
             >
-              次へ
+              ▶
             </button>
           </div>
         </div>

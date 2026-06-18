@@ -5,6 +5,8 @@ import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import { useNavigate } from 'react-router-dom'
 
 import {
   HamburgerMenu,
@@ -17,6 +19,7 @@ export interface HeaderProps {
   menuItems: readonly HamburgerMenuItem[]
   onMenuSelect?: (item: HamburgerMenuItem) => void
   children?: ReactNode
+  showMenu?: boolean
 }
 
 export function Header({
@@ -25,7 +28,21 @@ export function Header({
   menuItems,
   onMenuSelect,
   children,
+  showMenu = true,
 }: HeaderProps) {
+
+  const navigate = useNavigate()
+
+  const logout = () => {
+
+    sessionStorage.removeItem("adminKbn")
+    sessionStorage.removeItem("employeeCode")
+    sessionStorage.removeItem("username")
+
+    navigate("/user-login")
+  }
+
+  const username = sessionStorage.getItem("username")
   return (
     <AppBar
       position='fixed'
@@ -46,12 +63,14 @@ export function Header({
     >
       <Box sx={{ width: '100%', margin: '0 auto' }}>
         <Toolbar sx={{ minHeight: 76, gap: 2, px: { xs: 2, md: 3 } }}>
-          <HamburgerMenu
-            title='Components'
-            subtitle='サンプル画面と各 UI パーツ'
-            items={menuItems}
-            onSelect={onMenuSelect}
-          />
+          {showMenu && (
+            <HamburgerMenu
+              title='Components'
+              subtitle='サンプル画面と各 UI パーツ'
+              items={menuItems}
+              onSelect={onMenuSelect}
+            />
+          )}
           <Box sx={{ minWidth: 0, flex: 1 }}>
             <Typography
               variant='overline'
@@ -71,12 +90,27 @@ export function Header({
               {title}
             </Typography>
           </Box>
-          {children && (
+          {username && (
             <Stack
               direction='row'
-              spacing={1.25}
-              sx={{ display: { xs: 'none', md: 'flex' } }}
+              spacing={2}
+              sx={{
+                display: { xs: 'none', md: 'flex' },
+                alignItems: 'center',
+              }}
             >
+              <Typography variant="body2">
+                {username} さん
+              </Typography>
+
+              <Button
+                color="inherit"
+                variant="outlined"
+                onClick={logout}
+              >
+                ログアウト
+              </Button>
+
               {children}
             </Stack>
           )}

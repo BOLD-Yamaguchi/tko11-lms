@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { loginSchema } from "./schemas/loginSchema";
 import type { LoginFormValues } from "./schemas/loginSchema";
 import "./Login.css";
+import Header from "./components/Header";
 
 function Login() {
   // パスワード表示と送信中表示をログインフォーム内で管理する。
@@ -90,6 +91,26 @@ function Login() {
     }
   };
 
+  const handleMenuSelect = (item: HamburgerMenuItem) => {
+      switch (item.id) {
+        case "home":
+          navigate("/");
+          break;
+        case "books":
+          navigate("/books");
+          break;
+        case "UsersList":
+          navigate("/UsersList");
+          break;
+      }
+    };
+
+  const menuItems: HamburgerMenuItem[] = [
+    { id: "home", label: "ホーム", description: "トップ画面へ移動" },
+    { id: "books", label: "書籍管理", description: "書籍一覧を表示" },
+    { id: "UsersList", label: "ユーザー管理", description: "ユーザー管理画面を表示" },
+  ];
+
   const onNavigateToSignup = () => {
     window.location.href = "/signup";
   };
@@ -97,22 +118,12 @@ function Login() {
   return (
     <div className="login-container">
       {/* ヘッダー */}
-      <header
-        style={{
-          backgroundColor: "#2C5A9C",
-          color: "white",
-          padding: "12px 24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2 style={{ margin: 0 }}>
-          書籍貸出管理システム
-        </h2>
-
-        <span>ようこそ</span>
-      </header>
+      <Header
+        title="書籍貸出管理システム"
+        eyebrow="BOOK MANAGEMENT SYSTEM"
+        menuItems={menuItems}
+        onMenuSelect={handleMenuSelect}
+      />
 
       {/* メイン */}
       <div className="login-main">
