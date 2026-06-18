@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -44,14 +46,15 @@ public class UserController {
             }
         });
         return repository.findByEmployeeCode(employeeCode)
-            .map(user -> {
-                user.setUsername(updatedUser.getUsername());
-                user.setMailAddress(updatedUser.getMailAddress());
-                user.setAffiliationKbn(updatedUser.getAffiliationKbn());
-                user.setAdminKbn(updatedUser.getAdminKbn());
-                return repository.save(user);
-            })
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with employeeCode " + employeeCode));
+                .map(user -> {
+                    user.setUsername(updatedUser.getUsername());
+                    user.setMailAddress(updatedUser.getMailAddress());
+                    user.setAffiliationKbn(updatedUser.getAffiliationKbn());
+                    user.setAdminKbn(updatedUser.getAdminKbn());
+                    return repository.save(user);
+                })
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "User not found with employeeCode " + employeeCode));
     }
 
     @PostMapping
@@ -59,11 +62,11 @@ public class UserController {
         if (repository.findByMailAddress(newUser.getMailAddress()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "EMAIL_ALREADY_EXISTS");
         }
-        
+
         if (newUser.getUserId() == null) {
             newUser.setUserId(UUID.randomUUID());
         }
-        
+
         if (newUser.getPassword() != null) {
             String hashedPassword = passwordEncoder.encode(newUser.getPassword());
             newUser.setPassword(hashedPassword);
@@ -78,11 +81,22 @@ public class UserController {
     @PutMapping("/password-reset")
     public User resetPassword(@RequestBody User resetData) {
         return repository.findByMailAddress(resetData.getMailAddress())
-            .map(user -> {
-                String hashedPassword = passwordEncoder.encode(resetData.getPassword());
-                user.setPassword(hashedPassword);
-                return repository.save(user);
-            })
-            .orElseThrow(() -> new RuntimeException("該当するメールアドレスが見つかりません: " + resetData.getMailAddress()));
+                .map(user -> {
+                    String hashedPassword = passwordEncoder.encode(resetData.getPassword());
+                    user.setPassword(hashedPassword);
+                    return repository.save(user);
+                })
+                .orElseThrow(() -> new RuntimeException("該当するメールアドレスが見つかりません: " + resetData.getMailAddress()));
     }
+
+    @DeleteMapping("/{employeeCode}")
+    @Transactional
+    public void deleteUser(@PathVariable String employeeCode) {
+        User user = repository.findByEmployeeCode(employeeCode)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "User not found with employeeCode " + employeeCode));
+
+        repository.delete(user);
+    }
+
 }
