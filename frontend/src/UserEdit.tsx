@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "./components/Header";
+import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 import { TextBox } from "./components/TextBox";
 
 type User = {
@@ -19,13 +20,32 @@ function UserEdit() {
   // フォームの入力状態
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [department, setDepartment] = useState("0"); // 0: 東京, 1: 大阪
-  const [role, setRole] = useState("0"); // 0: 一般ユーザー, 1: 貸出ユーザー, 2: 管理者
+  const [department, setDepartment] = useState("0");
+  const [role, setRole] = useState("0");
   const [userId, setUserId] = useState("");
 
-  // モーダル・確認画面の表示状態管理
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const menuItems: HamburgerMenuItem[] = [
+    { id: "home", label: "ホーム", description: "トップ画面へ移動" },
+    { id: "books", label: "書籍管理", description: "書籍一覧を表示" },
+    { id: "UsersList", label: "ユーザー管理", description: "ユーザー管理画面を表示" },
+  ];
+
+  const handleMenuSelect = (item: HamburgerMenuItem) => {
+    switch (item.id) {
+      case "home":
+        navigate("/");
+        break;
+      case "books":
+        navigate("/books");
+        break;
+      case "UsersList":
+        navigate("/UsersList");
+        break;
+    }
+  };
 
   // 初期表示時に該当ユーザーの情報を取得
   useEffect(() => {
@@ -59,7 +79,6 @@ function UserEdit() {
   }, [employeeCode, navigate]);
 
   // 更新確認ボタン押下時（モーダルを開く）
-  // 修正点: 型を React.FormEvent<HTMLFormElement> に変更
   const handleOpenModal = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email || !name) {
@@ -84,8 +103,7 @@ function UserEdit() {
 
     console.log("更新実行:", payload);
     try {
-      // 修正点: コントローラーの仕様（UUIDパース）に合わせ、URL末尾に userId を追加
-      const response = await fetch(`http://localhost:8080/users/${userId}`, {
+      const response = await fetch(`http://localhost:8080/users/${employeeCode}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -94,6 +112,11 @@ function UserEdit() {
       });
 
       if (!response.ok) {
+        if (response.status === 409) {
+          alert("このメールアドレスはすでに使用されています。");
+          setIsModalOpen(false);
+          return;
+        }
         throw new Error("更新に失敗しました");
       }
 
@@ -111,8 +134,12 @@ function UserEdit() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#f9f9f9" }}>
-      {/* ヘッダー */}
-      <Header title="書籍貸出管理システム" menuItems={[]} />
+      <Header
+        title="書籍貸出管理システム"
+        eyebrow="BOOK MANAGEMENT SYSTEM"
+        menuItems={menuItems}
+        onMenuSelect={handleMenuSelect}
+      />
 
       <main style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px 20px" }}>
         <div style={{

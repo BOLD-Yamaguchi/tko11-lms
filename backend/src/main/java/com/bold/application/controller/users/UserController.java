@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.bold.application.entity.users.User;
@@ -35,7 +37,12 @@ public class UserController {
 
     @PutMapping("/{employeeCode}")
     public User updateUser(@PathVariable String employeeCode, @RequestBody User updatedUser) {
-        // findByIdではなく、社員コード(String)で検索するように修正
+        repository.findByMailAddress(updatedUser.getMailAddress()).ifPresent(existingUser -> {
+            String existingCode = existingUser.getEmployeeCode();
+            if (existingCode == null || !existingCode.equals(employeeCode)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "EMAIL_ALREADY_EXISTS");
+            }
+        });
         return repository.findByEmployeeCode(employeeCode)
             .map(user -> {
                 user.setUsername(updatedUser.getUsername());
@@ -44,12 +51,15 @@ public class UserController {
                 user.setAdminKbn(updatedUser.getAdminKbn());
                 return repository.save(user);
             })
-            .orElseThrow(() -> new RuntimeException("User not found with employeeCode " + employeeCode));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with employeeCode " + employeeCode));
     }
 
     @PostMapping
     public User createUser(@RequestBody User newUser) {
-        // UUIDに isEmpty() は使えないため、nullチェックに修正
+        if (repository.findByMailAddress(newUser.getMailAddress()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "EMAIL_ALREADY_EXISTS");
+        }
+        
         if (newUser.getUserId() == null) {
             newUser.setUserId(UUID.randomUUID());
         }

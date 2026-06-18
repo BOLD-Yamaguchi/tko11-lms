@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "./components/Header";
+import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 import { TextBox } from "./components/TextBox";
 
 function UserManagement() {
@@ -18,11 +19,28 @@ function UserManagement() {
   const [role, setRole] = useState("0"); // 0: 一般ユーザー, 1: 貸出ユーザー, 2: 管理者
   const [employeeCode, setEmployeeCode] = useState("");
 
-  // パスワードが一致していないかどうかの判定
+  const menuItems: HamburgerMenuItem[] = [
+    { id: "home", label: "ホーム", description: "トップ画面へ移動" },
+    { id: "books", label: "書籍管理", description: "書籍一覧を表示" },
+    { id: "UsersList", label: "ユーザー管理", description: "ユーザー管理画面を表示" },
+  ];
+
+  const handleMenuSelect = (item: HamburgerMenuItem) => {
+    switch (item.id) {
+      case "home":
+        navigate("/");
+        break;
+      case "books":
+        navigate("/books");
+        break;
+      case "UsersList":
+        navigate("/UsersList");
+        break;
+    }
+  };
+
   const isPasswordMismatch = password !== "" && confirmPassword !== "" && password !== confirmPassword;
 
-  // サブミット時の処理
-  // 修正点：型を React.FormEvent<HTMLFormElement> に修正
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -46,7 +64,6 @@ function UserManagement() {
         return;
       }
 
-      // 新規登録のAPIリクエスト（Controllerの @PostMapping に対応）
       const payload = {
         username: name,
         mailAddress: email,
@@ -74,7 +91,7 @@ function UserManagement() {
       } catch (error) {
         console.error(error);
         alert("通信エラーが発生しました。");
-        return; 
+        return;
       }
     } else {
       // パスワードリセットのAPIリクエスト（Controllerの @PutMapping("/password-reset") に対応）
@@ -85,8 +102,8 @@ function UserManagement() {
 
       console.log("パスワードリセット実行:", payload);
       try {
-        const response = await fetch(`http://localhost:8080/users/password-reset`, { 
-          method: "PUT", 
+        const response = await fetch(`http://localhost:8080/users/password-reset`, {
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
@@ -103,13 +120,17 @@ function UserManagement() {
       }
     }
 
-    // 完了後、ユーザー一覧画面へ戻る
     navigate("/UsersList");
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#f9f9f9" }}>
-      <Header title="書籍貸出管理システム" menuItems={[]} />
+      <Header
+        title="書籍貸出管理システム"
+        eyebrow="BOOK MANAGEMENT SYSTEM"
+        menuItems={menuItems}
+        onMenuSelect={handleMenuSelect}
+      />
 
       <main style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px 20px" }}>
         <div style={{
