@@ -16,8 +16,10 @@ import {
   PAGE_SIZE_OPTIONS,
 } from '../../constants/bookSearch'
 import { getBookSearchMenuItems } from '../../constants/navigation'
+import { searchBooks } from '../../api/booksApi'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import type {
+  CatalogBook,
   LoanStatus,
   UserRole,
 } from '../../types'
@@ -46,18 +48,20 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
   const restoredState = (
     location.state as SearchLocationState | null
   )?.searchState ?? initialBookSearchState
-  // 書籍・カテゴリ・ログインユーザーの拠点情報を共通クエリから取得する。
+  // カテゴリなど、検索条件に必要な共通データを取得する。
   const data = useLibraryDataValue()
-  const userLocation = data.roleProfiles[role].location
   // 入力中と適用済みの検索条件を分け、検索・ソート・ページング状態を管理する。
   const [form, setForm] = useState<SearchConditions>(restoredState.form)
   const [conditions, setConditions] = useState<SearchConditions>(restoredState.conditions)
+  const [apiBooks, setApiBooks] = useState<CatalogBook[]>(restoredState.results)
   const [hasSearched, setHasSearched] = useState(restoredState.hasSearched)
   const [sortKey, setSortKey] = useState<BookSearchSortKey>(restoredState.sortKey)
   const [ascending, setAscending] = useState(restoredState.ascending)
   const [page, setPage] = useState(restoredState.page)
   const [pageSize, setPageSize] = useState(restoredState.pageSize)
   const [message, setMessage] = useState('')
+  const [searchError, setSearchError] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
   const collectionOptions = [
     ...COLLECTION_STATUS_OPTIONS,
     ...(role === 'admin' ? [ADMIN_COLLECTION_STATUS_OPTION] : []),
@@ -76,10 +80,9 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
       !query.trim()
       || value.toLowerCase().includes(query.trim().toLowerCase())
     )
-    return data.books
+    return apiBooks
       .filter((book) => (
-        book.location === userLocation
-        && (role === 'admin' || book.collectionStatus !== '廃棄')
+        (role === 'admin' || book.collectionStatus !== '廃棄')
         && exact(book.id, conditions.id)
         && includes(book.title, conditions.title)
         && includes(book.author, conditions.author)
@@ -95,7 +98,7 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
         const compared = left[sortKey].localeCompare(right[sortKey], 'ja')
         return ascending ? compared : -compared
       })
-  }, [ascending, conditions, data.books, hasSearched, role, sortKey, userLocation])
+  }, [apiBooks, ascending, conditions, hasSearched, role, sortKey])
 
   const pageCount = Math.max(1, Math.ceil(results.length / pageSize))
   const currentPage = Math.min(page, pageCount)
@@ -104,12 +107,23 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
     currentPage * pageSize,
   )
 
-  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+  const submitSearch = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setConditions(form)
     setHasSearched(true)
     setPage(1)
-    setMessage('検索を実行しました。')
+    setSearchError('')
+    setIsSearching(true)
+
+    try {
+      setApiBooks(await searchBooks())
+      setMessage('検索を実行しました。')
+    } catch {
+      setApiBooks([])
+      setSearchError('書籍検索APIの呼び出しに失敗しました。')
+    } finally {
+      setIsSearching(false)
+    }
   }
 
   const toggleSort = (key: BookSearchSortKey) => {
@@ -180,7 +194,9 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
           <DropdownField label="配架分類" value={form.collectionStatus} onChange={(value) => setForm({ ...form, collectionStatus: value })} options={collectionOptions} />
         </div>
         <div className="search-submit">
-          <button type="submit" className="button button-primary"><SearchIcon size={20} />検索する</button>
+          <button type="submit" className="button button-primary" disabled={isSearching}>
+            <SearchIcon size={20} />{isSearching ? '検索中' : '検索する'}
+          </button>
         </div>
       </form>
 
@@ -235,7 +251,7 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
                   </td>
                 </tr>
               )}
-              {hasSearched && visibleBooks.map((book) => (
+              {hasSearched && !isSearching && !searchError && visibleBooks.map((book) => (
                 <tr
                   key={book.id}
                   title={`配架分類：${book.collectionStatus}`}
@@ -259,6 +275,7 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
                             searchState: {
                               form,
                               conditions,
+                              results: apiBooks,
                               hasSearched,
                               sortKey,
                               ascending,
@@ -273,7 +290,13 @@ function BookSearch({ role, onLogout }: BookSearchProps) {
                   </td>
                 </tr>
               ))}
-              {hasSearched && visibleBooks.length === 0 && (
+              {hasSearched && isSearching && (
+                <tr><td colSpan={9} className="empty-result">検索中です</td></tr>
+              )}
+              {hasSearched && !isSearching && searchError && (
+                <tr><td colSpan={9} className="empty-result">{searchError}</td></tr>
+              )}
+              {hasSearched && !isSearching && !searchError && visibleBooks.length === 0 && (
                 <tr><td colSpan={9} className="empty-result">書籍が見つかりませんでした</td></tr>
               )}
             </tbody>

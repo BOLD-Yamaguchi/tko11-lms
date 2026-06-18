@@ -11,6 +11,7 @@ public record BookSearchResponse(
 		String isbn,
 		String authorName,
 		String status,
+		String lendStatus,
 		String publisher,
 		LocalDate publishedAt,
 		String memo,
@@ -23,12 +24,17 @@ public record BookSearchResponse(
 		LocalDateTime updatedAt) {
 
 	public static BookSearchResponse from(MstBook mstBook) {
+		return from(mstBook, null);
+	}
+
+	public static BookSearchResponse from(MstBook mstBook, String lendStatus) {
 		return new BookSearchResponse(
 				mstBook.getBookId(),
 				mstBook.getBookName(),
 				mstBook.getIsbn(),
 				mstBook.getAutherName(),
 				mstBook.getStatus(),
+				lendStatus,
 				mstBook.getPublisher(),
 				mstBook.getPublished_at(),
 				mstBook.getMemo(),
