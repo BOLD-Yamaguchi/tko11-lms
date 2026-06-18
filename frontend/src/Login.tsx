@@ -6,15 +6,9 @@ import { useNavigate } from "react-router-dom";
 import { loginSchema } from "./schemas/loginSchema";
 import type { LoginFormValues } from "./schemas/loginSchema";
 import "./Login.css";
-import type { UserRole } from './types'
+import Header from "./components/Header";
 
-type LoginProps = {
-  role: UserRole | null;
-  onLogin: (nextRole: UserRole) => void;
-  onLogout: () => void;
-};
-
-function Login({ role, onLogin, onLogout }: LoginProps) {
+function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -48,16 +42,8 @@ function Login({ role, onLogin, onLogout }: LoginProps) {
         sessionStorage.setItem("adminKbn", String(result.adminKbn));
         sessionStorage.setItem("employeeCode", result.employeeCode);
         sessionStorage.setItem("username", result.username);
-        sessionStorage.setItem("isLogin", "true");
 
         alert("ログイン成功");
-
-        // 環境変数（VITE_DEFAULT_ROLE）があれば最優先、なければadminKbnが2なら"admin"、それ以外は"user"
-        const envRole = import.meta.env?.VITE_DEFAULT_ROLE as UserRole;
-        const determinedRole: UserRole = envRole || (result.adminKbn === 2 ? "admin" : "user");
-
-        // ログイン状態をApp層に伝える
-        onLogin(determinedRole); 
 
         navigate("/home");
       } else {
@@ -71,25 +57,14 @@ function Login({ role, onLogin, onLogout }: LoginProps) {
     }
   };
 
-  const onNavigateToSignup = () => {
-    window.location.href = "/signup";
-  };
-
   return (
     <div className="login-container">
-      <header
-        style={{
-          backgroundColor: "#2C5A9C",
-          color: "white",
-          padding: "12px 24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2 style={{ margin: 0 }}>書籍貸出管理システム</h2>
-        <span>{role ? `ログイン中 (${role})` : "ようこそ"}</span>
-      </header>
+      <Header
+        title="書籍貸出管理システム"
+        eyebrow="BOOK MANAGEMENT SYSTEM"
+        menuItems={[]}
+        showMenu={false}
+      />
 
       <div className="login-main">
         <div className="login-card">
@@ -135,16 +110,6 @@ function Login({ role, onLogin, onLogout }: LoginProps) {
               )}
             </div>
 
-            {role && (
-              <button 
-                type="button" 
-                onClick={onLogout} 
-                style={{ marginBottom: "10px", color: "red", background: "none", border: "none", cursor: "pointer" }}
-              >
-                一度ログアウトする
-              </button>
-            )}
-
             <button className="login-button" type="submit" disabled={isSubmitting}>
               {isSubmitting ? "ログイン中..." : "ログインする"}
             </button>
@@ -153,7 +118,7 @@ function Login({ role, onLogin, onLogout }: LoginProps) {
           <div className="login-links">
             <p>
               アカウントをお持ちでない方は
-              <button className="link-button" type="button" onClick={onNavigateToSignup}>
+              <button className="link-button" type="button" onClick={() => navigate("/user-create")}>
                 新規ユーザー登録
               </button>
             </p>
