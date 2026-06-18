@@ -268,7 +268,7 @@ function UsersList() {
       </div>
 
       <div className="create-button-container">
-        <button className="create-button" onClick={() => navigate("/users/create")}>
+        <button className="create-button" onClick={() => navigate("/user-create")}>
           ＋
         </button>
       </div>

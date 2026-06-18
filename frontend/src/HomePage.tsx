@@ -5,18 +5,12 @@ import { Header } from "./components/Header";
 import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 
 import { MenuCard } from "./components/MenuCard";
-import { ModalDialog } from "./components/modals/ModalDialog";
 import { BookOpen, Users } from "lucide-react";
-import type { UserRole } from './types'
 
-type HomePageProps = {
-  role: UserRole | null;
-  onLogout: () => void;
-};
 
-function HomePage({ role, onLogout }: HomePageProps) {
+
+function HomePage() {
   const navigate = useNavigate();
-  const [isModalDialogOpen, setIsModalDialogOpen] = useState(false);
 
   // ホバー状態を管理するステート
   const [isHoveredBooks, setIsHoveredBooks] = useState(false);
@@ -52,12 +46,6 @@ function HomePage({ role, onLogout }: HomePageProps) {
         navigate("/UsersList"); 
         break;
     }
-  };
-
-  const handleLogout = () => {
-    console.log("ログアウトしました");
-    onLogout(); // propsから受け取った非構造化要素（onLogout）を使用するように修正
-    setIsModalDialogOpen(false);
   };
 
   // メニューカード共通のベーススタイル
@@ -101,13 +89,6 @@ function HomePage({ role, onLogout }: HomePageProps) {
           width: "100%",
           maxWidth: "800px"
         }}>
-
-          {/* ログイン中の権限を表示（roleを利用して非構造化要素のエラーを完全に防ぐ） */}
-          {role && (
-            <div style={{ fontSize: "14px", color: "#4b5563" }}>
-              権限: {role}
-            </div>
-          )}
 
           {/* メニューグリッド：2カラムレイアウト */}
           <div style={{
@@ -162,18 +143,6 @@ function HomePage({ role, onLogout }: HomePageProps) {
 
         </div>
       </main>
-
-      {/* ログアウトモーダル */}
-      <ModalDialog
-        open={isModalDialogOpen}
-        title="ログアウト"
-        description="本当にログアウトしますか？"
-        confirmLabel="ログアウト"
-        cancelLabel="キャンセル"
-        tone="danger"
-        onClose={() => setIsModalDialogOpen(false)}
-        onConfirm={handleLogout}
-      />
     </div>
   );
 }

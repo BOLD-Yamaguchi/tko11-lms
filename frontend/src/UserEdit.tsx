@@ -164,7 +164,7 @@ function UserEdit() {
                 <input
                   type="text"
                   value={employeeCode || ""}
-                  disabled={true}
+                  disabled={false}
                   style={{
                     width: "100%",
                     padding: "10px",
