@@ -2,12 +2,16 @@ package com.bold.application.entity.books;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "mst_book")
@@ -22,40 +26,52 @@ public class MstBook {
 			name = "book_seq",
 			sequenceName = "book_seq",
 			initialValue = 100001,
-			allocotionStyle = 1)
+			allocationSize = 1)
 	private int bookId;
+
 	@NotBlank
-	@Colum(length=100)
+	@Column(nullable = false, length = 100)
 	private String bookName;
-	@Colum(length=15)
+
+	@Column(length = 15)
 	private String isbn;
+
 	@NotBlank
-	@Colum(length=100)
+	@Column(nullable = false, length = 100)
 	private String authorName;
+
 	@NotBlank
-	@Colum(length=1)
+	@Column(nullable = false, length = 1)
 	private String bookStatus;
+
 	@NotBlank
-	@COLUM(length=40)
+	@Column(nullable = false, length = 40)
 	private String publisher;
+
 	private LocalDate publishedAt;
-	@Colum(length=100)
+
+	@Column(length = 100)
 	private String memo;
+
 	private int categoryLevel1Id;
 	private int categoryLevel2Id;
+
 	@NotBlank
-	@Colum(length=1)
+	@Column(nullable = false, length = 1)
 	private String region;
-	@NotBlank
-	@Colum(length=20)
+
+	@Column(length = 20)
 	private String shelfNo;
-	private ing tierNo;
+
+	private int tierNo;
 	private LocalDateTime createdAt;
 	private LocalDateTime bookInfoUpdatedAt;
 	private UUID lendUserId;
+
 	@NotBlank
-	@Colum(length=1)
+	@Column(nullable = false, length = 1)
 	private String status;
+
 	private LocalDate returnedAt;
 	private LocalDateTime statusUpdatedAt;
 
@@ -83,12 +99,12 @@ public class MstBook {
 		this.isbn = isbn;
 	}
 
-	public String getAutherName() {
+	public String getAuthorName() {
 		return authorName;
 	}
 
-	public void setAutherName(String autherName) {
-		this.authorName = autherName;
+	public void setAuthorName(String authorName) {
+		this.authorName = authorName;
 	}
 
 	public String getBookStatus() {
@@ -96,7 +112,7 @@ public class MstBook {
 	}
 
 	public void setBookStatus(String bookStatus) {
-		this.BookStatus = bookStatus;
+		this.bookStatus = bookStatus;
 	}
 
 	public String getPublisher() {
@@ -107,11 +123,11 @@ public class MstBook {
 		this.publisher = publisher;
 	}
 
-	public LocalDate getPublished_at() {
+	public LocalDate getPublishedAt() {
 		return publishedAt;
 	}
 
-	public void setPublished_at(LocalDate publishedAt) {
+	public void setPublishedAt(LocalDate publishedAt) {
 		this.publishedAt = publishedAt;
 	}
 
@@ -123,20 +139,20 @@ public class MstBook {
 		this.memo = memo;
 	}
 
-	public int getCategoryLevel1() {
+	public int getCategoryLevel1Id() {
 		return categoryLevel1Id;
 	}
 
-	public void setCategoryLevel1(int categoryLevel1) {
-		this.categoryLevel1Id = categoryLevel1;
+	public void setCategoryLevel1Id(int categoryLevel1Id) {
+		this.categoryLevel1Id = categoryLevel1Id;
 	}
 
-	public int getCategoryLevel2() {
+	public int getCategoryLevel2Id() {
 		return categoryLevel2Id;
 	}
 
-	public void setCategoryLevel2(int categoryLevel2) {
-		this.categoryLevel2Id = categoryLevel2;
+	public void setCategoryLevel2Id(int categoryLevel2Id) {
+		this.categoryLevel2Id = categoryLevel2Id;
 	}
 
 	public String getRegion() {
@@ -175,11 +191,19 @@ public class MstBook {
 		return bookInfoUpdatedAt;
 	}
 
-	public void setUpdatedAt(LocalDateTime updatedAt) {
-		this.updatedAt = updatedAt;
+	public void setBookInfoUpdatedAt(LocalDateTime bookInfoUpdatedAt) {
+		this.bookInfoUpdatedAt = bookInfoUpdatedAt;
 	}
 
-	public String getLendUserId() {
+	public LocalDateTime getUpdatedAt() {
+		return bookInfoUpdatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.bookInfoUpdatedAt = updatedAt;
+	}
+
+	public UUID getLendUserId() {
 		return lendUserId;
 	}
 

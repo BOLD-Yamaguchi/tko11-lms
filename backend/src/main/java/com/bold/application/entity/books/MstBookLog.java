@@ -3,11 +3,14 @@ package com.bold.application.entity.books;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "mst_book_log")
@@ -22,10 +25,12 @@ public class MstBookLog {
     private UUID lendUserId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    @Colum(length=500)
+
+    @Column(length = 500)
     private String review;
+
 	@NotBlank
-    @Colum(length=1)
+    @Column(nullable = false, length = 1)
     private String hiddenFlg;
 
     public int getLendId() {
