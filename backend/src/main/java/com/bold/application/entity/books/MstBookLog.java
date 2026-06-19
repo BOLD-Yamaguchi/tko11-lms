@@ -16,11 +16,16 @@ public class MstBookLog {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int lendId;
-    private int bookId;
+    @NotNull
+	private int bookId;
+    @NotNull
     private UUID lendUserId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    @Colum(length=500)
     private String review;
+	@NotBlank
+    @Colum(length=1)
     private String hiddenFlg;
 
     public int getLendId() {

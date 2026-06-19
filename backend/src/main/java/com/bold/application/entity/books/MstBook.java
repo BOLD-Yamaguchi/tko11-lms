@@ -14,22 +14,50 @@ import jakarta.persistence.Table;
 public class MstBook {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(
+			strategy = GenerationType.SEQUENCE,
+			generator = "book_seq"
+	)
+	@SequenceGenerator(
+			name = "book_seq",
+			sequenceName = "book_seq",
+			initialValue = 100001,
+			allocotionStyle = 1)
 	private int bookId;
+	@NotBlank
+	@Colum(length=100)
 	private String bookName;
+	@Colum(length=15)
 	private String isbn;
+	@NotBlank
+	@Colum(length=100)
 	private String authorName;
-	private String status;
+	@NotBlank
+	@Colum(length=1)
+	private String bookStatus;
+	@NotBlank
+	@COLUM(length=40)
 	private String publisher;
 	private LocalDate publishedAt;
+	@Colum(length=100)
 	private String memo;
 	private int categoryLevel1Id;
 	private int categoryLevel2Id;
+	@NotBlank
+	@Colum(length=1)
 	private String region;
+	@NotBlank
+	@Colum(length=20)
 	private String shelfNo;
-	private String tierNo;
+	private ing tierNo;
 	private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
+	private LocalDateTime bookInfoUpdatedAt;
+	private UUID lendUserId;
+	@NotBlank
+	@Colum(length=1)
+	private String status;
+	private LocalDate returnedAt;
+	private LocalDateTime statusUpdatedAt;
 
 	public int getBookId() {
 		return bookId;
@@ -63,12 +91,12 @@ public class MstBook {
 		this.authorName = autherName;
 	}
 
-	public String getStatus() {
-		return status;
+	public String getBookStatus() {
+		return bookStatus;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setBookStatus(String bookStatus) {
+		this.BookStatus = bookStatus;
 	}
 
 	public String getPublisher() {
@@ -127,11 +155,11 @@ public class MstBook {
 		this.shelfNo = shelfNo;
 	}
 
-	public String getTierNo() {
+	public int getTierNo() {
 		return tierNo;
 	}
 
-	public void setTierNo(String tierNo) {
+	public void setTierNo(int tierNo) {
 		this.tierNo = tierNo;
 	}
 
@@ -143,11 +171,43 @@ public class MstBook {
 		this.createdAt = createdAt;
 	}
 
-	public LocalDateTime getUpdatedAt() {
-		return updatedAt;
+	public LocalDateTime getBookInfoUpdatedAt() {
+		return bookInfoUpdatedAt;
 	}
 
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public String getLendUserId() {
+		return lendUserId;
+	}
+
+	public void setLendUserId(UUID userId) {
+		this.lendUserId = userId;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public LocalDate getReturnedAt() {
+		return returnedAt;
+	}
+
+	public void setReturnedAt(LocalDate returnedAt) {
+		this.returnedAt = returnedAt;
+	}
+
+	public LocalDateTime getStatusUpdatedAt() {
+		return statusUpdatedAt;
+	}
+
+	public void setStatusUpdatedAt(LocalDateTime updatedAt) {
+		this.statusUpdatedAt = updatedAt;
 	}
 }

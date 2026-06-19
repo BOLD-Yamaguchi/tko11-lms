@@ -15,6 +15,8 @@ public class MstCategoryLevel1{
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int categoryLevel1Id;
+	@NotBlank
+	@Colum(length=100)
     private String categoryLevel1Name;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
