@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.bold.application.entity.books.MstBook;
-import com.bold.application.repository.books.MstBookRepository;
+import src.main.java.com.bold.application.entity.books.MstBook;
+import src.main.java.com.bold.application.repository.books.MstBookRepository;
 
 @Service
 public class MstBookService {
@@ -17,10 +17,12 @@ public class MstBookService {
 		this.mstBookRepository = mstBookRepository;
 	}
 
+	// 全書籍検索
 	public List<MstBook> findAll() {
 		return mstBookRepository.findAll();
 	}
 
+	// 条件付き書籍検索
 	public List<MstBook> search(
 			Integer bookId,
 			String bookName,
@@ -47,7 +49,13 @@ public class MstBookService {
 				region);
 	}
 
+	// 書籍登録
 	public MstBook create(MstBook mstBook) {
 		return mstBookRepository.save(mstBook);
+	}
+
+	// 書籍情報取得
+	public MstBook findByBookId(int bookId) {
+		return mstBookRepository.findByBookId(bookId);
 	}
 }

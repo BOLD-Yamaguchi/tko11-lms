@@ -5,10 +5,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.bold.application.entity.books.MstBook;
-import com.bold.application.entity.books.TrnBookStatus;
-import com.bold.application.repository.books.MstBookRepository;
-import com.bold.application.repository.books.TrnBookStatusRepository;
+import src.main.java.com.bold.application.entity.books.MstBook;
+import src.main.java.com.bold.application.entity.books.TrnBookStatus;
+import src.main.java.com.bold.application.repository.books.MstBookRepository;
+import src.main.java.com.bold.application.repository.books.TrnBookStatusRepository;
 
 @Service
 public class BookService {
@@ -23,7 +23,7 @@ public class BookService {
 	}
 
 	// 書籍詳細情報取得（１件）
-	public MstBook findById(String bookId) {
+	public MstBook findById(int bookId) {
 		return repository.findByBookId(bookId);
 	}
 
