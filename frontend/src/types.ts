@@ -13,6 +13,7 @@ export type UserProfile = {
 }
 
 export type BookStatusDetail = {
+  lendUserId?: string
   borrowerName?: string
   reserverName?: string
   reservationEmployeeNumber?: string

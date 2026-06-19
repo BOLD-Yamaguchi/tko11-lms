@@ -27,7 +27,12 @@ import BookSearch from './pages/book-search/BookSearch'
 import LoginPage from './pages/login/LoginPage'
 import MyPage from './pages/my-page/MyPage'
 import { useLibraryDataValue } from './data/libraryQueries'
-import type { Book, LoanStatus, UserRole } from './types'
+import type {
+  Book,
+  BookStatusDetail,
+  LoanStatus,
+  UserRole,
+} from './types'
 
 type AppRouterProps = {
   role: UserRole | null
@@ -36,7 +41,11 @@ type AppRouterProps = {
   onCreateBook: (book: Book) => void
   onCreateBooks: (books: Book[]) => void
   onUpdateBook: (book: Book) => void
-  onLoanStatusChange: (bookId: string, status: LoanStatus) => void
+  onLoanStatusChange: (
+    bookId: string,
+    status: LoanStatus,
+    statusDetail?: BookStatusDetail | null,
+  ) => void
   onHistoryVisibilityChange: (bookId: string, visibleIds: string[]) => void
   onReturnCommentChange: (bookId: string, comment: string) => void
 }

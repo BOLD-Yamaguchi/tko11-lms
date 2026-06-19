@@ -33,7 +33,11 @@ import {
   rejectBookReturnRequest,
   requestBookReturn,
 } from '../../api/booksApi'
-import { BORROWING_FILTER_OPTIONS } from '../../constants/myPage'
+import {
+  BORROWING_FILTER_OPTIONS,
+  HISTORY_FILTER_OPTIONS,
+  RESERVATION_FILTER_OPTIONS,
+} from '../../constants/myPage'
 import { getMyPageTitle } from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
@@ -52,6 +56,11 @@ type MyPageProps = {
 
 type GeneralPendingAction = 'requestReturn' | 'cancelReservation'
 type LoanStep = 'auth' | 'confirm'
+
+type ListFilterOption = {
+  value: string
+  label: string
+}
 
 type AccordionPanelProps = {
   title: string
@@ -97,10 +106,15 @@ function MyPage({ role }: MyPageProps) {
   const [hasReservation, setHasReservation] = useState(true)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [bulkReturnOpen, setBulkReturnOpen] = useState(false)
-  const [filterKey, setFilterKey] = useState('employeeNumber')
-  const [keyword, setKeyword] = useState('')
+  const [borrowingFilterKey, setBorrowingFilterKey] = useState('employeeNumber')
+  const [borrowingKeyword, setBorrowingKeyword] = useState('')
+  const [reservationFilterKey, setReservationFilterKey] = useState('reserver')
+  const [reservationKeyword, setReservationKeyword] = useState('')
+  const [historyFilterKey, setHistoryFilterKey] = useState('borrower')
+  const [historyKeyword, setHistoryKeyword] = useState('')
   const [message, setMessage] = useState('')
   const visibleLoanHistory = data.userLoanHistory.filter((record) => {
+    if (!record.returnDate.trim()) return false
     if (role === 'admin') return true
     return data.books.find((book) => book.id === record.bookId)?.collectionStatus !== '廃棄'
   })
@@ -112,19 +126,41 @@ function MyPage({ role }: MyPageProps) {
     void fetchHistoryLists()
   }, [])
 
-  // 管理者が選択した検索対象とキーワードから借受一覧を絞り込む。
+  // 選択した検索対象とキーワードから借受・予約・履歴の各一覧を絞り込む。
   const filteredBorrowings = useMemo(() => {
-    const normalized = keyword.trim().toLowerCase()
+    const normalized = borrowingKeyword.trim().toLowerCase()
     if (!normalized) return borrowings
     return borrowings.filter((record) => {
-      const target = filterKey === 'name'
+      const target = borrowingFilterKey === 'name'
         ? record.borrower
-        : filterKey === 'title'
+        : borrowingFilterKey === 'title'
           ? record.title
           : record.employeeNumber
       return target.toLowerCase().includes(normalized)
     })
-  }, [borrowings, filterKey, keyword])
+  }, [borrowings, borrowingFilterKey, borrowingKeyword])
+
+  const filteredReservations = useMemo(() => {
+    const normalized = reservationKeyword.trim().toLowerCase()
+    if (!normalized) return reservations
+    return reservations.filter((record) => {
+      const target = reservationFilterKey === 'title'
+        ? record.title
+        : record.reserver
+      return target.toLowerCase().includes(normalized)
+    })
+  }, [reservations, reservationFilterKey, reservationKeyword])
+
+  const filteredLoanHistory = useMemo(() => {
+    const normalized = historyKeyword.trim().toLowerCase()
+    if (!normalized) return visibleLoanHistory
+    return visibleLoanHistory.filter((record) => {
+      const target = historyFilterKey === 'title'
+        ? record.title
+        : record.borrower
+      return target.toLowerCase().includes(normalized)
+    })
+  }, [historyFilterKey, historyKeyword, visibleLoanHistory])
 
   const selectedBorrowings = borrowings.filter((record) => (
     selectedIds.includes(record.employeeNumber)
@@ -291,13 +327,37 @@ function MyPage({ role }: MyPageProps) {
       {role === 'operator' && (
         <div className="operator-accordions">
           <AccordionPanel title="借受リスト（全員分）" icon={<BookIcon />}>
-            <SimpleBorrowingTable records={borrowings} />
+            <ListFilter
+              filterKey={borrowingFilterKey}
+              keyword={borrowingKeyword}
+              options={BORROWING_FILTER_OPTIONS}
+              onFilterKeyChange={setBorrowingFilterKey}
+              onKeywordChange={setBorrowingKeyword}
+              onSearch={() => setMessage(`${filteredBorrowings.length}件見つかりました。`)}
+            />
+            <SimpleBorrowingTable records={filteredBorrowings} />
           </AccordionPanel>
           <AccordionPanel title="予約リスト（全員分）" tone="orange" icon={<BookmarkIcon />}>
-            <ReservationTable records={reservations} books={data.books} onLoan={startLoan} />
+            <ListFilter
+              filterKey={reservationFilterKey}
+              keyword={reservationKeyword}
+              options={RESERVATION_FILTER_OPTIONS}
+              onFilterKeyChange={setReservationFilterKey}
+              onKeywordChange={setReservationKeyword}
+              onSearch={() => setMessage(`${filteredReservations.length}件見つかりました。`)}
+            />
+            <ReservationTable records={filteredReservations} books={data.books} onLoan={startLoan} />
           </AccordionPanel>
           <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
-            <HistoryTable records={visibleLoanHistory} />
+            <ListFilter
+              filterKey={historyFilterKey}
+              keyword={historyKeyword}
+              options={HISTORY_FILTER_OPTIONS}
+              onFilterKeyChange={setHistoryFilterKey}
+              onKeywordChange={setHistoryKeyword}
+              onSearch={() => setMessage(`${filteredLoanHistory.length}件見つかりました。`)}
+            />
+            <HistoryTable records={filteredLoanHistory} />
           </AccordionPanel>
         </div>
       )}
@@ -309,11 +369,11 @@ function MyPage({ role }: MyPageProps) {
             <div className="admin-filter">
               <DropdownField
                 label="検索対象"
-                value={filterKey}
-                onChange={setFilterKey}
+                value={borrowingFilterKey}
+                onChange={setBorrowingFilterKey}
                 options={BORROWING_FILTER_OPTIONS}
               />
-              <TextBox label="キーワード" value={keyword} onChange={setKeyword} placeholder="キーワードを入力" />
+              <TextBox label="キーワード" value={borrowingKeyword} onChange={setBorrowingKeyword} placeholder="キーワードを入力" />
               <button
                 type="button"
                 className="compact-search"
@@ -383,10 +443,26 @@ function MyPage({ role }: MyPageProps) {
 
           <div className="operator-accordions admin-secondary-lists">
             <AccordionPanel title="予約リスト（全員分）" tone="orange" icon={<BookmarkIcon />}>
-              <ReservationTable records={reservations} />
+              <ListFilter
+                filterKey={reservationFilterKey}
+                keyword={reservationKeyword}
+                options={RESERVATION_FILTER_OPTIONS}
+                onFilterKeyChange={setReservationFilterKey}
+                onKeywordChange={setReservationKeyword}
+                onSearch={() => setMessage(`${filteredReservations.length}件見つかりました。`)}
+              />
+              <ReservationTable records={filteredReservations} />
             </AccordionPanel>
             <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
-              <HistoryTable records={visibleLoanHistory} />
+              <ListFilter
+                filterKey={historyFilterKey}
+                keyword={historyKeyword}
+                options={HISTORY_FILTER_OPTIONS}
+                onFilterKeyChange={setHistoryFilterKey}
+                onKeywordChange={setHistoryKeyword}
+                onSearch={() => setMessage(`${filteredLoanHistory.length}件見つかりました。`)}
+              />
+              <HistoryTable records={filteredLoanHistory} />
             </AccordionPanel>
           </div>
         </>
@@ -477,6 +553,46 @@ type GeneralUserSectionsProps = {
   onCancelReservation: () => void
   historyRecords: UserLoanHistory[]
   onOpenBook: (bookId: string) => void
+}
+
+function ListFilter({
+  filterKey,
+  keyword,
+  options,
+  onFilterKeyChange,
+  onKeywordChange,
+  onSearch,
+}: {
+  filterKey: string
+  keyword: string
+  options: readonly ListFilterOption[]
+  onFilterKeyChange: (value: string) => void
+  onKeywordChange: (value: string) => void
+  onSearch: () => void
+}) {
+  return (
+    <div className="admin-filter list-filter">
+      <DropdownField
+        label="検索対象"
+        value={filterKey}
+        onChange={onFilterKeyChange}
+        options={options}
+      />
+      <TextBox
+        label="キーワード"
+        value={keyword}
+        onChange={onKeywordChange}
+        placeholder="キーワードを入力"
+      />
+      <button
+        type="button"
+        className="compact-search"
+        onClick={onSearch}
+      >
+        <SearchIcon size={19} />検索
+      </button>
+    </div>
+  )
 }
 
 function GeneralUserSections({
@@ -596,6 +712,9 @@ function SimpleBorrowingTable({ records }: { records: BorrowingRecord[] }) {
               <td><RecordStatus status={record.status} /></td>
             </tr>
           ))}
+          {records.length === 0 && (
+            <tr><td colSpan={7}>借受中の書籍はありません。</td></tr>
+          )}
         </tbody>
       </table>
     </div>
@@ -684,6 +803,9 @@ function HistoryTable({ records }: { records: UserLoanHistory[] }) {
               <td>{record.tierNumber}</td>
             </tr>
           ))}
+          {records.length === 0 && (
+            <tr><td colSpan={7}>貸出履歴はありません。</td></tr>
+          )}
         </tbody>
       </table>
     </div>

@@ -8,7 +8,13 @@ import {
   updateBookInformation,
 } from './api/booksApi'
 import { libraryDataQueryKey, useLibraryData } from './data/libraryQueries'
-import type { Book, LibraryData, LoanStatus, UserRole } from './types'
+import type {
+  Book,
+  BookStatusDetail,
+  LibraryData,
+  LoanStatus,
+  UserRole,
+} from './types'
 
 const roleStorageKey = 'tko11-mock-user-role'
 
@@ -91,12 +97,26 @@ function App() {
     }))
   }
 
-  const updateLoanStatus = (bookId: string, loanStatus: LoanStatus) => {
+  const updateLoanStatus = (
+    bookId: string,
+    loanStatus: LoanStatus,
+    statusDetail?: BookStatusDetail | null,
+  ) => {
     updateLibraryData((current) => ({
       ...current,
       books: current.books.map((book) => (
         book.id === bookId ? { ...book, loanStatus } : book
       )),
+      bookStatusDetails: statusDetail === undefined
+        ? current.bookStatusDetails
+        : statusDetail === null
+          ? Object.fromEntries(
+            Object.entries(current.bookStatusDetails).filter(([id]) => id !== bookId),
+          )
+          : {
+            ...current.bookStatusDetails,
+            [bookId]: statusDetail,
+          },
     }))
   }
 

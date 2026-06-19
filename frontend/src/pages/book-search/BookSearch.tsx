@@ -8,7 +8,7 @@ import {
   TextBox,
   Toast,
 } from '../../components'
-import { fetchSearchBooks } from '../../api/booksApi'
+import { searchBooks } from '../../api/booksApi'
 import {
   ADMIN_COLLECTION_STATUS_OPTION,
   COLLECTION_STATUS_OPTIONS,
@@ -135,7 +135,7 @@ function BookSearch({ role }: BookSearchProps) {
     setIsSearching(true)
 
     try {
-      setApiBooks(await fetchSearchBooks())
+      setApiBooks(await searchBooks(form))
       setMessage('検索を実行しました。')
     } catch {
       setApiBooks([])

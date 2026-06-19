@@ -35,13 +35,17 @@ import {
   reserveBook,
 } from '../../api/booksApi'
 import { useLibraryDataValue } from '../../data/libraryQueries'
-import { getReturnDueDate } from '../../dateUtils'
+import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
 import type { BookSearchState } from '../book-search/searchState'
-import type { LoanStatus, UserRole } from '../../types'
+import type { BookStatusDetail, LoanStatus, UserRole } from '../../types'
 
 type BookDetailProps = {
   role: UserRole
-  onStatusChange: (bookId: string, status: LoanStatus) => void
+  onStatusChange: (
+    bookId: string,
+    status: LoanStatus,
+    statusDetail?: BookStatusDetail | null,
+  ) => void
   onHistoryVisibilityChange: (bookId: string, visibleIds: string[]) => void
   onReturnCommentChange: (bookId: string, comment: string) => void
   onLogout: () => void
@@ -244,15 +248,16 @@ function BookDetail({
     ['棚番号', book.shelfNumber],
     ['段番号', book.tierNumber || '未設定'],
     ['拠点', book.location],
-    ['備考', book.notes || '付録なし'],
+    ['備考', book.notes],
   ]
   const actions = isDisposed ? [] : getActions(role, book.loanStatus)
   const profile = data?.roleProfiles[role]
   const statusDetail = data?.bookStatusDetails[book.id]
-  const visibleHistoryIds = historyVisibility[book.id] ?? loanHistory.map((history) => history.id)
+  const returnedHistory = loanHistory.filter((history) => history.returnDate.trim())
+  const visibleHistoryIds = historyVisibility[book.id] ?? returnedHistory.map((history) => history.id)
   const displayedHistory = role === 'admin' && editingHistory
-    ? loanHistory
-    : loanHistory.filter((history) => visibleHistoryIds.includes(history.id))
+    ? returnedHistory
+    : returnedHistory.filter((history) => visibleHistoryIds.includes(history.id))
   const callBookActionApi = (
     action: BookAction,
     payload: Record<string, unknown> = {},
@@ -260,6 +265,13 @@ function BookDetail({
     const requestPayload = {
       bookId: book.id,
       bookTitle: book.title,
+      ...(action === 'reserve'
+        ? {
+          userId: profile?.userId,
+          employeeNumber: profile?.employeeNumber,
+          userName: profile?.name,
+        }
+        : {}),
       ...payload,
     }
 
@@ -277,12 +289,38 @@ function BookDetail({
     payload: Record<string, unknown> = {},
   ) => {
     const setting = actionSettings[action]
+    const nextStatusDetail = getNextStatusDetail(action)
     callBookActionApi(action, payload)
-    onStatusChange(book.id, setting.nextStatus)
+    onStatusChange(book.id, setting.nextStatus, nextStatusDetail)
     setMessage(setting.message)
     setPendingAction(null)
     setActionStep(null)
     setAuthenticatedUserName('')
+  }
+
+  const getNextStatusDetail = (action: BookAction): BookStatusDetail | null | undefined => {
+    if (action === 'reserve') {
+      return {
+        lendUserId: profile?.userId,
+        reserverName: profile?.name,
+        reservationEmployeeNumber: profile?.employeeNumber,
+        reservationDate: getCurrentDate(),
+      }
+    }
+
+    if (action === 'loan') {
+      return {
+        lendUserId: statusDetail?.lendUserId ?? profile?.userId,
+        borrowerName: authenticatedUserName || statusDetail?.reserverName || profile?.name,
+        returnDueDate: getReturnDueDate(),
+      }
+    }
+
+    if (['cancelReservation', 'return', 'approveReturn'].includes(action)) {
+      return null
+    }
+
+    return undefined
   }
 
   const startHistoryEditing = () => {
