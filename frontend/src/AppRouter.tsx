@@ -1,10 +1,10 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import HomePage from './HomePage'
-import Login from './Login'
 import PasswordReset from './passwordReset'
 import UserEdit from './UserEdit'
 import UserManagement from './UserManagement'
 import UserList from './UsersList'
+import Login from './Login'
 import CreateBook from './pages/book-create/CreateBook'
 import BookDetail from './pages/book-detail/BookDetail'
 import EditBook from './pages/book-edit/EditBook'
@@ -13,6 +13,7 @@ import Home from './pages/home/Home'
 import LoginPage from './pages/login/LoginPage'
 import MyPage from './pages/my-page/MyPage'
 import type { Book, LoanStatus, UserRole } from './types'
+import ProtectedRoute from "./components/ProtectedRoute";
 
 type AppRouterProps = {
   role: UserRole | null
@@ -94,24 +95,17 @@ function AppRouter({
         />
         <Route path="/delete" element={<Navigate to={role ? '/system' : '/login'} replace />} />
 
-        <Route path="/" element={<HomePage role={role} onLogout={onLogout} />} />
+        <Route path="/" element={<HomePage />} />
 
         <Route path="/books" element={<LoginPage onLogin={onLogin} />} />
 
-        <Route
-          path="/UsersList"
-          element={role === 'admin' ? <UserList /> : <Login role={role} onLogin={onLogin} onLogout={onLogout} />}
-        />
-
-        <Route
-          path="/home"
-          element={role === 'admin' ? <Navigate to="/UsersList" replace /> : <HomePage role={role} onLogout={onLogout} />}
-        />
+        <Route path="/home" element={<HomePage />} />
 
         {/* ユーザー管理その他ルート */}
-        <Route path="/user-login" element={<Navigate to="/" replace />} />
-        <Route path="/users/create" element={<UserManagement />} />
-        <Route path="/users/:employeeCode" element={<UserEdit />} />
+        <Route path="/user-login" element={<Login />} />
+        <Route path="/UsersList" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
+        <Route path="/users/:employeeCode" element={<ProtectedRoute><UserEdit /></ProtectedRoute>} />
+        <Route path="/user-create" element={<UserManagement />}/>
         <Route path="/passwordReset" element={<PasswordReset />} />
 
         {/* いずれにも一致しない場合はルートへ */}
