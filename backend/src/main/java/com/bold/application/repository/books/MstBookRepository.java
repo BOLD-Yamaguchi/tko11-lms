@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import src.main.java.com.bold.application.entity.books.MstBook;
+import com.bold.application.entity.books.MstBook;
 
 @Repository
 public interface MstBookRepository extends JpaRepository<MstBook, Integer> {
@@ -36,8 +36,8 @@ public interface MstBookRepository extends JpaRepository<MstBook, Integer> {
 			AND (:publishedAtEnd IS NULL OR b.publishedAt <= :publishedAtEnd)
 			AND (:categoryLevel1 IS NULL OR b.categoryLevel1Id = :categoryLevel1)
 			AND (:categoryLevel2 IS NULL OR b.categoryLevel2Id = :categoryLevel2)
-			AND (:lendStatus IS NULL OR :status = '' OR t.lendStatus LIKE CONCAT('%', :status, '%'))
-			AND (:status IS NULL OR :bookStatus = '' OR b.status = :bookStatus)
+			AND (:status IS NULL OR :status = '' OR t.status LIKE CONCAT('%', :status, '%'))
+			AND (:bookStatus IS NULL OR :bookStatus = '' OR b.status = :bookStatus)
 			AND (:region IS NULL OR :region = '' OR b.region = :region)
 			""")
 	List<MstBook> search(
@@ -49,8 +49,8 @@ public interface MstBookRepository extends JpaRepository<MstBook, Integer> {
 			@Param("publishedAtEnd") LocalDate publishedAtEnd,
 			@Param("categoryLevel1") Integer categoryLevel1,
 			@Param("categoryLevel2") Integer categoryLevel2,
-			@Param("lendStatus") String status,
-			@Param("status") String bokStatus,
+			@Param("status") String status,
+			@Param("bookStatus") String bokStatus,
 			@Param("region") String region);
 
 }
