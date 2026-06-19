@@ -16,44 +16,26 @@ public interface MstBookRepository extends JpaRepository<MstBook, Integer> {
 	// 一覧取得
 	List<MstBook> findAll();
 
-	// 条件付き一覧取得
-	List<MstBook> search(int bookId,
-			String bookName,
-			String isbn,
-			String authorName,
-			String status,
-			String publisher,
-			LocalDate publishedAtStart,
-			LocalDate publishedAtEnd,
-			int categoryLevel1,
-			int categoryLevel2,
-			String rigion,
-			String shelfNo,
-			int tierNo
-			);
-
 	// 書籍情報取得（１件）
 	MstBook findByBookId(int bookId);
 
-	// 登録・更新
-	MstBook save(MstBook mstBook, int bookId);
-
-	// 書籍検索クエリ
+	// 書籍検索API
+	//Nullか空値の場合は、検索条件をTrueとする
 	@Query("""
 			SELECT b
 			FROM MstBook b
 			LEFT JOIN TrnBookStatus t ON b.bookId = t.bookId
 			WHERE (:bookId IS NULL OR b.bookId = :bookId)
-			AND (:bookName IS NULL OR b.bookName LIKE CONCAT('%', :bookName, '%'))
-			AND (:authorName IS NULL OR b.authorName LIKE CONCAT('%', :authorName, '%'))
-			AND (:publisher IS NULL OR b.publisher LIKE CONCAT('%', :publisher, '%'))
+			AND (:bookName IS NULL OR :bookName = '' OR b.bookName LIKE CONCAT('%', :bookName, '%'))
+			AND (:authorName IS NULL OR :authorName = '' OR b.authorName LIKE CONCAT('%', :authorName, '%'))
+			AND (:publisher IS NULL OR :publisher = '' OR b.publisher LIKE CONCAT('%', :publisher, '%'))
 			AND (:publishedAtStart IS NULL OR b.publishedAt >= :publishedAtStart)
 			AND (:publishedAtEnd IS NULL OR b.publishedAt <= :publishedAtEnd)
 			AND (:categoryLevel1 IS NULL OR b.categoryLevel1Id = :categoryLevel1)
 			AND (:categoryLevel2 IS NULL OR b.categoryLevel2Id = :categoryLevel2)
-			AND (:lendStatus IS NULL OR t.lendStatus LIKE CONCAT('%', :lendStatus, '%'))
-			AND (:status IS NULL OR b.status = :status)
-			AND (:region IS NULL OR b.region = :region)
+			AND (:lendStatus IS NULL OR :lendStatus = '' OR t.lendStatus LIKE CONCAT('%', :lendStatus, '%'))
+			AND (:status IS NULL OR :status = '' OR b.status = :status)
+			AND (:region IS NULL OR :region = '' OR b.region = :region)
 			""")
 	List<MstBook> search(
 			@Param("bookId") Integer bookId,

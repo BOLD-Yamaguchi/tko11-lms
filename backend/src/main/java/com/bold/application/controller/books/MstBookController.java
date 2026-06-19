@@ -37,6 +37,7 @@ public class MstBookController {
 		this.trnBookStatusRepository = trnBookStatusRepository;
 	}
 
+	// テスト用
 	@GetMapping("/search/all")
 	public List<BookSearchResponse> getBooks() {
 		return mstBookService.findAll()
@@ -45,6 +46,7 @@ public class MstBookController {
 				.toList();
 	}
 
+	// 書籍検索API
 	@GetMapping("/search")
 	public List<BookSearchResponse> searchBooks(@ModelAttribute BookSearchRequest request) {
 		return mstBookService.search(
