@@ -5,17 +5,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import src.main.java.com.bold.application.entity.books.MstBook;
-import src.main.java.com.bold.application.entity.books.TrnBookStatus;
-import src.main.java.com.bold.application.repository.books.MstBookRepository;
-import src.main.java.com.bold.application.repository.books.TrnBookStatusRepository;
+import com.bold.application.entity.books.MstBook;
+import com.bold.application.repository.books.MstBookRepository;
 
 @Service
 public class BookService {
 	
 	@Autowired
 	private MstBookRepository repository;
-	private TrnBookStatusRepository statusRepository;
 	
 	// 書籍情報一覧取得
 	public List<MstBook> findAll() {
@@ -29,22 +26,24 @@ public class BookService {
 
 	// 新規書籍登録
 	public MstBook create(MstBook mstBook) {
-		return repository.save(mstBook, mstBook.getBookId());
+		return repository.save(mstBook);
 	}
 
 	// 書籍情報更新
 	public MstBook update(MstBook mstBook) {
-		return repository.save(mstBook, mstBook.getBookId());
+		return repository.save(mstBook);
 	}
 
 	// 書籍状態から書籍情報を取得
-	public List<TrnBookStatus> getBookInfoByStatus(String status) {
-		return statusRepository.findByStatus(status);
+	public List<MstBook> getBookInfoByStatus(String status) {
+		return repository.findByStatus(status);
 	}
 
 	// 書籍状態の更新
-	public TrnBookStatus statusUpdate(int bookId, String status) {
-		return statusRepository.saveAndFlush(bookId, status);
+	public MstBook statusUpdate(int bookId, String status) {
+		MstBook mstBook = repository.findByBookId(bookId);
+		mstBook.setStatus(status);
+		return repository.saveAndFlush(mstBook);
 	}
 
 }

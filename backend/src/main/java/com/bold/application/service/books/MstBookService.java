@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import src.main.java.com.bold.application.entity.books.MstBook;
-import src.main.java.com.bold.application.repository.books.MstBookRepository;
+import com.bold.application.entity.books.MstBook;
+import com.bold.application.repository.books.MstBookRepository;
 
 @Service
 public class MstBookService {
@@ -29,24 +29,24 @@ public class MstBookService {
 			String authorName,
 			String publisher,
 			LocalDate publishedAtStart,
-			LocalDate publishedAtEnd,
-			Integer categoryLevel1,
-			Integer categoryLevel2,
-			String lendStatus,
-			String status,
-			String region) {
+				LocalDate publishedAtEnd,
+				Integer categoryLevel1,
+				Integer categoryLevel2,
+				String bookStatus,
+				String status,
+				String region) {
 		return mstBookRepository.search(
 				bookId,
 				bookName,
 				authorName,
 				publisher,
 				publishedAtStart,
-				publishedAtEnd,
-				categoryLevel1,
-				categoryLevel2,
-				lendStatus,
-				status,
-				region);
+					publishedAtEnd,
+					categoryLevel1,
+					categoryLevel2,
+					bookStatus,
+					status,
+					region);
 	}
 
 	// 書籍登録

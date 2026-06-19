@@ -36,7 +36,7 @@ public class BookLogService {
 
 	// 新規履歴登録
 	public void create(MstBookLog mstBookLog) {
-		repository.save(mstBookLog, mstBookLog.getLendId());
+		repository.save(mstBookLog);
 	}
 
 	// 新規履歴登録（複数一括）
@@ -46,6 +46,6 @@ public class BookLogService {
 
 	// 履歴更新
 	public void update(MstBookLog mstBookLog, int lendId) {
-		repository.save(mstBookLog, mstBookLog.getLendId());
+		repository.save(mstBookLog);
 	}
 }
