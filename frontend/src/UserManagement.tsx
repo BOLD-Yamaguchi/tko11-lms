@@ -84,13 +84,18 @@ function UserManagement() {
         });
 
         if (!response.ok) {
+          if (response.status === 409) {
+            const result = await response.json();
+            alert(result.message);
+            return;
+          }
           throw new Error("登録に失敗しました");
         }
 
         alert("ユーザーを新規登録しました。");
       } catch (error) {
         console.error(error);
-        alert("通信エラーが発生しました。");
+        alert("サーバーとの通信に失敗しました");
         return;
       }
     } else {
@@ -112,10 +117,10 @@ function UserManagement() {
         if (!response.ok) {
           throw new Error("パスワードリセットに失敗しました");
         }
-        alert("パスワードをリセットしました。");
+        alert("パスワードをリセットしました");
       } catch (error) {
         console.error(error);
-        alert("通信エラーが発生しました。");
+        alert("サーバーとの通信に失敗しました");
         return;
       }
     }

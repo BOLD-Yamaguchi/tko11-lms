@@ -112,26 +112,26 @@ function UserEdit() {
 
       if (!response.ok) {
         if (response.status === 409) {
-          alert("このメールアドレスはすでに使用されています。");
+          const result = await response.json();
+          alert(result.message);
           setIsModalOpen(false);
           return;
         }
         throw new Error("更新に失敗しました");
       }
 
-      alert("ユーザー情報を更新しました。");
+      alert("ユーザー情報を更新しました");
       setIsModalOpen(false);
       navigate("/UsersList");
     } catch (error) {
       console.error(error);
-      alert("通信エラーが発生しました。");
+      alert("サーバーとの通信に失敗しました");
       navigate("/UsersList");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ★最終削除確定処理
   const handleDelete = async () => {
     setIsSubmitting(true);
     try {

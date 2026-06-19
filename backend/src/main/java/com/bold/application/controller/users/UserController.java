@@ -42,7 +42,7 @@ public class UserController {
         repository.findByMailAddress(updatedUser.getMailAddress()).ifPresent(existingUser -> {
             String existingCode = existingUser.getEmployeeCode();
             if (existingCode == null || !existingCode.equals(employeeCode)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "EMAIL_ALREADY_EXISTS");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "このメールアドレスはすでに使用されています");
             }
         });
         return repository.findByEmployeeCode(employeeCode)
@@ -59,8 +59,12 @@ public class UserController {
 
     @PostMapping
     public User createUser(@RequestBody User newUser) {
+        if (repository.findByEmployeeCode(newUser.getEmployeeCode()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "この社員コードはすでに使用されています");
+        }
+        
         if (repository.findByMailAddress(newUser.getMailAddress()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "EMAIL_ALREADY_EXISTS");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "このメールアドレスはすでに使用されています");
         }
 
         if (newUser.getUserId() == null) {
