@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bold.application.dto.books.BookSearchRequest;
 import com.bold.application.dto.books.BookSearchResponse;
 import com.bold.application.entity.books.MstBook;
-import com.bold.application.entity.books.TrnBookStatus;
-import com.bold.application.repository.books.TrnBookStatusRepository;
 import com.bold.application.service.books.MstBookService;
 
 @RestController
@@ -30,11 +28,9 @@ import com.bold.application.service.books.MstBookService;
 public class MstBookController {
 
 	private final MstBookService mstBookService;
-	private final TrnBookStatusRepository trnBookStatusRepository;
 
-	public MstBookController(MstBookService mstBookService, TrnBookStatusRepository trnBookStatusRepository) {
+	public MstBookController(MstBookService mstBookService) {
 		this.mstBookService = mstBookService;
-		this.trnBookStatusRepository = trnBookStatusRepository;
 	}
 
 	// テスト用
@@ -58,7 +54,7 @@ public class MstBookController {
 				request.getPublishedAtEnd(),
 				request.getCategoryLevel1(),
 				request.getCategoryLevel2(),
-				request.getLendStatus(),
+					request.getBookStatus(),
 				request.getStatus(),
 				request.getRegion())
 				.stream()
@@ -72,9 +68,6 @@ public class MstBookController {
 	}
 
 	private BookSearchResponse toSearchResponse(MstBook mstBook) {
-		TrnBookStatus bookStatus = trnBookStatusRepository.findByBookId(mstBook.getBookId());
-		return BookSearchResponse.from(
-				mstBook,
-				bookStatus != null ? bookStatus.getLendStatus() : null);
+		return BookSearchResponse.from(mstBook);
 	}
 }
