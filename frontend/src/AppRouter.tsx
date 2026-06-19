@@ -104,7 +104,7 @@ function AppRouter({
         {/* ユーザー管理その他ルート */}
         <Route path="/user-login" element={<Login />} />
         <Route path="/UsersList" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
-        <Route path="/users/:id" element={<ProtectedRoute><UserEdit /></ProtectedRoute>} />
+        <Route path="/users/:employeeCode" element={<ProtectedRoute><UserEdit /></ProtectedRoute>} />
         <Route path="/user-create" element={<UserManagement />}/>
         <Route path="/passwordReset" element={<PasswordReset />} />
 

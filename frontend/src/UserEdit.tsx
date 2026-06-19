@@ -25,6 +25,7 @@ function UserEdit() {
   const [userId, setUserId] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const menuItems: HamburgerMenuItem[] = [
@@ -54,7 +55,6 @@ function UserEdit() {
         const response = await fetch("http://localhost:8080/users");
         const users: User[] = await response.json();
 
-        // URLのemployeeCodeと一致するユーザーを検索
         const currentUser = users.find((u) => u.employeeCode === employeeCode);
 
         if (currentUser) {
@@ -101,7 +101,6 @@ function UserEdit() {
       adminKbn: Number(role),
     };
 
-    console.log("更新実行:", payload);
     try {
       const response = await fetch(`http://localhost:8080/users/${employeeCode}`, {
         method: "PUT",
@@ -127,6 +126,29 @@ function UserEdit() {
       console.error(error);
       alert("通信エラーが発生しました。");
       navigate("/UsersList");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ★最終削除確定処理
+  const handleDelete = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`http://localhost:8080/users/${employeeCode}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("削除に失敗しました");
+      }
+
+      alert("ユーザー情報を削除しました。");
+      setIsDeleteModalOpen(false);
+      navigate("/UsersList");
+    } catch (error) {
+      console.error(error);
+      alert("削除処理中にエラーが発生しました。");
     } finally {
       setIsSubmitting(false);
     }
@@ -164,7 +186,7 @@ function UserEdit() {
                 <input
                   type="text"
                   value={employeeCode || ""}
-                  disabled={false}
+                  disabled={true}
                   style={{
                     width: "100%",
                     padding: "10px",
@@ -196,7 +218,7 @@ function UserEdit() {
                 required={true}
               />
 
-              {/* 拠点支部（東京: 0, 大阪: 1） */}
+              {/* 拠点支部 */}
               <div>
                 <label style={{ fontWeight: "bold", marginBottom: "6px", display: "block", fontSize: "14px" }}>拠点支部</label>
                 <div style={{ display: "flex", gap: "20px" }}>
@@ -223,7 +245,7 @@ function UserEdit() {
                 </div>
               </div>
 
-              {/* 管理者区分（一般ユーザー: 0, 貸出ユーザー: 1, 管理者: 2） */}
+              {/* 管理者区分 */}
               <div>
                 <label style={{ fontWeight: "bold", marginBottom: "6px", display: "block", fontSize: "14px" }}>管理者区分</label>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -261,31 +283,14 @@ function UserEdit() {
               </div>
             </div>
 
-            {/* 下部アクションボタンエリア */}
-            <div style={{ marginTop: "30px", display: "flex", gap: "16px" }}>
+            <div style={{ marginTop: "30px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              {/* 削除ボタン */}
               <button
                 type="button"
-                onClick={() => navigate("/UsersList")}
+                onClick={() => setIsDeleteModalOpen(true)}
                 style={{
-                  flex: 1,
-                  padding: "12px",
-                  backgroundColor: "#fff",
-                  color: "#333",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  cursor: "pointer"
-                }}
-              >
-                戻る
-              </button>
-              <button
-                type="submit"
-                style={{
-                  flex: 1,
-                  padding: "12px",
-                  backgroundColor: "#1976d2",
+                  padding: "12px 24px",
+                  backgroundColor: "#d32f2f",
                   color: "#fff",
                   border: "none",
                   borderRadius: "4px",
@@ -295,38 +300,57 @@ function UserEdit() {
                   boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
                 }}
               >
-                更新
+                削除
               </button>
+
+              {/* 戻る・更新ボタンのグループ */}
+              <div style={{ display: "flex", gap: "16px" }}>
+                <button
+                  type="button"
+                  onClick={() => navigate("/UsersList")}
+                  style={{
+                    padding: "12px 24px",
+                    backgroundColor: "#fff",
+                    color: "#333",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    cursor: "pointer"
+                  }}
+                >
+                  戻る
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    padding: "12px 24px",
+                    backgroundColor: "#1976d2",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "4px",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
+                  }}
+                >
+                  更新
+                </button>
+              </div>
             </div>
           </form>
         </div>
       </main>
 
-      {/* 確認用モーダル表示 */}
       {isModalOpen && (
         <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          backgroundColor: "rgba(0,0,0,0.5)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 1000
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
         }}>
-          <div style={{
-            backgroundColor: "#fff",
-            padding: "24px",
-            borderRadius: "8px",
-            width: "100%",
-            maxWidth: "400px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
-          }}>
+          <div style={{ backgroundColor: "#fff", padding: "24px", borderRadius: "8px", width: "100%", maxWidth: "400px", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>
             <h3 style={{ marginTop: 0, marginBottom: "16px" }}>変更内容の確認</h3>
             <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>以下の内容でユーザー情報を更新しますか？</p>
-
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "14px", marginBottom: "24px" }}>
               <div><strong>社員コード:</strong> {employeeCode}</div>
               <div><strong>メールアドレス:</strong> {email}</div>
@@ -334,40 +358,39 @@ function UserEdit() {
               <div><strong>拠点支部:</strong> {department === "1" ? "大阪" : "東京"}</div>
               <div><strong>管理者区分:</strong> {role === "2" ? "管理者" : role === "1" ? "貸出ユーザー" : "一般ユーザー"}</div>
             </div>
-
             <div style={{ display: "flex", gap: "12px" }}>
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => setIsModalOpen(false)}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  backgroundColor: "#fff",
-                  color: "#333",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  cursor: "pointer"
-                }}
-              >
+              <button type="button" disabled={isSubmitting} onClick={() => setIsModalOpen(false)} style={{ flex: 1, padding: "10px", backgroundColor: "#fff", color: "#333", border: "1px solid #ccc", borderRadius: "4px", cursor: "pointer" }}>
                 キャンセル
               </button>
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={handleUpdate}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  backgroundColor: "#1976d2",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontWeight: "bold",
-                  cursor: "pointer"
-                }}
-              >
+              <button type="button" disabled={isSubmitting} onClick={handleUpdate} style={{ flex: 1, padding: "10px", backgroundColor: "#1976d2", color: "#fff", border: "none", borderRadius: "4px", fontWeight: "bold", cursor: "pointer" }}>
                 {isSubmitting ? "更新中..." : "確定"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isDeleteModalOpen && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
+        }}>
+          <div style={{ backgroundColor: "#fff", padding: "24px", borderRadius: "8px", width: "100%", maxWidth: "400px", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>
+            <h3 style={{ marginTop: 0, marginBottom: "16px", color: "#d32f2f" }}>ユーザー削除の確認</h3>
+            <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>
+              以下のユーザーを<strong>完全に削除</strong>しますか？<br></br>
+              この操作は取り消せません。
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "14px", marginBottom: "24px", backgroundColor: "#fff5f5", padding: "12px", borderRadius: "4px", border: "1px solid #ffe3e3" }}>
+              <div><strong>社員コード:</strong> {employeeCode}</div>
+              <div><strong>氏名:</strong> {name}</div>
+            </div>
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button type="button" disabled={isSubmitting} onClick={() => setIsDeleteModalOpen(false)} style={{ flex: 1, padding: "10px", backgroundColor: "#fff", color: "#333", border: "1px solid #ccc", borderRadius: "4px", cursor: "pointer" }}>
+                キャンセル
+              </button>
+              <button type="button" disabled={isSubmitting} onClick={handleDelete} style={{ flex: 1, padding: "10px", backgroundColor: "#d32f2f", color: "#fff", border: "none", borderRadius: "4px", fontWeight: "bold", cursor: "pointer" }}>
+                {isSubmitting ? "削除中..." : "削除する"}
               </button>
             </div>
           </div>
