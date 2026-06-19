@@ -16,8 +16,8 @@ public class BookSearchRequest {
 	private LocalDate publishedAtEnd;
 	private Integer categoryLevel1;
 	private Integer categoryLevel2;
-	private String lendStatus;
 	private String status;
+	private String bookStatus;
 	private String region;
 
 	public Integer getBookId() {
@@ -84,20 +84,20 @@ public class BookSearchRequest {
 		this.categoryLevel2 = categoryLevel2;
 	}
 
-	public String getLendStatus() {
-		return lendStatus;
-	}
-
-	public void setLendStatus(String lendStatus) {
-		this.lendStatus = lendStatus;
-	}
-
 	public String getStatus() {
 		return status;
 	}
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public String getBookStatus() {
+		return bookStatus;
+	}
+
+	public void setBookStatus(String bookStatus) {
+		this.bookStatus = bookStatus;
 	}
 
 	public String getRegion() {

@@ -3,15 +3,15 @@ package com.bold.application.dto.books;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.bold.application.entity.books.MstBook;
+import src.main.java.com.bold.application.entity.books.MstBook;
 
 public record BookSearchResponse(
 		int bookId,
 		String bookName,
 		String isbn,
 		String authorName,
+		String bookStatus,
 		String status,
-		String lendStatus,
 		String publisher,
 		LocalDate publishedAt,
 		String memo,
@@ -27,14 +27,14 @@ public record BookSearchResponse(
 		return from(mstBook, null);
 	}
 
-	public static BookSearchResponse from(MstBook mstBook, String lendStatus) {
+	public static BookSearchResponse from(MstBook mstBook, String status) {
 		return new BookSearchResponse(
 				mstBook.getBookId(),
 				mstBook.getBookName(),
 				mstBook.getIsbn(),
 				mstBook.getAutherName(),
+				mstBook.getBookStatus(),
 				mstBook.getStatus(),
-				lendStatus,
 				mstBook.getPublisher(),
 				mstBook.getPublished_at(),
 				mstBook.getMemo(),
