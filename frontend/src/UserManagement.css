@@ -101,31 +101,38 @@
 .action-container-col {
   margin-top: 30px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row-reverse;
   align-items: center;
+  border: 1px solid transparent;
   gap: 16px;
+}
+
+.submit-button-full,
+.user-management-back-button {
+  box-sizing: border-box !important;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  overflow: visible;
 }
 
 /* 登録・リセットボタン */
 .submit-button-full {
-  width: 100%;
-  padding: 12px;
-  background-color: #1976d2;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background-color: #fff;
+  color: #1976d2;
+  border-color: #1976d2;
 }
 
 /* 戻るボタン */
-.user-managementback-button {
-  background: none;
-  border: none;
-  color: #1976d2;
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: 14px;
+.user-management-back-button {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+  border-color: #ccc;
+  box-shadow: none;
 }
