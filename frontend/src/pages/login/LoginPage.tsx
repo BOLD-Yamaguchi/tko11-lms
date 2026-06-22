@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { BookIcon, UserIcon, UsersIcon } from '../../Icons'
 import { Footer, Header } from '../../components'
 import type { HamburgerMenuItem } from '../../components'
-import type { UserRole } from '../../types'
+import { UserRole } from '../../types'
 
 type LoginPageProps = {
   onLogin: (role: UserRole) => void
@@ -16,19 +16,19 @@ const roles: Array<{
   icon: ReactNode
 }> = [
   {
-    role: 'general',
+    role: UserRole.General,
     title: '一般ユーザー',
     description: '個人の貸出・予約状況を確認します',
     icon: <UserIcon size={42} />,
   },
   {
-    role: 'operator',
+    role: UserRole.Operator,
     title: '貸出ユーザー',
     description: '全ユーザーの貸出状況を確認します',
     icon: <UsersIcon size={44} />,
   },
   {
-    role: 'admin',
+    role: UserRole.Admin,
     title: '管理者ユーザー',
     description: '書籍登録・更新と返却承認を行います',
     icon: <BookIcon size={44} />,

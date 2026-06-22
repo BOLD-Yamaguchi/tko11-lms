@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { BookIcon, UsersIcon } from '../../Icons'
 import { Toast, UserMenu } from '../../components'
 import { getHomeMenuItems } from '../../constants/navigation'
-import type { UserRole } from '../../types'
+import { UserRole } from '../../types'
 
 type HomeProps = {
   role: UserRole
@@ -14,7 +14,7 @@ function Home({ role, onLogout }: HomeProps) {
   const navigate = useNavigate()
   // 画面内操作の案内をトーストとして一時表示する。
   const [message, setMessage] = useState('')
-  const isAdmin = role === 'admin'
+  const isAdmin = role === UserRole.Admin
   const menuItems = getHomeMenuItems(role)
 
   const openUsers = () => {
@@ -51,9 +51,9 @@ function Home({ role, onLogout }: HomeProps) {
           <span className="system-card-icon"><BookIcon size={72} /></span>
           <h2>書籍管理</h2>
           <p>
-            {role === 'admin' && '書籍の検索・登録・編集ができます'}
-            {role === 'operator' && '書籍の検索・貸出状況の確認ができます'}
-            {role === 'general' && '書籍の検索・予約状況の確認ができます'}
+            {role === UserRole.Admin && '書籍の検索・登録・編集ができます'}
+            {role === UserRole.Operator && '書籍の検索・貸出状況の確認ができます'}
+            {role === UserRole.General && '書籍の検索・予約状況の確認ができます'}
           </p>
           <button type="button" className="button button-primary" onClick={() => navigate('/mypage')}>
             開く

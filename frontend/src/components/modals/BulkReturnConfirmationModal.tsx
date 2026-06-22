@@ -27,10 +27,10 @@ export function BulkReturnConfirmationModal({
       <div className="bulk-return-confirmation">
         <ul>
           {records.map((record) => (
-            <li key={record.employeeNumber}>
+            <li key={record.employeeCode}>
               <strong>{record.title}</strong>
               {' '}
-              <span>{record.borrower}さん（{record.employeeNumber}）</span>
+              <span>{record.borrower}さん（{record.employeeCode}）</span>
             </li>
           ))}
         </ul>

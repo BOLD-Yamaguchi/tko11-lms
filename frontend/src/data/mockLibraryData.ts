@@ -62,10 +62,10 @@ const emptyBook: CatalogBook = {
 }
 
 const borrowingRecords: BorrowingRecord[] = [
-  { employeeNumber: 'S0001', borrower: '山田太郎', title: 'AWS入門', author: '山田太郎', loanDate: '2025/05/20', shelfNumber: 'A-01-03', tierNumber: '01', status: '貸出中' },
-  { employeeNumber: 'S0002', borrower: '佐藤花子', title: 'Python実践', author: '佐藤花子', loanDate: '2025/05/18', shelfNumber: 'B-02-01', tierNumber: '02', status: '貸出中' },
+  { employeeCode: 'S0001', borrower: '山田太郎', title: 'AWS入門', author: '山田太郎', loanDate: '2025/05/20', shelfNumber: 'A-01-03', tierNumber: '01', status: '貸出中' },
+  { employeeCode: 'S0002', borrower: '佐藤花子', title: 'Python実践', author: '佐藤花子', loanDate: '2025/05/18', shelfNumber: 'B-02-01', tierNumber: '02', status: '貸出中' },
   {
-    employeeNumber: 'S0003',
+    employeeCode: 'S0003',
     borrower: '鈴木一郎',
     title: 'データ分析の基礎',
     author: '鈴木一郎',
@@ -75,19 +75,19 @@ const borrowingRecords: BorrowingRecord[] = [
     status: '返却申請中',
     returnComment: '図が多く、理解しやすかったです。',
   },
-  { employeeNumber: 'S0004', borrower: '田中次郎', title: 'Linuxの基礎', author: '田中次郎', loanDate: '2025/05/16', shelfNumber: 'A-02-02', tierNumber: '01', status: '貸出中' },
-  { employeeNumber: 'S0005', borrower: '高橋美咲', title: 'SQL入門', author: '高橋美咲', loanDate: '2025/05/16', shelfNumber: 'B-01-04', tierNumber: '03', status: '貸出中' },
-  { employeeNumber: 'S0006', borrower: '伊藤健一', title: 'データベース設計', author: '伊藤健一', loanDate: '2025/05/17', shelfNumber: 'C-03-01', tierNumber: '03', status: '貸出中' },
-  { employeeNumber: 'S0007', borrower: '渡辺直樹', title: '機械学習の基礎', author: '渡辺直樹', loanDate: '2025/05/19', shelfNumber: 'A-03-02', tierNumber: '01', status: '貸出中' },
-  { employeeNumber: 'S0008', borrower: '中村真由美', title: 'Webアプリ開発入門', author: '中村真由美', loanDate: '2025/05/21', shelfNumber: 'B-03-03', tierNumber: '02', status: '貸出中' },
-  { employeeNumber: 'S0009', borrower: '小林大輔', title: 'ネットワークの基礎', author: '小林大輔', loanDate: '2025/05/14', shelfNumber: 'C-02-04', tierNumber: '03', status: '貸出中' },
-  { employeeNumber: 'S0010', borrower: '加藤優子', title: '情報セキュリティ入門', author: '加藤優子', loanDate: '2025/05/13', shelfNumber: 'A-01-05', tierNumber: '01', status: '貸出中' },
+  { employeeCode: 'S0004', borrower: '田中次郎', title: 'Linuxの基礎', author: '田中次郎', loanDate: '2025/05/16', shelfNumber: 'A-02-02', tierNumber: '01', status: '貸出中' },
+  { employeeCode: 'S0005', borrower: '高橋美咲', title: 'SQL入門', author: '高橋美咲', loanDate: '2025/05/16', shelfNumber: 'B-01-04', tierNumber: '03', status: '貸出中' },
+  { employeeCode: 'S0006', borrower: '伊藤健一', title: 'データベース設計', author: '伊藤健一', loanDate: '2025/05/17', shelfNumber: 'C-03-01', tierNumber: '03', status: '貸出中' },
+  { employeeCode: 'S0007', borrower: '渡辺直樹', title: '機械学習の基礎', author: '渡辺直樹', loanDate: '2025/05/19', shelfNumber: 'A-03-02', tierNumber: '01', status: '貸出中' },
+  { employeeCode: 'S0008', borrower: '中村真由美', title: 'Webアプリ開発入門', author: '中村真由美', loanDate: '2025/05/21', shelfNumber: 'B-03-03', tierNumber: '02', status: '貸出中' },
+  { employeeCode: 'S0009', borrower: '小林大輔', title: 'ネットワークの基礎', author: '小林大輔', loanDate: '2025/05/14', shelfNumber: 'C-02-04', tierNumber: '03', status: '貸出中' },
+  { employeeCode: 'S0010', borrower: '加藤優子', title: '情報セキュリティ入門', author: '加藤優子', loanDate: '2025/05/13', shelfNumber: 'A-01-05', tierNumber: '01', status: '貸出中' },
 ]
 
 const reservationRecords: ReservationRecord[] = [
-  { employeeNumber: 'S0004', title: '機械学習の基礎', author: '渡辺直樹', reserver: '田中次郎', reservationDate: '2025/05/24', shelfNumber: 'A', tierNumber: '01' },
-  { employeeNumber: 'S0008', title: 'ネットワークの基礎', author: '小林大輔', reserver: '中村真由美', reservationDate: '2025/05/23', shelfNumber: 'C', tierNumber: '03' },
-  { employeeNumber: 'S0010', title: 'Webアプリ開発入門', author: '中村真由美', reserver: '加藤優子', reservationDate: '2025/05/24', shelfNumber: 'B', tierNumber: '02' },
+  { employeeCode: 'S0004', title: '機械学習の基礎', author: '渡辺直樹', reserver: '田中次郎', reservationDate: '2025/05/24', shelfNumber: 'A', tierNumber: '01' },
+  { employeeCode: 'S0008', title: 'ネットワークの基礎', author: '小林大輔', reserver: '中村真由美', reservationDate: '2025/05/23', shelfNumber: 'C', tierNumber: '03' },
+  { employeeCode: 'S0010', title: 'Webアプリ開発入門', author: '中村真由美', reserver: '加藤優子', reservationDate: '2025/05/24', shelfNumber: 'B', tierNumber: '02' },
 ]
 
 const userLoanHistory: UserLoanHistory[] = [
@@ -110,7 +110,7 @@ const roleProfiles: Record<UserRole, UserProfile> = {
     title: 'ユーザー情報',
     label: '一般ユーザー',
     userId: 'U0001',
-    employeeNumber: 'S0001',
+    employeeCode: 'S0001',
     name: '山田 太郎',
     location: '東京',
   },
@@ -118,7 +118,7 @@ const roleProfiles: Record<UserRole, UserProfile> = {
     title: 'ユーザー情報',
     label: '貸出ユーザー',
     userId: 'L0001',
-    employeeNumber: 'S0101',
+    employeeCode: 'S0101',
     name: '貸出 担当',
     location: '東京',
   },
@@ -126,7 +126,7 @@ const roleProfiles: Record<UserRole, UserProfile> = {
     title: 'ユーザー情報',
     label: '管理者ユーザー',
     userId: 'A0001',
-    employeeNumber: 'S9001',
+    employeeCode: 'S9001',
     name: '管理 太郎',
     location: '東京',
   },
@@ -177,7 +177,7 @@ export const mockLibraryData: LibraryData = {
     },
     B0004: {
       reserverName: '佐藤花子',
-      reservationEmployeeNumber: 'S0002',
+      reservationemployeeCode: 'S0002',
       reservationDate: '2026/04/01',
     },
   },

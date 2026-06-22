@@ -19,8 +19,8 @@ import { useLibraryDataValue } from '../../data/libraryQueries'
 import type {
   CatalogBook,
   LoanStatus,
-  UserRole,
 } from '../../types'
+import {UserRole} from '../../types'
 import {
   initialBookSearchState,
 } from './searchState'
@@ -62,7 +62,7 @@ function BookSearch({ role }: BookSearchProps) {
   const [isSearching, setIsSearching] = useState(false)
   const collectionOptions = [
     ...COLLECTION_STATUS_OPTIONS,
-    ...(role === 'admin' ? [ADMIN_COLLECTION_STATUS_OPTION] : []),
+    ...(role === UserRole.Admin ? [ADMIN_COLLECTION_STATUS_OPTION] : []),
   ]
   const getMinorCategoryOptions = (majorCategory: string) => (
     majorCategory
@@ -99,7 +99,7 @@ function BookSearch({ role }: BookSearchProps) {
         const isDisposed = book.collectionStatus === '廃棄'
 
         return (
-          (role === 'admin' || !isDisposed)
+          (role === UserRole.Admin || !isDisposed)
           && exact(book.id, conditions.id)
           && includes(book.title, conditions.title)
           && includes(book.author, conditions.author)

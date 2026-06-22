@@ -43,6 +43,9 @@ export function Header({
   }
 
   const username = sessionStorage.getItem("username")
+  const employeeCode = sessionStorage.getItem("employeeCode")
+  const adminKbn = sessionStorage.getItem("adminKbn")
+
   return (
     <AppBar
       position='fixed'
@@ -99,9 +102,11 @@ export function Header({
                 alignItems: 'center',
               }}
             >
-              <Typography variant="body2">
-                {username} さん
-              </Typography>
+              <span className={`logged-in-user header-login-user ${adminKbn}`}>
+                <span className="logged-in-prefix">ログイン中：</span>
+                <strong>{username}</strong>
+                <span className="logged-in-id">（{employeeCode}）</span>
+              </span>
 
               <Button
                 color="inherit"

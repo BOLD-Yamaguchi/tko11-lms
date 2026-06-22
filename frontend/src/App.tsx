@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { UserRole } from './types'
 import AppRouter from './AppRouter'
 import {
   importBooksFromCsv,
@@ -13,16 +14,22 @@ import type {
   BookStatusDetail,
   LibraryData,
   LoanStatus,
-  UserRole,
 } from './types'
 
-const roleStorageKey = 'tko11-mock-user-role'
+const roleStorageKey = 'adminKbn'
 
 function readStoredRole(): UserRole | null {
-  const stored = sessionStorage.getItem(roleStorageKey)
-  return stored === 'general' || stored === 'operator' || stored === 'admin'
-    ? stored
-    : null
+  const stored = Number(sessionStorage.getItem(roleStorageKey))
+
+  switch (stored) {
+    case UserRole.General:
+    case UserRole.Operator:
+    case UserRole.Admin:
+      return stored
+
+    default:
+      return null
+  }
 }
 
 function App() {
@@ -47,10 +54,9 @@ function App() {
   }
 
   const login = (nextRole: UserRole) => {
-    sessionStorage.setItem(roleStorageKey, nextRole)
+    sessionStorage.setItem(roleStorageKey, String(nextRole))
     setRole(nextRole)
   }
-
   const logout = () => {
     sessionStorage.removeItem(roleStorageKey)
     setRole(null)

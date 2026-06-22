@@ -1,5 +1,5 @@
 import type { HamburgerMenuItem } from '../components/HamburgerMenu'
-import type { UserRole } from '../types'
+import { UserRole } from '../types'
 
 const HOME_MENU_ITEM = {
   id: 'home',
@@ -26,8 +26,8 @@ const LOGOUT_MENU_ITEM = {
 } as const
 
 export function getMyPageTitle(role: UserRole) {
-  if (role === 'admin') return '書籍管理'
-  if (role === 'operator') return '貸出ページ'
+  if (role === UserRole.Admin) return '書籍管理'
+  if (role === UserRole.Operator) return '貸出ページ'
   return 'マイページ'
 }
 
@@ -46,7 +46,7 @@ export function getHomeMenuItems(role: UserRole): HamburgerMenuItem[] {
       label: '書籍管理',
       description: `${getMyPageTitle(role)}と書籍検索を開きます`,
     },
-    ...(role === 'admin'
+    ...(role === UserRole.Admin
       ? [{ id: 'users', label: 'ユーザー管理', description: 'ユーザー管理モックを確認します' }]
       : []),
     { ...LOGOUT_MENU_ITEM, description: 'ログイン画面へ戻ります' },
@@ -57,7 +57,7 @@ export function getMyPageMenuItems(role: UserRole): HamburgerMenuItem[] {
   return [
     HOME_MENU_ITEM,
     SEARCH_MENU_ITEM,
-    ...(role === 'admin' ? [CREATE_MENU_ITEM] : []),
+    ...(role === UserRole.Admin ? [CREATE_MENU_ITEM] : []),
     LOGOUT_MENU_ITEM,
   ]
 }
@@ -65,7 +65,7 @@ export function getMyPageMenuItems(role: UserRole): HamburgerMenuItem[] {
 export function getBookSearchMenuItems(role: UserRole): HamburgerMenuItem[] {
   return [
     getMyPageMenuItem(role),
-    ...(role === 'admin' ? [CREATE_MENU_ITEM] : []),
+    ...(role === UserRole.Admin ? [CREATE_MENU_ITEM] : []),
     HOME_MENU_ITEM,
     LOGOUT_MENU_ITEM,
   ]
@@ -88,7 +88,7 @@ export function getBookDetailMenuItems(role: UserRole): HamburgerMenuItem[] {
   return [
     getMyPageMenuItem(role),
     SEARCH_MENU_ITEM,
-    ...(role === 'admin' ? [CREATE_MENU_ITEM] : []),
+    ...(role === UserRole.Admin ? [CREATE_MENU_ITEM] : []),
     HOME_MENU_ITEM,
     LOGOUT_MENU_ITEM,
   ]

@@ -1,13 +1,14 @@
+import type { ReactNode } from 'react'
+
 export type CollectionStatus = '開架' | '閉架' | '廃棄'
 export type LibraryLocation = '東京' | '大阪'
 export type LoanStatus = '貸出可' | '貸出中' | '返却申請中' | '予約中'
-export type UserRole = 'general' | 'operator' | 'admin'
 
 export type UserProfile = {
   title: string
   label: string
   userId: string
-  employeeNumber: string
+  employeeCode: string
   name: string
   location: LibraryLocation
 }
@@ -16,9 +17,34 @@ export type BookStatusDetail = {
   lendUserId?: string
   borrowerName?: string
   reserverName?: string
-  reservationEmployeeNumber?: string
+  reservationemployeeCode?: string
   returnDueDate?: string
   reservationDate?: string
+}
+
+export const UserRole = {
+  General: 0,
+  Operator: 1,
+  Admin: 2,
+} as const
+
+export type UserRole =
+  typeof UserRole[keyof typeof UserRole]
+
+export function getRoleName(role: UserRole): string {
+  switch (role) {
+    case UserRole.General:
+      return '一般利用者'
+
+    case UserRole.Operator:
+      return '貸出管理者'
+
+    case UserRole.Admin:
+      return '管理者'
+
+    default:
+      return '不明'
+  }
 }
 
 export type Book = {
@@ -37,6 +63,13 @@ export type Book = {
   notes: string
 }
 
+
+export type AppFrameProps = {
+  role: UserRole
+  onLogout: () => void
+  children: ReactNode
+}
+
 export type CatalogBook = Book & {
   loanStatus: LoanStatus
 }
@@ -50,7 +83,7 @@ export type LoanHistory = {
 }
 
 export type BorrowingRecord = {
-  employeeNumber: string
+  employeeCode: string
   borrower: string
   title: string
   author: string
@@ -62,7 +95,7 @@ export type BorrowingRecord = {
 }
 
 export type ReservationRecord = {
-  employeeNumber: string
+  employeeCode: string
   title: string
   author: string
   reserver: string

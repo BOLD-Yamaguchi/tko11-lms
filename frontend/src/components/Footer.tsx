@@ -16,7 +16,6 @@ export interface FooterProps {
 
 export function Footer({
   title = 'React Component Set',
-  description = 'MUI をベースにした画面部品のサンプルセットです。',
   links = [],
 }: FooterProps) {
   return (
@@ -52,9 +51,6 @@ export function Footer({
             sx={{ color: 'var(--text-h)', fontWeight: 700 }}
           >
             {title}
-          </Typography>
-          <Typography variant='body2' sx={{ color: 'var(--text)' }}>
-            {description}
           </Typography>
         </Box>
         {links.length > 0 && (
