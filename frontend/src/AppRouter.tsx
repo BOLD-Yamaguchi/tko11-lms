@@ -33,7 +33,6 @@ import type {
   LoanStatus,
   UserRole,
 } from './types'
-import type { Book, LoanStatus, UserRole } from './types'
 import ProtectedRoute from "./components/ProtectedRoute";
 
 type AppRouterProps = {
@@ -166,7 +165,6 @@ function AppRouter({
               )
               : <Navigate to="/login" replace />
           }
-          element={role ? <MyPage role={role} onLogout={onLogout} /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/search"
@@ -179,7 +177,6 @@ function AppRouter({
               )
               : <Navigate to="/login" replace />
           }
-          element={role ? <BookSearch role={role} onLogout={onLogout} /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/create"
