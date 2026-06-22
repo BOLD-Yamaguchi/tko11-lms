@@ -1,0 +1,202 @@
+/* 全体レイアウト */
+.user-edit-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+}
+
+.user-edit-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+/* カードデザイン */
+.user-edit-card {
+  width: 100%;
+  max-width: 500px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  box-sizing: border-box;
+}
+
+.user-edit-title {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+.form-flex-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 入力欄（非活性） */
+.form-label {
+  font-weight: bold;
+  margin-bottom: 6px;
+  display: block;
+  font-size: 14px;
+}
+
+.disabled-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  color: #555;
+  cursor: not-allowed;
+  box-sizing: border-box;
+}
+
+/* ラジオボタン周り */
+.radio-group-row {
+  display: flex;
+  gap: 20px;
+}
+
+.radio-group-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ボタンレイアウト */
+.action-container {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.right-buttons {
+  display: flex;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.btn {
+  box-sizing: border-box !important;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.delete-button {
+  background-color: #d32f2f;
+  color: #fff;
+  border-color: #d32f2f;
+}
+
+.user-edit-back-button {
+  background-color: #fff;
+  color: #333;
+  border-color: #ccc;
+  box-shadow: none;
+}
+
+.submit-button {
+  background-color: #1976d2;
+  color: #fff;
+  border-color: #1976d2;
+}
+
+.submit-button {
+  background-color: #1976d2;
+  color: #fff;
+  border-color: #1976d2;
+}
+
+/* モーダル共通 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.modal-description {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.modal-data-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  border: none;
+}
+
+.modal-btn-cancel {
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+/* 削除モーダル */
+.delete-title {
+  color: #d32f2f;
+}
+
+.delete-data-box {
+  background-color: #fff5f5;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #ffe3e3;
+}

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Header from "./components/Header";
 import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 import { TextBox } from "./components/TextBox";
+import "./UserEdit.css";
 
 type User = {
   userId: string;
@@ -27,7 +28,7 @@ function UserEdit() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const menuItems: HamburgerMenuItem[] = [
     { id: "home", label: "ホーム", description: "トップ画面へ移動" },
     { id: "books", label: "書籍管理", description: "書籍一覧を表示" },
@@ -96,7 +97,7 @@ function UserEdit() {
       userId,
       username: name,
       mailAddress: email,
-      employeeCode: employeeCode, 
+      employeeCode: employeeCode,
       affiliationKbn: Number(department),
       adminKbn: Number(role),
     };
@@ -155,7 +156,7 @@ function UserEdit() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#f9f9f9" }}>
+    <div className="user-edit-container">
       <Header
         title="書籍貸出管理システム"
         eyebrow="BOOK MANAGEMENT SYSTEM"
@@ -163,40 +164,21 @@ function UserEdit() {
         onMenuSelect={handleMenuSelect}
       />
 
-      <main style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px 20px" }}>
-        <div style={{
-          width: "100%",
-          maxWidth: "500px",
-          backgroundColor: "#fff",
-          borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          padding: "30px",
-          boxSizing: "border-box"
-        }}>
-          <h2 style={{ textAlign: "center", marginBottom: "24px", color: "#333" }}>ユーザー情報編集</h2>
+      <main className="user-edit-main">
+        <div className="user-edit-card">
+          <h2 className="user-edit-title">ユーザー情報編集</h2>
 
           <form onSubmit={handleOpenModal}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            <div className="form-flex-container">
 
               {/* 社員コード（非活性・閲覧のみ） */}
               <div>
-                <label style={{ fontWeight: "bold", marginBottom: "6px", display: "block", fontSize: "14px" }}>
-                  社員コード
-                </label>
+                <label className="form-label">社員コード</label>
                 <input
                   type="text"
                   value={employeeCode || ""}
                   disabled={true}
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                    backgroundColor: "#f5f5f5",
-                    color: "#555",
-                    cursor: "not-allowed",
-                    boxSizing: "border-box"
-                  }}
+                  className="disabled-input"
                 />
               </div>
 
@@ -220,9 +202,9 @@ function UserEdit() {
 
               {/* 拠点支部 */}
               <div>
-                <label style={{ fontWeight: "bold", marginBottom: "6px", display: "block", fontSize: "14px" }}>拠点支部</label>
-                <div style={{ display: "flex", gap: "20px" }}>
-                  <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                <label className="form-label">拠点支部</label>
+                <div className="radio-group-row">
+                  <label className="radio-label">
                     <input
                       type="radio"
                       name="department"
@@ -232,7 +214,7 @@ function UserEdit() {
                     />
                     東京
                   </label>
-                  <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <label className="radio-label">
                     <input
                       type="radio"
                       name="department"
@@ -247,9 +229,9 @@ function UserEdit() {
 
               {/* 管理者区分 */}
               <div>
-                <label style={{ fontWeight: "bold", marginBottom: "6px", display: "block", fontSize: "14px" }}>管理者区分</label>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                <label className="form-label">管理者区分</label>
+                <div className="radio-group-col">
+                  <label className="radio-label">
                     <input
                       type="radio"
                       name="role"
@@ -259,7 +241,7 @@ function UserEdit() {
                     />
                     一般ユーザー
                   </label>
-                  <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <label className="radio-label">
                     <input
                       type="radio"
                       name="role"
@@ -269,7 +251,7 @@ function UserEdit() {
                     />
                     貸出ユーザー
                   </label>
-                  <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <label className="radio-label">
                     <input
                       type="radio"
                       name="role"
@@ -283,57 +265,32 @@ function UserEdit() {
               </div>
             </div>
 
-            <div style={{ marginTop: "30px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              {/* 削除ボタン */}
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                style={{
-                  padding: "12px 24px",
-                  backgroundColor: "#d32f2f",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
-                }}
-              >
-                削除
-              </button>
+            <div className="action-container">
+              <div>
+                {sessionStorage.getItem("employeeCode") !== employeeCode && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    disabled={isSubmitting}
+                    className="btn delete-button"
+                  >
+                    削除
+                  </button>
+                )}
+              </div>
 
               {/* 戻る・更新ボタンのグループ */}
-              <div style={{ display: "flex", gap: "16px" }}>
+              <div className="right-buttons">
                 <button
                   type="button"
                   onClick={() => navigate("/UsersList")}
-                  style={{
-                    padding: "12px 24px",
-                    backgroundColor: "#fff",
-                    color: "#333",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    fontSize: "16px",
-                    fontWeight: "bold",
-                    cursor: "pointer"
-                  }}
+                  className="btn user-edit-back-button"
                 >
                   戻る
                 </button>
                 <button
                   type="submit"
-                  style={{
-                    padding: "12px 24px",
-                    backgroundColor: "#1976d2",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "4px",
-                    fontSize: "16px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
-                  }}
+                  className="btn submit-button"
                 >
                   更新
                 </button>
@@ -344,25 +301,22 @@ function UserEdit() {
       </main>
 
       {isModalOpen && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-          backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
-        }}>
-          <div style={{ backgroundColor: "#fff", padding: "24px", borderRadius: "8px", width: "100%", maxWidth: "400px", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>
-            <h3 style={{ marginTop: 0, marginBottom: "16px" }}>変更内容の確認</h3>
-            <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>以下の内容でユーザー情報を更新しますか？</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "14px", marginBottom: "24px" }}>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>変更内容の確認</h3>
+            <p className="modal-description">以下の内容でユーザー情報を更新しますか？</p>
+            <div className="modal-data-list">
               <div><strong>社員コード:</strong> {employeeCode}</div>
               <div><strong>メールアドレス:</strong> {email}</div>
               <div><strong>氏名:</strong> {name}</div>
               <div><strong>拠点支部:</strong> {department === "1" ? "大阪" : "東京"}</div>
               <div><strong>管理者区分:</strong> {role === "2" ? "管理者" : role === "1" ? "貸出ユーザー" : "一般ユーザー"}</div>
             </div>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <button type="button" disabled={isSubmitting} onClick={() => setIsModalOpen(false)} style={{ flex: 1, padding: "10px", backgroundColor: "#fff", color: "#333", border: "1px solid #ccc", borderRadius: "4px", cursor: "pointer" }}>
+            <div className="modal-buttons">
+              <button type="button" disabled={isSubmitting} onClick={() => setIsModalOpen(false)} className="modal-btn modal-btn-cancel">
                 キャンセル
               </button>
-              <button type="button" disabled={isSubmitting} onClick={handleUpdate} style={{ flex: 1, padding: "10px", backgroundColor: "#1976d2", color: "#fff", border: "none", borderRadius: "4px", fontWeight: "bold", cursor: "pointer" }}>
+              <button type="button" disabled={isSubmitting} onClick={handleUpdate} className="modal-btn submit-button">
                 {isSubmitting ? "更新中..." : "確定"}
               </button>
             </div>
@@ -371,25 +325,22 @@ function UserEdit() {
       )}
 
       {isDeleteModalOpen && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-          backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
-        }}>
-          <div style={{ backgroundColor: "#fff", padding: "24px", borderRadius: "8px", width: "100%", maxWidth: "400px", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>
-            <h3 style={{ marginTop: 0, marginBottom: "16px", color: "#d32f2f" }}>ユーザー削除の確認</h3>
-            <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>
-              以下のユーザーを<strong>完全に削除</strong>しますか？<br></br>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="delete-title">ユーザー削除の確認</h3>
+            <p className="modal-description">
+              以下のユーザーを<strong>完全に削除</strong>しますか？<br />
               この操作は取り消せません。
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "14px", marginBottom: "24px", backgroundColor: "#fff5f5", padding: "12px", borderRadius: "4px", border: "1px solid #ffe3e3" }}>
+            <div className="modal-data-list delete-data-box">
               <div><strong>社員コード:</strong> {employeeCode}</div>
               <div><strong>氏名:</strong> {name}</div>
             </div>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <button type="button" disabled={isSubmitting} onClick={() => setIsDeleteModalOpen(false)} style={{ flex: 1, padding: "10px", backgroundColor: "#fff", color: "#333", border: "1px solid #ccc", borderRadius: "4px", cursor: "pointer" }}>
+            <div className="modal-buttons">
+              <button type="button" disabled={isSubmitting} onClick={() => setIsDeleteModalOpen(false)} className="modal-btn modal-btn-cancel">
                 キャンセル
               </button>
-              <button type="button" disabled={isSubmitting} onClick={handleDelete} style={{ flex: 1, padding: "10px", backgroundColor: "#d32f2f", color: "#fff", border: "none", borderRadius: "4px", fontWeight: "bold", cursor: "pointer" }}>
+              <button type="button" disabled={isSubmitting} onClick={handleDelete} className="modal-btn delete-button">
                 {isSubmitting ? "削除中..." : "削除する"}
               </button>
             </div>

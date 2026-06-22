@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "./components/Header";
 import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 import { TextBox } from "./components/TextBox";
+import "./UserManagement.css";
 
 function UserManagement() {
   const navigate = useNavigate();
@@ -99,7 +100,7 @@ function UserManagement() {
         return;
       }
     } else {
-      // パスワードリセットのAPIリクエスト（Controllerの @PutMapping("/password-reset") に対応）
+      // パスワードリセットのAPIリクエスト
       const payload = {
         mailAddress: email,
         password: password,
@@ -129,7 +130,7 @@ function UserManagement() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#f9f9f9" }}>
+    <div className="user-mgmt-container">
       <Header
         title="書籍貸出管理システム"
         eyebrow="BOOK MANAGEMENT SYSTEM"
@@ -137,24 +138,16 @@ function UserManagement() {
         onMenuSelect={handleMenuSelect}
       />
 
-      <main style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px 20px" }}>
-        <div style={{
-          width: "100%",
-          maxWidth: "500px",
-          backgroundColor: "#fff",
-          borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          padding: "30px",
-          boxSizing: "border-box"
-        }}>
-          <h2 style={{ textAlign: "center", marginBottom: "24px", color: "#333" }}>ユーザー管理画面</h2>
+      <main className="user-mgmt-main">
+        <div className="user-mgmt-card">
+          <h2 className="user-mgmt-title">ユーザー管理画面</h2>
 
           <form onSubmit={handleSubmit}>
             {/* 操作選択 */}
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ fontWeight: "bold", marginBottom: "8px", display: "block" }}>操作選択</label>
-              <div style={{ display: "flex", gap: "20px" }}>
-                <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+            <div className="operation-select-container">
+              <label className="form-label-bold">操作選択</label>
+              <div className="radio-group-row">
+                <label className="radio-label">
                   <input
                     type="radio"
                     name="operation"
@@ -164,7 +157,7 @@ function UserManagement() {
                   />
                   新規ユーザー登録
                 </label>
-                <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                <label className="radio-label">
                   <input
                     type="radio"
                     name="operation"
@@ -177,10 +170,10 @@ function UserManagement() {
               </div>
             </div>
 
-            <hr style={{ border: "none", borderTop: "1px solid #eee", margin: "20px 0" }} />
+            <hr className="form-divider" />
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              <h3 style={{ margin: 0, fontSize: "16px", color: "#666" }}>ユーザー情報入力エリア</h3>
+            <div className="form-flex-container">
+              <h3 className="area-subtitle">ユーザー情報入力エリア</h3>
 
               {/* ユーザーID (メールアドレス) */}
               <TextBox
@@ -233,9 +226,9 @@ function UserManagement() {
 
                   {/* 拠点支部（東京: 0, 大阪: 1） */}
                   <div>
-                    <label style={{ fontWeight: "bold", marginBottom: "6px", display: "block", fontSize: "14px" }}>拠点支部</label>
-                    <div style={{ display: "flex", gap: "20px" }}>
-                      <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <label className="form-label-small">拠点支部</label>
+                    <div className="radio-group-row">
+                      <label className="radio-label">
                         <input
                           type="radio"
                           name="department"
@@ -245,7 +238,7 @@ function UserManagement() {
                         />
                         東京
                       </label>
-                      <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <label className="radio-label">
                         <input
                           type="radio"
                           name="department"
@@ -260,9 +253,9 @@ function UserManagement() {
 
                   {/* 管理者区分 */}
                   <div>
-                    <label style={{ fontWeight: "bold", marginBottom: "6px", display: "block", fontSize: "14px" }}>管理者区分</label>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                      <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <label className="form-label-small">管理者区分</label>
+                    <div className="radio-group-col">
+                      <label className="radio-label">
                         <input
                           type="radio"
                           name="role"
@@ -272,7 +265,7 @@ function UserManagement() {
                         />
                         一般ユーザー
                       </label>
-                      <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <label className="radio-label">
                         <input
                           type="radio"
                           name="role"
@@ -282,7 +275,7 @@ function UserManagement() {
                         />
                         貸出ユーザー
                       </label>
-                      <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <label className="radio-label">
                         <input
                           type="radio"
                           name="role"
@@ -296,45 +289,27 @@ function UserManagement() {
                   </div>
                 </>
               ) : (
-                <div style={{ padding: "10px", backgroundColor: "#f0f0f0", borderRadius: "4px", fontSize: "13px", color: "#777" }}>
+                <div className="reset-mode-notice">
                   ※パスワードリセットモードでは、氏名・社員コード・拠点支部・管理者区分は変更できません。
                 </div>
               )}
             </div>
 
             {/* アクションボタン */}
-            <div style={{ marginTop: "30px", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+            <div className="action-container-col">
               <button
                 type="submit"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  backgroundColor: "#1976d2",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
-                }}
+                className="submit-button-full"
               >
-                {operation === "create" ? "登録する" : "パスワードをリセットする"}
+                {operation === "create" ? "登録" : "リセット"}
               </button>
 
               <button
                 type="button"
                 onClick={() => navigate("/UsersList")}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#1976d2",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  fontSize: "14px"
-                }}
+                className="user-management-back-button"
               >
-                ユーザー一覧画面へ戻る
+                戻る
               </button>
             </div>
           </form>

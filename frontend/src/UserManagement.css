@@ -1,0 +1,131 @@
+/* 全体レイアウト */
+.user-mgmt-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+}
+
+.user-mgmt-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+/* カードデザイン */
+.user-mgmt-card {
+  width: 100%;
+  max-width: 500px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  box-sizing: border-box;
+}
+
+.user-mgmt-title {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+/* 操作選択エリア */
+.operation-select-container {
+  margin-bottom: 20px;
+}
+
+.form-label-bold {
+  font-weight: bold;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.form-label-small {
+  font-weight: bold;
+  margin-bottom: 6px;
+  display: block;
+  font-size: 14px;
+}
+
+/* ラジオボタン周り */
+.radio-group-row {
+  display: flex;
+  gap: 20px;
+}
+
+.radio-group-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 区切り線 */
+.form-divider {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 20px 0;
+}
+
+/* フォームの共通縦並び */
+.form-flex-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.area-subtitle {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+}
+
+/* パスワードリセット時の注意書き */
+.reset-mode-notice {
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #777;
+}
+
+/* アクションボタン */
+.action-container-col {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 登録・リセットボタン */
+.submit-button-full {
+  width: 100%;
+  padding: 12px;
+  background-color: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 戻るボタン */
+.user-managementback-button {
+  background: none;
+  border: none;
+  color: #1976d2;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px;
+}

@@ -62,7 +62,7 @@ public class UserController {
         if (repository.findByEmployeeCode(newUser.getEmployeeCode()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "この社員コードはすでに使用されています");
         }
-        
+
         if (repository.findByMailAddress(newUser.getMailAddress()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "このメールアドレスはすでに使用されています");
         }
@@ -98,9 +98,7 @@ public class UserController {
     public void deleteUser(@PathVariable String employeeCode) {
         User user = repository.findByEmployeeCode(employeeCode)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "User not found with employeeCode " + employeeCode));
-
+                        "指定したユーザーが見つかりません " + employeeCode));
         repository.delete(user);
     }
-
 }
