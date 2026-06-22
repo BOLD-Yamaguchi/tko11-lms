@@ -6,12 +6,12 @@ import { Footer } from "./components/Footer";
 import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 
 import { MenuCard } from "./components/MenuCard";
-import { ModalDialog } from "./components/modals/ModalDialog";
 import { BookOpen, Users } from "lucide-react";
 
-export default function HomePage() {
+
+
+function HomePage() {
   const navigate = useNavigate();
-  const [isModalDialogOpen, setIsModalDialogOpen] = useState(false);
 
   // ホバー状態を管理するステート
   const [isHoveredBooks, setIsHoveredBooks] = useState(false);
@@ -47,11 +47,6 @@ export default function HomePage() {
         navigate("/UsersList"); 
         break;
     }
-  };
-
-  const handleLogout = () => {
-    console.log("ログアウトしました");
-    setIsModalDialogOpen(false);
   };
 
   // メニューカード共通のベーススタイル
@@ -151,22 +146,8 @@ export default function HomePage() {
 
         </div>
       </main>
-
-      {/* ログアウトモーダル */}
-      <ModalDialog
-        open={isModalDialogOpen}
-        title="ログアウト"
-        description="本当にログアウトしますか？"
-        confirmLabel="ログアウト"
-        cancelLabel="キャンセル"
-        tone="danger"
-        onClose={() => setIsModalDialogOpen(false)}
-        onConfirm={handleLogout}
-      />
-      <Footer
-        title="書籍貸出管理システム"
-        description="テスト段階のモック画面です。"
-      />
     </div>
   );
 }
+
+export default HomePage;

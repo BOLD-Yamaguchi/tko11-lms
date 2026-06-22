@@ -1,5 +1,6 @@
 package com.bold.application.service;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.bold.application.dto.LoginRequest;
@@ -10,20 +11,29 @@ import com.bold.application.repository.users.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+    
+    // BCryptエンコーダーの用意
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    // コンストラクタ注入
     public UserService(UserRepository userRepository) {
-
         this.userRepository = userRepository;
     }
 
-    public boolean login(LoginRequest request) {
-
-        User user =userRepository.findByEmployeeCode(request.getEmployeeCode()).orElse(null);
+    public User login(LoginRequest request) {
+        // ユーザーの存在チェック
+        User user = userRepository.findByEmployeeCode(request.getEmployeeCode())
+                .orElse(null);
 
         if (user == null) {
-            return false;
+            return null;
         }
 
-        return user.getPassword().equals(request.getPassword());
+        // BCryptでのパスワード一致チェック（安全な比較）
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return null;
+        }
+
+        return user;
     }
 }

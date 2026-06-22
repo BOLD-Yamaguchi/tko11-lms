@@ -9,7 +9,6 @@ import {
   useNavigate,
 } from 'react-router-dom'
 import HomePage from './HomePage'
-import Login from './Login'
 import PasswordReset from './passwordReset'
 import UserEdit from './UserEdit'
 import UserManagement from './UserManagement'
@@ -20,6 +19,7 @@ import {
   LogoutConfirmationModal,
 } from './components'
 import type { HamburgerMenuItem } from './components'
+import Login from './Login'
 import CreateBook from './pages/book-create/CreateBook'
 import BookDetail from './pages/book-detail/BookDetail'
 import EditBook from './pages/book-edit/EditBook'
@@ -33,6 +33,8 @@ import type {
   LoanStatus,
   UserRole,
 } from './types'
+import type { Book, LoanStatus, UserRole } from './types'
+import ProtectedRoute from "./components/ProtectedRoute";
 
 type AppRouterProps = {
   role: UserRole | null
@@ -164,6 +166,7 @@ function AppRouter({
               )
               : <Navigate to="/login" replace />
           }
+          element={role ? <MyPage role={role} onLogout={onLogout} /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/search"
@@ -176,6 +179,7 @@ function AppRouter({
               )
               : <Navigate to="/login" replace />
           }
+          element={role ? <BookSearch role={role} onLogout={onLogout} /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/create"
@@ -230,15 +234,24 @@ function AppRouter({
         />
         <Route path="/books" element={<Navigate to={role ? '/mypage' : '/login'} replace />} />
         <Route path="/delete" element={<Navigate to={role ? '/mypage' : '/login'} replace />} />
+        <Route path="/delete" element={<Navigate to={role ? '/system' : '/login'} replace />} />
+
+        <Route path="/" element={<HomePage />} />
+
+        <Route path="/books" element={<LoginPage onLogin={onLogin} />} />
 
         <Route path="/home" element={<HomePage />} />
+
+        {/* ユーザー管理その他ルート */}
         <Route path="/user-login" element={<Login />} />
-        <Route path="/UsersList" element={<UserList />} />
-        <Route path="/users/:id" element={<UserEdit />} />
-        <Route path="/users" element={<UserManagement />} />
+        <Route path="/UsersList" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
+        <Route path="/users/:employeeCode" element={<ProtectedRoute><UserEdit /></ProtectedRoute>} />
+        <Route path="/user-create" element={<UserManagement />}/>
         <Route path="/passwordReset" element={<PasswordReset />} />
 
         <Route path="*" element={<Navigate to="/user-login" replace />} />
+        {/* いずれにも一致しない場合はルートへ */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

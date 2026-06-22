@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bold.application.dto.LoginRequest;
 import com.bold.application.dto.LoginResponse;
+import com.bold.application.entity.users.User;
 import com.bold.application.service.UserService;
 
 @RestController
@@ -23,18 +24,22 @@ public class LoginController {
             UserService userService) {
         this.userService = userService;
     }
-
+    
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @RequestBody LoginRequest request) {
 
-        boolean result = userService.login(request);
+        User user = userService.login(request);
 
-        if (result) {
+        if (user != null) {
+
             return ResponseEntity.ok(
                     new LoginResponse(
                             true,
-                            "ログイン成功"));
+                            "ログイン成功",
+                            user.getAdminKbn(),
+                            user.getEmployeeCode(),
+                            user.getUsername()));
         }
 
         return ResponseEntity.status(
@@ -42,6 +47,7 @@ public class LoginController {
                 .body(
                         new LoginResponse(
                                 false,
-                                "社員コードまたはパスワードが違います"));
+                                "社員コードまたはパスワードが違います",
+                                null,null,null));
     }
 }

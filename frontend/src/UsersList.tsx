@@ -13,18 +13,19 @@ function UsersList() {
   const navigate = useNavigate();
 
   const usersQuery = useQuery({
-  queryKey: ["users"],
-  queryFn: fetchUsers,
-});
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+  });
   useEffect(() => {
     console.log("APIレスポンス:", usersQuery.data);
   }, [usersQuery.data]);
-  
+
 
   const users = usersQuery.data ?? EMPTY_USERS;
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 2;
+  // 1ページあたりの表示件数
+  const itemsPerPage = 5;
 
   const [filteredUsers, setFilteredUsers] = useState<User[] | null>(null);
   const displayedUsers = filteredUsers ?? users;
@@ -169,7 +170,7 @@ function UsersList() {
           <table border={1} className="user-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>No.</th>
 
                 <th
                   className="sortable-header"
@@ -197,25 +198,48 @@ function UsersList() {
             </thead>
 
             <tbody>
-              {currentUsers.map((user) => (
-                <tr
-                  key={user.userId}
-                  className="user-row"
-                  onClick={() => navigate(`/users/${user.userId}`)}
-                >
-                  <td>{user.userId}</td>
-                  <td>{user.username}</td>
-                  <td>{user.mailAddress}</td>
-                  <td>{user.employeeCode}</td>
-                  <td>{user.adminKbn === 1 ? "管理者" : "一般社員"}</td>
-                  <td>{user.affiliationKbn === 1 ? "大阪" : "東京"}</td>
-                </tr>
-              ))}
+              {currentUsers.map((user, index) => {
+                const getAdminLabel = (kbn: number) => {
+                  if (kbn === 0) return "一般ユーザー";
+                  if (kbn === 1) return "貸出ユーザー";
+                  if (kbn === 2) return "管理者";
+                  return "未設定";
+                };
+
+                return (
+                  <tr className="user-row "
+                    key={user.userId}
+                    onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      "#f0f8ff")
+                    }
+                    onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      "white")
+                    }
+                    onClick={() => navigate(`/users/${user.employeeCode}`)}
+                  >
+                    <td style={{ padding: "15px" }}>{startIndex + index + 1}</td>
+
+                    <td>{user.username}</td>
+
+                    <td>{user.mailAddress}</td>
+
+                    <td>{user.employeeCode}</td>
+
+                    <td>{getAdminLabel(user.adminKbn)}</td>
+
+
+                    <td>{user.affiliationKbn === 1 ? "大阪" : "東京"}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
 
           <div className="pagination">
             <button
+              className="page-button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
             >
@@ -226,19 +250,14 @@ function UsersList() {
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                style={{
-                  padding: "5px 10px",
-                  border: "1px solid #ccc",
-                  cursor: "pointer",
-                  backgroundColor: page === currentPage ? "#2C5A9C" : "white",
-                  color: page === currentPage ? "white" : "black",
-                }}
+                className={`page-button ${page === currentPage ? "active" : ""}`}
               >
                 {page}
               </button>
             ))}
 
             <button
+              className="page-button"
               disabled={currentPage === totalPages || totalPages === 0}
               onClick={() => setCurrentPage(currentPage + 1)}
             >
@@ -249,7 +268,7 @@ function UsersList() {
       </div>
 
       <div className="create-button-container">
-        <button className="create-button" onClick={() => navigate("/users/create")}>
+        <button className="create-button" onClick={() => navigate("/user-create")}>
           ＋
         </button>
       </div>
