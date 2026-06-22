@@ -1,4 +1,5 @@
 import { DEFAULT_PAGE_SIZE } from '../../constants/bookSearch'
+import type { CatalogBook } from '../../types'
 
 export type SearchConditions = {
   id: string
@@ -11,6 +12,7 @@ export type SearchConditions = {
   majorCategory: string
   minorCategory: string
   collectionStatus: string
+  location: string
 }
 
 export type BookSearchSortKey =
@@ -23,6 +25,7 @@ export type BookSearchSortKey =
 export type BookSearchState = {
   form: SearchConditions
   conditions: SearchConditions
+  results: CatalogBook[]
   hasSearched: boolean
   sortKey: BookSearchSortKey
   ascending: boolean
@@ -41,11 +44,13 @@ export const emptySearchConditions: SearchConditions = {
   majorCategory: '',
   minorCategory: '',
   collectionStatus: '',
+  location: '',
 }
 
 export const initialBookSearchState: BookSearchState = {
   form: emptySearchConditions,
   conditions: emptySearchConditions,
+  results: [],
   hasSearched: false,
   sortKey: 'id',
   ascending: true,

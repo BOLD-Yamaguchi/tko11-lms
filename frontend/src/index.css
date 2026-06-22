@@ -73,6 +73,16 @@ svg {
   min-height: 100vh;
 }
 
+.app-screen-layout {
+  min-height: 100vh;
+  padding-top: var(--header-height);
+  padding-bottom: 112px;
+}
+
+.app-screen-content {
+  min-height: calc(100vh - var(--header-height) - 112px);
+}
+
 .page-shell {
   width: min(1480px, calc(100% - 40px));
   margin: 0 auto;
@@ -107,6 +117,7 @@ svg {
 .logged-in-user {
   display: inline-flex;
   align-items: center;
+  min-width: 0;
   padding: 8px 12px;
   border: 1px solid #a9c2eb;
   border-radius: 999px;
@@ -114,6 +125,19 @@ svg {
   background: rgba(255, 255, 255, 0.84);
   font-size: 13px;
   white-space: nowrap;
+}
+
+.header-login-user {
+  max-width: min(360px, 42vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-login-user strong,
+.header-login-user .logged-in-id {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .logged-in-user.operator {
@@ -220,15 +244,21 @@ svg {
 }
 
 /* Mock login */
-.login-page {
-  position: relative;
+.mock-screen-layout {
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 40px 24px;
+  padding-top: var(--header-height);
+  padding-bottom: 112px;
   background:
     radial-gradient(circle at 15% 10%, rgba(8, 109, 240, 0.18), transparent 34%),
     linear-gradient(135deg, #f8fbff, #edf3fc);
+}
+
+.login-page {
+  position: relative;
+  min-height: calc(100vh - var(--header-height) - 112px);
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
 }
 
 .login-back-button {
@@ -676,6 +706,10 @@ svg {
   color: #d94f00;
 }
 
+.record-status.disposed {
+  color: #4b5563;
+}
+
 .list-action-button {
   min-height: 34px;
   padding: 5px 12px;
@@ -794,35 +828,56 @@ svg {
 }
 
 .search-form {
-  padding: 18px 16px 12px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1148px) minmax(170px, 210px);
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 28px 16px 18px;
   border-bottom: 1px solid #cbd7e8;
 }
 
 .search-form h2,
 .search-results h2 {
-  margin: 0 0 16px;
+  margin: 0;
   color: #101827;
   font-size: 20px;
 }
 
 .search-fields {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(210px, 260px));
+  align-items: center;
+  justify-content: center;
   gap: 18px 44px;
+}
+
+.search-fields > * {
+  align-self: center;
 }
 
 .search-submit {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  margin: 0;
 }
 
 .search-submit .button {
-  min-height: 48px;
+  min-width: 190px;
+  min-height: 64px;
+  align-items: center;
+  line-height: 1;
 }
 
 .search-results {
-  padding-top: 18px;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #d9e1ec;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 8px 24px rgba(34, 63, 104, 0.08);
 }
 
 .results-heading {
@@ -933,6 +988,10 @@ svg {
 
 .loan-badge.reserved {
   background: #7654c6;
+}
+
+.loan-badge.disposed {
+  background: #6b7280;
 }
 
 .empty-result {
@@ -1148,11 +1207,112 @@ svg {
   padding-top: 4px;
 }
 
-.csv-message {
+.csv-guidance {
   margin: -8px 0 0;
-  color: var(--green);
+  color: var(--muted);
   text-align: right;
   font-size: 14px;
+}
+
+.csv-result {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 14px;
+}
+
+.csv-result p {
+  margin: 0;
+}
+
+.csv-result.success {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.csv-result.has-errors {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.csv-result ul {
+  margin: 10px 0 0;
+  padding-left: 22px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.csv-result li + li {
+  margin-top: 4px;
+}
+
+.csv-confirmation-message {
+  margin: 8px 0 0;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+.csv-format-guide {
+  display: grid;
+  gap: 14px;
+  max-height: min(68vh, 640px);
+  overflow-y: auto;
+  padding-right: 4px;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.csv-format-guide p,
+.csv-format-guide dl {
+  margin: 0;
+}
+
+.csv-format-list {
+  display: grid;
+  gap: 8px;
+}
+
+.csv-format-list div {
+  display: grid;
+  grid-template-columns: minmax(130px, 180px) minmax(0, 1fr);
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid #d9e1ec;
+  border-radius: 8px;
+  background: #fbfdff;
+}
+
+.csv-format-list dt {
+  color: #102445;
+  font-weight: 800;
+}
+
+.csv-format-list dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.csv-format-note {
+  padding: 10px 12px;
+  border: 1px solid #f0c5cd;
+  border-radius: 8px;
+  color: #a11d2c;
+  background: #fff8f8;
+  font-weight: 700;
+}
+
+.csv-format-guide code {
+  display: block;
+  padding: 12px;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #24324a;
+  background: #f7faff;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 /* Detail */
@@ -1312,6 +1472,20 @@ svg {
 
 .loan-status.status-予約中 strong {
   color: #6541bd;
+}
+
+.loan-status.status-disposed {
+  border-color: #6b7280;
+  background: linear-gradient(110deg, #fff 20%, #f3f4f6 100%);
+}
+
+.loan-status.status-disposed .loan-status-icon {
+  background: linear-gradient(145deg, #7a8491, #4b5563);
+  box-shadow: 0 7px 16px rgba(75, 85, 99, 0.18);
+}
+
+.loan-status.status-disposed strong {
+  color: #4b5563;
 }
 
 .book-action-auth-fields {
@@ -1622,8 +1796,23 @@ svg {
     right: 18px;
   }
 
+  .search-form {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .search-form h2 {
+    width: min(100%, 680px);
+  }
+
   .search-fields {
+    width: min(100%, 680px);
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-submit {
+    width: min(100%, 680px);
+    justify-content: flex-end;
   }
 
   .detail-card {
@@ -1642,10 +1831,6 @@ svg {
     grid-template-columns: minmax(150px, 1fr) auto minmax(300px, 1fr);
   }
 
-  .logged-in-prefix,
-  .logged-in-id {
-    display: none;
-  }
 }
 
 @media (max-width: 760px) {
@@ -1815,6 +2000,10 @@ svg {
     font-size: 11px;
   }
 
+  .header-login-user {
+    max-width: 46vw;
+  }
+
   .user-menu {
     gap: 6px;
   }
@@ -1822,6 +2011,14 @@ svg {
   .search-fields {
     grid-template-columns: 1fr;
     gap: 14px;
+  }
+
+  .search-submit {
+    justify-content: stretch;
+  }
+
+  .search-submit .button {
+    width: 100%;
   }
 
   .results-heading {
@@ -1877,6 +2074,11 @@ svg {
 
   .form-footer .button {
     flex: 1 1 140px;
+  }
+
+  .csv-format-list div {
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 
   .home-page {

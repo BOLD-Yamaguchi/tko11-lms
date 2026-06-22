@@ -1,10 +1,10 @@
 import type { HamburgerMenuItem } from '../components/HamburgerMenu'
 import type { UserRole } from '../types'
 
-const SYSTEM_MENU_ITEM = {
-  id: 'system',
-  label: 'システムメニュー',
-  description: '最初のメニューへ戻る',
+const HOME_MENU_ITEM = {
+  id: 'home',
+  label: 'トップページ',
+  description: 'トップページへ戻る',
 } as const
 
 const SEARCH_MENU_ITEM = {
@@ -55,7 +55,7 @@ export function getHomeMenuItems(role: UserRole): HamburgerMenuItem[] {
 
 export function getMyPageMenuItems(role: UserRole): HamburgerMenuItem[] {
   return [
-    SYSTEM_MENU_ITEM,
+    HOME_MENU_ITEM,
     SEARCH_MENU_ITEM,
     ...(role === 'admin' ? [CREATE_MENU_ITEM] : []),
     LOGOUT_MENU_ITEM,
@@ -66,7 +66,7 @@ export function getBookSearchMenuItems(role: UserRole): HamburgerMenuItem[] {
   return [
     getMyPageMenuItem(role),
     ...(role === 'admin' ? [CREATE_MENU_ITEM] : []),
-    SYSTEM_MENU_ITEM,
+    HOME_MENU_ITEM,
     LOGOUT_MENU_ITEM,
   ]
 }
@@ -79,7 +79,7 @@ export function getBookFormMenuItems(
     getMyPageMenuItem(role),
     SEARCH_MENU_ITEM,
     ...(isEdit ? [CREATE_MENU_ITEM] : []),
-    SYSTEM_MENU_ITEM,
+    HOME_MENU_ITEM,
     LOGOUT_MENU_ITEM,
   ]
 }
@@ -89,7 +89,7 @@ export function getBookDetailMenuItems(role: UserRole): HamburgerMenuItem[] {
     getMyPageMenuItem(role),
     SEARCH_MENU_ITEM,
     ...(role === 'admin' ? [CREATE_MENU_ITEM] : []),
-    SYSTEM_MENU_ITEM,
+    HOME_MENU_ITEM,
     LOGOUT_MENU_ITEM,
   ]
 }

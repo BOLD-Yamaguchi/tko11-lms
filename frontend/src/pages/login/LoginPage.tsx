@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BookIcon, UserIcon, UsersIcon } from '../../Icons'
-import { BackButton } from '../../components'
+import { Footer, Header } from '../../components'
+import type { HamburgerMenuItem } from '../../components'
 import type { UserRole } from '../../types'
 
 type LoginPageProps = {
@@ -35,44 +36,62 @@ const roles: Array<{
 ]
 
 function LoginPage({ onLogin }: LoginPageProps) {
-  // 選択した権限を保存した後、システムメニューへ置換遷移する。
+  // テスト段階では権限選択後に直接マイページへ遷移する。
   const navigate = useNavigate()
+  const menuItems: HamburgerMenuItem[] = [
+    {
+      id: 'home',
+      label: 'トップページ',
+      description: 'トップページへ戻る',
+    },
+  ]
 
   const login = (role: UserRole) => {
     onLogin(role)
-    navigate('/system', { replace: true })
+    navigate('/mypage', { replace: true })
+  }
+
+  const handleMenuSelect = (item: HamburgerMenuItem) => {
+    if (item.id === 'home') navigate('/home')
   }
 
   return (
-    <main className="login-page">
-      <BackButton
-        className="login-back-button"
-        label="ログイン画面に戻る"
-        onClick={() => navigate('/home')}
+    <div className="mock-screen-layout">
+      <Header
+        title="書籍貸出管理システム"
+        eyebrow="BOOK MANAGEMENT SYSTEM"
+        menuItems={menuItems}
+        onMenuSelect={handleMenuSelect}
       />
-      <section className="login-panel">
-        <p className="eyebrow">LIBRARY MANAGEMENT MOCK</p>
-        <h1>モックログイン</h1>
-        <p className="login-guidance">
-          ログイン済みユーザーの権限を選択してください。選択した権限はログアウトまで固定されます。
-        </p>
-        <div className="login-role-grid">
-          {roles.map((item) => (
-            <button
-              key={item.role}
-              type="button"
-              className={`login-role-card ${item.role}`}
-              onClick={() => login(item.role)}
-            >
-              <span>{item.icon}</span>
-              <strong>{item.title}</strong>
-              <small>{item.description}</small>
-              <b>この権限でログイン</b>
-            </button>
-          ))}
-        </div>
-      </section>
-    </main>
+      <main className="login-page">
+        <section className="login-panel">
+          <p className="eyebrow">LIBRARY MANAGEMENT MOCK</p>
+          <h1>モックログイン</h1>
+          <p className="login-guidance">
+            ログイン済みユーザーの権限を選択してください。選択した権限はログアウトまで固定されます。
+          </p>
+          <div className="login-role-grid">
+            {roles.map((item) => (
+              <button
+                key={item.role}
+                type="button"
+                className={`login-role-card ${item.role}`}
+                onClick={() => login(item.role)}
+              >
+                <span>{item.icon}</span>
+                <strong>{item.title}</strong>
+                <small>{item.description}</small>
+                <b>この権限でログイン</b>
+              </button>
+            ))}
+          </div>
+        </section>
+      </main>
+      <Footer
+        title="書籍貸出管理システム"
+        description="テスト段階のモック画面です。"
+      />
+    </div>
   )
 }
 

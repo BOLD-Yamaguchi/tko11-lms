@@ -21,18 +21,31 @@ import {
   ModalDialog,
   ReturnRequestModal,
   Toast,
-  UserMenu,
 } from '../../components'
 import type { BookActionCredentials } from '../../components'
-import { getBookDetailMenuItems } from '../../constants/navigation'
+import {
+  approveBookReturn,
+  cancelBookReservation,
+  directlyReturnBook,
+  fetchBookDetail,
+  fetchHistoryLists,
+  lendBook,
+  rejectBookReturnRequest,
+  requestBookReturn,
+  reserveBook,
+} from '../../api/booksApi'
 import { useLibraryDataValue } from '../../data/libraryQueries'
-import { getReturnDueDate } from '../../dateUtils'
+import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
 import type { BookSearchState } from '../book-search/searchState'
-import type { LoanStatus, UserRole } from '../../types'
+import type { BookStatusDetail, LoanStatus, UserRole } from '../../types'
 
 type BookDetailProps = {
   role: UserRole
-  onStatusChange: (bookId: string, status: LoanStatus) => void
+  onStatusChange: (
+    bookId: string,
+    status: LoanStatus,
+    statusDetail?: BookStatusDetail | null,
+  ) => void
   onHistoryVisibilityChange: (bookId: string, visibleIds: string[]) => void
   onReturnCommentChange: (bookId: string, comment: string) => void
   onLogout: () => void
@@ -178,7 +191,6 @@ function BookDetail({
   onStatusChange,
   onHistoryVisibilityChange,
   onReturnCommentChange,
-  onLogout,
 }: BookDetailProps) {
   const navigate = useNavigate()
   // 遷移元と通知メッセージをlocation stateから復元し、戻り先を決定する。
@@ -208,12 +220,20 @@ function BookDetail({
     window.scrollTo(0, 0)
   }, [location.key])
 
+  useEffect(() => {
+    if (!book) return
+
+    void fetchBookDetail(book.id)
+    void fetchHistoryLists()
+  }, [book])
+
   if (!book) {
     return null
   }
   if (book.collectionStatus === '廃棄' && role !== 'admin') {
     return <Navigate to="/search" replace />
   }
+  const isDisposed = book.collectionStatus === '廃棄'
 
   const details = [
     ['書籍ID', book.id],
@@ -228,24 +248,79 @@ function BookDetail({
     ['棚番号', book.shelfNumber],
     ['段番号', book.tierNumber || '未設定'],
     ['拠点', book.location],
-    ['備考', book.notes || '付録なし'],
+    ['備考', book.notes],
   ]
-  const actions = getActions(role, book.loanStatus)
+  const actions = isDisposed ? [] : getActions(role, book.loanStatus)
   const profile = data?.roleProfiles[role]
   const statusDetail = data?.bookStatusDetails[book.id]
-  const visibleHistoryIds = historyVisibility[book.id] ?? loanHistory.map((history) => history.id)
+  const returnedHistory = loanHistory.filter((history) => history.returnDate.trim())
+  const visibleHistoryIds = historyVisibility[book.id] ?? returnedHistory.map((history) => history.id)
   const displayedHistory = role === 'admin' && editingHistory
-    ? loanHistory
-    : loanHistory.filter((history) => visibleHistoryIds.includes(history.id))
-  const menuItems = getBookDetailMenuItems(role)
+    ? returnedHistory
+    : returnedHistory.filter((history) => visibleHistoryIds.includes(history.id))
+  const callBookActionApi = (
+    action: BookAction,
+    payload: Record<string, unknown> = {},
+  ) => {
+    const requestPayload = {
+      bookId: book.id,
+      bookTitle: book.title,
+      ...(action === 'reserve'
+        ? {
+          userId: profile?.userId,
+          employeeNumber: profile?.employeeNumber,
+          userName: profile?.name,
+        }
+        : {}),
+      ...payload,
+    }
 
-  const executeAction = (action: BookAction) => {
+    if (action === 'reserve') void reserveBook(requestPayload)
+    if (action === 'cancelReservation') void cancelBookReservation(requestPayload)
+    if (action === 'loan') void lendBook(requestPayload)
+    if (action === 'return') void directlyReturnBook(requestPayload)
+    if (action === 'requestReturn') void requestBookReturn(requestPayload)
+    if (action === 'cancelReturnRequest') void rejectBookReturnRequest(requestPayload)
+    if (action === 'approveReturn') void approveBookReturn(requestPayload)
+  }
+
+  const executeAction = (
+    action: BookAction,
+    payload: Record<string, unknown> = {},
+  ) => {
     const setting = actionSettings[action]
-    onStatusChange(book.id, setting.nextStatus)
+    const nextStatusDetail = getNextStatusDetail(action)
+    callBookActionApi(action, payload)
+    onStatusChange(book.id, setting.nextStatus, nextStatusDetail)
     setMessage(setting.message)
     setPendingAction(null)
     setActionStep(null)
     setAuthenticatedUserName('')
+  }
+
+  const getNextStatusDetail = (action: BookAction): BookStatusDetail | null | undefined => {
+    if (action === 'reserve') {
+      return {
+        lendUserId: profile?.userId,
+        reserverName: profile?.name,
+        reservationEmployeeNumber: profile?.employeeNumber,
+        reservationDate: getCurrentDate(),
+      }
+    }
+
+    if (action === 'loan') {
+      return {
+        lendUserId: statusDetail?.lendUserId ?? profile?.userId,
+        borrowerName: authenticatedUserName || statusDetail?.reserverName || profile?.name,
+        returnDueDate: getReturnDueDate(),
+      }
+    }
+
+    if (['cancelReservation', 'return', 'approveReturn'].includes(action)) {
+      return null
+    }
+
+    return undefined
   }
 
   const startHistoryEditing = () => {
@@ -346,25 +421,19 @@ function BookDetail({
 
   const submitReturnRequest = (comment: string) => {
     onReturnCommentChange(book.id, comment)
-    executeAction('requestReturn')
+    executeAction('requestReturn', { comment })
   }
 
   const rejectReturnRequest = () => {
+    void rejectBookReturnRequest({
+      bookId: book.id,
+      bookTitle: book.title,
+      comment: returnComments[book.id] ?? '',
+    })
     onStatusChange(book.id, '貸出中')
     onReturnCommentChange(book.id, '')
     setMessage('返却申請を却下しました。')
     closeAction()
-  }
-
-  const handleMenu = (id: string) => {
-    if (id === 'mypage') navigate('/mypage')
-    if (id === 'search') navigate('/search')
-    if (id === 'create') navigate('/create')
-    if (id === 'system') navigate('/system')
-    if (id === 'logout') {
-      onLogout()
-      navigate('/login', { replace: true })
-    }
   }
 
   const goBack = () => {
@@ -377,27 +446,31 @@ function BookDetail({
     navigate(backPath)
   }
 
-  const statusDescription = {
-    貸出可: <p>現在、この書籍は貸出できます。</p>,
-    貸出中: (
-      <>
-        <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
-        <p>返却予定日：{statusDetail?.returnDueDate ?? getReturnDueDate()}</p>
-      </>
-    ),
-    返却申請中: (
-      <>
-        <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
-        <p>返却申請を確認中です。</p>
-      </>
-    ),
-    予約中: (
-      <>
-        <p>予約者：{statusDetail?.reserverName ?? profile?.name}さん</p>
-        <p>予約日：{statusDetail?.reservationDate ?? '未設定'}</p>
-      </>
-    ),
-  }[book.loanStatus]
+  const statusDescription = isDisposed
+    ? <p>この書籍は廃棄済みのため、貸出・予約操作はできません。</p>
+    : {
+      貸出可: <p>現在、この書籍は貸出できます。</p>,
+      貸出中: (
+        <>
+          <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
+          <p>返却予定日：{statusDetail?.returnDueDate ?? getReturnDueDate()}</p>
+        </>
+      ),
+      返却申請中: (
+        <>
+          <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
+          <p>返却申請を確認中です。</p>
+        </>
+      ),
+      予約中: (
+        <>
+          <p>予約者：{statusDetail?.reserverName ?? profile?.name}さん</p>
+          <p>予約日：{statusDetail?.reservationDate ?? '未設定'}</p>
+        </>
+      ),
+    }[book.loanStatus]
+  const displayStatus = isDisposed ? '廃棄済' : book.loanStatus
+  const statusClassName = isDisposed ? 'status-disposed' : `status-${book.loanStatus}`
 
   const modalSetting = pendingAction ? actionSettings[pendingAction] : null
   const confirmationTitle = pendingAction === 'loan'
@@ -421,7 +494,6 @@ function BookDetail({
               書籍編集
             </Link>
           )}
-          <UserMenu role={role} items={menuItems} onSelect={(item) => handleMenu(item.id)} />
         </div>
       </header>
 
@@ -440,10 +512,10 @@ function BookDetail({
 
         <div className="book-actions-panel">
           <h2 className="section-title">現在の状態</h2>
-          <div className={`loan-status status-${book.loanStatus}`}>
+          <div className={`loan-status ${statusClassName}`}>
             <span className="loan-status-icon"><BookIcon size={34} /></span>
             <div>
-              <strong>{book.loanStatus}</strong>
+              <strong>{displayStatus}</strong>
               {statusDescription}
             </div>
           </div>

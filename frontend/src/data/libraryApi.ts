@@ -1,12 +1,35 @@
 import type { LibraryData } from '../types'
-import { API_ENDPOINTS, USE_MOCK_API } from '../constants/api'
-import { httpClient } from '../api/httpClient'
+import { USE_MOCK_API } from '../constants/api'
+import {
+  fetchBorrowLists,
+  fetchHistoryLists,
+  fetchMyPageInformation,
+  fetchReservationLists,
+  fetchSearchBooks,
+} from '../api/booksApi'
 import { mockLibraryData } from './mockLibraryData'
 
 export async function fetchLibraryData(): Promise<LibraryData> {
+  const mockData = structuredClone(mockLibraryData)
+
   if (USE_MOCK_API) {
-    return structuredClone(mockLibraryData)
+    void fetchMyPageInformation()
+    void fetchBorrowLists()
+    void fetchHistoryLists()
+    void fetchReservationLists()
   }
 
-  return httpClient.get(API_ENDPOINTS.libraryData).json<LibraryData>()
+  try {
+    const books = await fetchSearchBooks()
+    return {
+      ...mockData,
+      books,
+    }
+  } catch (error) {
+    if (USE_MOCK_API) {
+      return mockData
+    }
+
+    throw error
+  }
 }

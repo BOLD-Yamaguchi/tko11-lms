@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -20,17 +20,30 @@ import {
   ReturnRequestModal,
   TextBox,
   Toast,
-  UserMenu,
 } from '../../components'
-import { BORROWING_FILTER_OPTIONS } from '../../constants/myPage'
 import {
-  getMyPageMenuItems,
-  getMyPageTitle,
-} from '../../constants/navigation'
+  approveBookReturn,
+  bulkReturnBooks,
+  cancelBookReservation,
+  fetchBorrowLists,
+  fetchHistoryLists,
+  fetchMyPageInformation,
+  fetchReservationLists,
+  lendBook,
+  rejectBookReturnRequest,
+  requestBookReturn,
+} from '../../api/booksApi'
+import {
+  BORROWING_FILTER_OPTIONS,
+  HISTORY_FILTER_OPTIONS,
+  RESERVATION_FILTER_OPTIONS,
+} from '../../constants/myPage'
+import { getMyPageTitle } from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
 import type {
   BorrowingRecord,
+  CatalogBook,
   ReservationRecord,
   UserLoanHistory,
   UserRole,
@@ -43,6 +56,11 @@ type MyPageProps = {
 
 type GeneralPendingAction = 'requestReturn' | 'cancelReservation'
 type LoanStep = 'auth' | 'confirm'
+
+type ListFilterOption = {
+  value: string
+  label: string
+}
 
 type AccordionPanelProps = {
   title: string
@@ -72,7 +90,7 @@ function AccordionPanel({
   )
 }
 
-function MyPage({ role, onLogout }: MyPageProps) {
+function MyPage({ role }: MyPageProps) {
   const navigate = useNavigate()
   // 権限別プロフィールと貸出・予約・履歴の初期データを共通クエリから取得する。
   const data = useLibraryDataValue()
@@ -88,29 +106,62 @@ function MyPage({ role, onLogout }: MyPageProps) {
   const [hasReservation, setHasReservation] = useState(true)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [bulkReturnOpen, setBulkReturnOpen] = useState(false)
-  const [filterKey, setFilterKey] = useState('employeeNumber')
-  const [keyword, setKeyword] = useState('')
+  const [borrowingFilterKey, setBorrowingFilterKey] = useState('employeeNumber')
+  const [borrowingKeyword, setBorrowingKeyword] = useState('')
+  const [reservationFilterKey, setReservationFilterKey] = useState('reserver')
+  const [reservationKeyword, setReservationKeyword] = useState('')
+  const [historyFilterKey, setHistoryFilterKey] = useState('borrower')
+  const [historyKeyword, setHistoryKeyword] = useState('')
   const [message, setMessage] = useState('')
   const visibleLoanHistory = data.userLoanHistory.filter((record) => {
+    if (!record.returnDate.trim()) return false
     if (role === 'admin') return true
     return data.books.find((book) => book.id === record.bookId)?.collectionStatus !== '廃棄'
   })
 
-  // 管理者が選択した検索対象とキーワードから借受一覧を絞り込む。
+  useEffect(() => {
+    void fetchMyPageInformation()
+    void fetchBorrowLists()
+    void fetchReservationLists()
+    void fetchHistoryLists()
+  }, [])
+
+  // 選択した検索対象とキーワードから借受・予約・履歴の各一覧を絞り込む。
   const filteredBorrowings = useMemo(() => {
-    const normalized = keyword.trim().toLowerCase()
+    const normalized = borrowingKeyword.trim().toLowerCase()
     if (!normalized) return borrowings
     return borrowings.filter((record) => {
-      const target = filterKey === 'name'
+      const target = borrowingFilterKey === 'name'
         ? record.borrower
-        : filterKey === 'title'
+        : borrowingFilterKey === 'title'
           ? record.title
           : record.employeeNumber
       return target.toLowerCase().includes(normalized)
     })
-  }, [borrowings, filterKey, keyword])
+  }, [borrowings, borrowingFilterKey, borrowingKeyword])
 
-  const menuItems = getMyPageMenuItems(role)
+  const filteredReservations = useMemo(() => {
+    const normalized = reservationKeyword.trim().toLowerCase()
+    if (!normalized) return reservations
+    return reservations.filter((record) => {
+      const target = reservationFilterKey === 'title'
+        ? record.title
+        : record.reserver
+      return target.toLowerCase().includes(normalized)
+    })
+  }, [reservations, reservationFilterKey, reservationKeyword])
+
+  const filteredLoanHistory = useMemo(() => {
+    const normalized = historyKeyword.trim().toLowerCase()
+    if (!normalized) return visibleLoanHistory
+    return visibleLoanHistory.filter((record) => {
+      const target = historyFilterKey === 'title'
+        ? record.title
+        : record.borrower
+      return target.toLowerCase().includes(normalized)
+    })
+  }, [historyFilterKey, historyKeyword, visibleLoanHistory])
+
   const selectedBorrowings = borrowings.filter((record) => (
     selectedIds.includes(record.employeeNumber)
   ))
@@ -124,6 +175,11 @@ function MyPage({ role, onLogout }: MyPageProps) {
   }
 
   const approveReturn = (employeeNumber: string) => {
+    const record = borrowings.find((current) => current.employeeNumber === employeeNumber)
+    void approveBookReturn({
+      employeeNumber,
+      bookTitle: record?.title,
+    })
     setBorrowings((current) => current.filter((record) => record.employeeNumber !== employeeNumber))
     setSelectedIds((current) => current.filter((selectedId) => selectedId !== employeeNumber))
     setMessage('返却を承認しました。')
@@ -131,6 +187,12 @@ function MyPage({ role, onLogout }: MyPageProps) {
   }
 
   const rejectReturn = (employeeNumber: string) => {
+    const record = borrowings.find((current) => current.employeeNumber === employeeNumber)
+    void rejectBookReturnRequest({
+      employeeNumber,
+      bookTitle: record?.title,
+      comment: record?.returnComment,
+    })
     setBorrowings((current) => current.map((record) => (
       record.employeeNumber === employeeNumber
         ? { ...record, status: '貸出中', returnComment: undefined }
@@ -150,6 +212,7 @@ function MyPage({ role, onLogout }: MyPageProps) {
   }
 
   const bulkReturn = () => {
+    void bulkReturnBooks(selectedBorrowings)
     setBorrowings((current) => current.filter((record) => !selectedIds.includes(record.employeeNumber)))
     setMessage(`${selectedIds.length}件の一括返却登録を実行しました。`)
     setSelectedIds([])
@@ -157,6 +220,10 @@ function MyPage({ role, onLogout }: MyPageProps) {
   }
 
   const requestReturn = (comment: string) => {
+    void requestBookReturn({
+      employeeNumber: profile.employeeNumber,
+      comment,
+    })
     setBorrowings((current) => current.map((record) => (
       record.employeeNumber === profile.employeeNumber
         ? { ...record, status: '返却申請中', returnComment: comment }
@@ -167,6 +234,10 @@ function MyPage({ role, onLogout }: MyPageProps) {
   }
 
   const cancelReservation = () => {
+    void cancelBookReservation({
+      employeeNumber: profile.employeeNumber,
+      bookTitle: generalReservation?.title,
+    })
     setHasReservation(false)
     setMessage('予約を取り消しました。')
     setPendingGeneralAction(null)
@@ -175,6 +246,10 @@ function MyPage({ role, onLogout }: MyPageProps) {
   const loanReservedBook = () => {
     if (!pendingLoan) return
 
+    void lendBook({
+      employeeNumber: pendingLoan.employeeNumber,
+      bookTitle: pendingLoan.title,
+    })
     setReservations((current) => current.filter((record) => record !== pendingLoan))
     setBorrowings((current) => [
       ...current,
@@ -204,27 +279,10 @@ function MyPage({ role, onLogout }: MyPageProps) {
     setLoanStep(null)
   }
 
-  const logout = () => {
-    onLogout()
-    navigate('/login', { replace: true })
-  }
-
-  const handleMenu = (id: string) => {
-    if (id === 'system') navigate('/system')
-    if (id === 'search') navigate('/search')
-    if (id === 'create') navigate('/create')
-    if (id === 'logout') logout()
-  }
-
   return (
     <main className="page-shell mypage">
       <div className="mypage-nav">
-        <BackButton label="メニューへ戻る" onClick={() => navigate('/system')} />
-        <UserMenu
-          role={role}
-          items={menuItems}
-          onSelect={(item) => handleMenu(item.id)}
-        />
+        <BackButton label="トップへ戻る" onClick={() => navigate('/home')} />
       </div>
 
       <h1 className="standalone-title">{getMyPageTitle(role)}</h1>
@@ -235,7 +293,7 @@ function MyPage({ role, onLogout }: MyPageProps) {
         </span>
         <h2>ユーザー情報</h2>
         <div className="user-meta">
-          <p>ユーザーID：{profile.userId}</p>
+          <p>社員番号：{profile.userId}</p>
           <p>名前：{profile.name}</p>
         </div>
         <span className={`role-chip ${role}`}>{profile.label}</span>
@@ -269,13 +327,37 @@ function MyPage({ role, onLogout }: MyPageProps) {
       {role === 'operator' && (
         <div className="operator-accordions">
           <AccordionPanel title="借受リスト（全員分）" icon={<BookIcon />}>
-            <SimpleBorrowingTable records={borrowings} />
+            <ListFilter
+              filterKey={borrowingFilterKey}
+              keyword={borrowingKeyword}
+              options={BORROWING_FILTER_OPTIONS}
+              onFilterKeyChange={setBorrowingFilterKey}
+              onKeywordChange={setBorrowingKeyword}
+              onSearch={() => setMessage(`${filteredBorrowings.length}件見つかりました。`)}
+            />
+            <SimpleBorrowingTable records={filteredBorrowings} />
           </AccordionPanel>
           <AccordionPanel title="予約リスト（全員分）" tone="orange" icon={<BookmarkIcon />}>
-            <ReservationTable records={reservations} onLoan={startLoan} />
+            <ListFilter
+              filterKey={reservationFilterKey}
+              keyword={reservationKeyword}
+              options={RESERVATION_FILTER_OPTIONS}
+              onFilterKeyChange={setReservationFilterKey}
+              onKeywordChange={setReservationKeyword}
+              onSearch={() => setMessage(`${filteredReservations.length}件見つかりました。`)}
+            />
+            <ReservationTable records={filteredReservations} books={data.books} onLoan={startLoan} />
           </AccordionPanel>
           <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
-            <HistoryTable records={visibleLoanHistory} />
+            <ListFilter
+              filterKey={historyFilterKey}
+              keyword={historyKeyword}
+              options={HISTORY_FILTER_OPTIONS}
+              onFilterKeyChange={setHistoryFilterKey}
+              onKeywordChange={setHistoryKeyword}
+              onSearch={() => setMessage(`${filteredLoanHistory.length}件見つかりました。`)}
+            />
+            <HistoryTable records={filteredLoanHistory} />
           </AccordionPanel>
         </div>
       )}
@@ -287,11 +369,11 @@ function MyPage({ role, onLogout }: MyPageProps) {
             <div className="admin-filter">
               <DropdownField
                 label="検索対象"
-                value={filterKey}
-                onChange={setFilterKey}
+                value={borrowingFilterKey}
+                onChange={setBorrowingFilterKey}
                 options={BORROWING_FILTER_OPTIONS}
               />
-              <TextBox label="キーワード" value={keyword} onChange={setKeyword} placeholder="キーワードを入力" />
+              <TextBox label="キーワード" value={borrowingKeyword} onChange={setBorrowingKeyword} placeholder="キーワードを入力" />
               <button
                 type="button"
                 className="compact-search"
@@ -361,10 +443,26 @@ function MyPage({ role, onLogout }: MyPageProps) {
 
           <div className="operator-accordions admin-secondary-lists">
             <AccordionPanel title="予約リスト（全員分）" tone="orange" icon={<BookmarkIcon />}>
-              <ReservationTable records={reservations} />
+              <ListFilter
+                filterKey={reservationFilterKey}
+                keyword={reservationKeyword}
+                options={RESERVATION_FILTER_OPTIONS}
+                onFilterKeyChange={setReservationFilterKey}
+                onKeywordChange={setReservationKeyword}
+                onSearch={() => setMessage(`${filteredReservations.length}件見つかりました。`)}
+              />
+              <ReservationTable records={filteredReservations} />
             </AccordionPanel>
             <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
-              <HistoryTable records={visibleLoanHistory} />
+              <ListFilter
+                filterKey={historyFilterKey}
+                keyword={historyKeyword}
+                options={HISTORY_FILTER_OPTIONS}
+                onFilterKeyChange={setHistoryFilterKey}
+                onKeywordChange={setHistoryKeyword}
+                onSearch={() => setMessage(`${filteredLoanHistory.length}件見つかりました。`)}
+              />
+              <HistoryTable records={filteredLoanHistory} />
             </AccordionPanel>
           </div>
         </>
@@ -455,6 +553,46 @@ type GeneralUserSectionsProps = {
   onCancelReservation: () => void
   historyRecords: UserLoanHistory[]
   onOpenBook: (bookId: string) => void
+}
+
+function ListFilter({
+  filterKey,
+  keyword,
+  options,
+  onFilterKeyChange,
+  onKeywordChange,
+  onSearch,
+}: {
+  filterKey: string
+  keyword: string
+  options: readonly ListFilterOption[]
+  onFilterKeyChange: (value: string) => void
+  onKeywordChange: (value: string) => void
+  onSearch: () => void
+}) {
+  return (
+    <div className="admin-filter list-filter">
+      <DropdownField
+        label="検索対象"
+        value={filterKey}
+        onChange={onFilterKeyChange}
+        options={options}
+      />
+      <TextBox
+        label="キーワード"
+        value={keyword}
+        onChange={onKeywordChange}
+        placeholder="キーワードを入力"
+      />
+      <button
+        type="button"
+        className="compact-search"
+        onClick={onSearch}
+      >
+        <SearchIcon size={19} />検索
+      </button>
+    </div>
+  )
 }
 
 function GeneralUserSections({
@@ -574,6 +712,9 @@ function SimpleBorrowingTable({ records }: { records: BorrowingRecord[] }) {
               <td><RecordStatus status={record.status} /></td>
             </tr>
           ))}
+          {records.length === 0 && (
+            <tr><td colSpan={7}>借受中の書籍はありません。</td></tr>
+          )}
         </tbody>
       </table>
     </div>
@@ -582,11 +723,21 @@ function SimpleBorrowingTable({ records }: { records: BorrowingRecord[] }) {
 
 function ReservationTable({
   records,
+  books = [],
   onLoan,
 }: {
   records: ReservationRecord[]
+  books?: CatalogBook[]
   onLoan?: (record: ReservationRecord) => void
 }) {
+  const isDisposedRecord = (record: ReservationRecord) => (
+    books.some((book) => (
+      book.collectionStatus === '廃棄'
+      && book.title === record.title
+      && book.author === record.author
+    ))
+  )
+
   return (
     <div className="table-scroll">
       <table className="data-table">
@@ -597,27 +748,35 @@ function ReservationTable({
           </tr>
         </thead>
         <tbody>
-          {records.map((record) => (
-            <tr key={`${record.title}-${record.reserver}`}>
-              <td>{record.title}</td>
-              <td>{record.author}</td>
-              <td>{record.reserver}</td>
-              <td>{record.reservationDate}</td>
-              <td>{record.shelfNumber}</td>
-              <td>{record.tierNumber}</td>
-              {onLoan && (
-                <td>
-                  <button
-                    type="button"
-                    className="list-action-button loan"
-                    onClick={() => onLoan(record)}
-                  >
-                    貸出
-                  </button>
-                </td>
-              )}
-            </tr>
-          ))}
+          {records.map((record) => {
+            const isDisposed = isDisposedRecord(record)
+
+            return (
+              <tr key={`${record.title}-${record.reserver}`}>
+                <td>{record.title}</td>
+                <td>{record.author}</td>
+                <td>{record.reserver}</td>
+                <td>{record.reservationDate}</td>
+                <td>{record.shelfNumber}</td>
+                <td>{record.tierNumber}</td>
+                {onLoan && (
+                  <td>
+                    {isDisposed ? (
+                      <span className="record-status disposed">廃棄済</span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="list-action-button loan"
+                        onClick={() => onLoan(record)}
+                      >
+                        貸出
+                      </button>
+                    )}
+                  </td>
+                )}
+              </tr>
+            )
+          })}
           {records.length === 0 && (
             <tr><td colSpan={onLoan ? 7 : 6}>予約中の書籍はありません。</td></tr>
           )}
@@ -644,6 +803,9 @@ function HistoryTable({ records }: { records: UserLoanHistory[] }) {
               <td>{record.tierNumber}</td>
             </tr>
           ))}
+          {records.length === 0 && (
+            <tr><td colSpan={7}>貸出履歴はありません。</td></tr>
+          )}
         </tbody>
       </table>
     </div>

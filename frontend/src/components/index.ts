@@ -9,6 +9,7 @@ export {
   ActionConfirmationModal,
   BookActionModal,
   BulkReturnConfirmationModal,
+  LogoutConfirmationModal,
   ModalDialog,
   ReturnRequestModal,
 } from './modals'

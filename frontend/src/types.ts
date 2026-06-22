@@ -13,6 +13,7 @@ export type UserProfile = {
 }
 
 export type BookStatusDetail = {
+  lendUserId?: string
   borrowerName?: string
   reserverName?: string
   reservationEmployeeNumber?: string
@@ -92,6 +93,7 @@ export type LibraryData = {
   categoryOptions: {
     major: string[]
     minor: string[]
+    minorByMajor?: Record<string, string[]>
   }
   locations: LibraryLocation[]
   bookStatusDetails: Record<string, BookStatusDetail>
