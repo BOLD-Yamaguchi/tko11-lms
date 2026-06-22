@@ -13,6 +13,6 @@ public interface MstCategoryLevel2Repository extends JpaRepository<MstCategoryLe
 	/* 全ての中分類リストを取得 */
 	List<MstCategoryLevel2> findAll();
 
-	/* 中分類名から中分類情報を取得 */
-	MstCategoryLevel2 findByCategoryLevel2Name(String categoryLevel2Name);
+	/* 中分類IDから中分類情報を取得 */
+	MstCategoryLevel2 findByCategoryLevel2Id(String categoryLevel2Id);
 }

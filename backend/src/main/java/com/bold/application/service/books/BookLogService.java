@@ -44,8 +44,23 @@ public class BookLogService {
 		repository.saveAll(mstBookLogList);
 	}
 
-	// 履歴更新
-	public void update(MstBookLog mstBookLog, int lendId) {
-		repository.save(mstBookLog);
+	// 履歴更新（感想）
+	public void updateReview(MstBookLog mstBookLog, int lendId) {
+		MstBookLog log = repository.findByLendId(lendId);
+		log.setReview(mstBookLog.getReview());
+	}
+
+	// 履歴更新（返却日）
+	public void updateUpdatedAt(MstBookLog mstBookLog, int lendId) {
+		MstBookLog log = repository.findByLendId(lendId);
+		log.setUpdatedAt(mstBookLog.getUpdatedAt());
+		repository.save(log);
+	}
+
+	// 履歴更新（非表示フラグ）
+	public void updateHiddenFlg(MstBookLog mstBookLog, int lendId) {
+		MstBookLog log = repository.findByLendId(lendId);
+		log.setHiddenFlg(mstBookLog.getHiddenFlg());
+		repository.save(log);
 	}
 }

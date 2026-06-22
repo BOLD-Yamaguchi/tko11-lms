@@ -1,6 +1,9 @@
 package com.bold.application.service.books;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +34,21 @@ public class BookService {
 
 	// 書籍情報更新
 	public MstBook update(MstBook mstBook) {
-		return repository.save(mstBook);
+		MstBook book = repository.findByBookId(mstBook.getBookId());
+		book.setBookName(mstBook.getBookName());
+		book.setIsbn(mstBook.getIsbn());
+		book.setAuthorName(mstBook.getAuthorName());
+		book.setPublisher(mstBook.getPublisher());
+		book.setPublishedAt(mstBook.getPublishedAt());
+		book.setCategoryLevel1Id(mstBook.getCategoryLevel1Id());
+		book.setCategoryLevel2Id(mstBook.getCategoryLevel2Id());
+		book.setBookStatus(mstBook.getBookStatus());
+		book.setRegion(mstBook.getRegion());
+		book.setShelfNo(mstBook.getShelfNo());
+		book.setTierNo(mstBook.getTierNo());
+		book.setMemo(mstBook.getMemo());
+		book.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
+		return repository.save(book, mstBook.getBookId());
 	}
 
 	// 書籍状態から書籍情報を取得
@@ -43,7 +60,14 @@ public class BookService {
 	public MstBook statusUpdate(int bookId, String status) {
 		MstBook mstBook = repository.findByBookId(bookId);
 		mstBook.setStatus(status);
-		return repository.saveAndFlush(mstBook);
+		mstBook.setStatusUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
+		return repository.save(mstBook, bookId);
 	}
 
+	// 貸出先ユーザIDの更新
+	public MstBook lendUserUpdate(int bookId, UUID userId) {
+		MstBook mstBook = repository.findByBookId(bookId);
+		mstBook.setLendUserId(userId);
+		return repository.save(mstBook, bookId);
+	}
 }
