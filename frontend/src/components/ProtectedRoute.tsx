@@ -14,6 +14,7 @@ function ProtectedRoute({
   onLogout,
   children,
 }: Props) {
+  console.log("ProtectedRoute role =", role)
   if (role === null) {
     return <Navigate to="/user-login" replace />
   }

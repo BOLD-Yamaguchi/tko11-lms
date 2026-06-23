@@ -12,12 +12,11 @@ import PasswordReset from './passwordReset'
 import UserEdit from './UserEdit'
 import UserManagement from './UserManagement'
 import UserList from './UsersList'
-import Login from './Login'
+import Login from './pages/login/Login'
 import CreateBook from './pages/book-create/CreateBook'
 import BookDetail from './pages/book-detail/BookDetail'
 import EditBook from './pages/book-edit/EditBook'
 import BookSearch from './pages/book-search/BookSearch'
-import LoginPage from './pages/login/LoginPage'
 import MyPage from './pages/my-page/MyPage'
 import type {
   Book,
@@ -54,7 +53,6 @@ function ScrollToTop() {
 
 function AppRouter({
   role,
-  onLogin,
   onLogout,
   onCreateBook,
   onCreateBooks,
@@ -64,13 +62,10 @@ function AppRouter({
   onReturnCommentChange,
 }: AppRouterProps) {
   return (
+    console.log("AppRouter role =", role),
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        <Route
-          path="/login"
-          element={role ? <Navigate to="/mypage" replace /> : <LoginPage onLogin={onLogin} />}
-        />
         <Route path="/" element={<Navigate to="/user-login" replace />} />
         <Route
           path="/system"
@@ -78,15 +73,9 @@ function AppRouter({
         />
         <Route
           path="/mypage"
-          element={
-            role
-              ? (
-                <ProtectedRoute role={role} onLogout={onLogout}>
+          element={<ProtectedRoute role={role} onLogout={onLogout}>
                   <MyPage role={role} onLogout={onLogout} />
-                </ProtectedRoute>
-              )
-              : <Navigate to="/login" replace />
-          }
+                </ProtectedRoute>}
         />
         <Route
           path="/search"
@@ -157,7 +146,6 @@ function AppRouter({
 
         <Route path="/" element={<HomePage />} />
 
-        <Route path="/books" element={<LoginPage onLogin={onLogin} />} />
 
         <Route path="/home" element={<HomePage />} />
 

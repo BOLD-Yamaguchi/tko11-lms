@@ -117,7 +117,7 @@ function HomePage() {
                 icon={BookOpen}
                 title="書籍管理"
                 description="書籍の検索・登録・削除"
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/mypage")}
               />
             </div>
 

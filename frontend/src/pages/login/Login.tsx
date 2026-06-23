@@ -3,10 +3,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { loginSchema } from "./schemas/loginSchema";
-import type { LoginFormValues } from "./schemas/loginSchema";
+import { loginSchema } from "../../schemas/loginSchema";
+import type { LoginFormValues } from "../../schemas/loginSchema";
 import "./Login.css";
-import Header from "./components/Header";
+import Header from "../../components/Header";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
