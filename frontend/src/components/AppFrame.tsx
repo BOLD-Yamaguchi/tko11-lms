@@ -26,7 +26,6 @@ function AppFrame({
     ...(role === UserRole.Admin
       ? [{ id: 'create', label: '書籍登録', description: '新しい書籍を登録する' }]
       : []),
-    { id: 'logout', label: 'ログアウト', description: 'ログイン画面へ戻る' },
   ]
 
   const handleMenuSelect = (item: HamburgerMenuItem) => {
@@ -34,7 +33,6 @@ function AppFrame({
     if (item.id === 'mypage') navigate('/mypage')
     if (item.id === 'search') navigate('/search')
     if (item.id === 'create') navigate('/create')
-    if (item.id === 'logout') setLogoutOpen(true)
   }
 
   const logout = () => {

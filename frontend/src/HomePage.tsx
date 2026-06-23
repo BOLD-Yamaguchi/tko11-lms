@@ -16,38 +16,6 @@ function HomePage() {
   const [isHoveredBooks, setIsHoveredBooks] = useState(false);
   const [isHoveredUsers, setIsHoveredUsers] = useState(false);
 
-  const menuItems: HamburgerMenuItem[] = [
-    {
-      id: "home",
-      label: "ホーム",
-      description: "トップ画面へ移動",
-    },
-    {
-      id: "books",
-      label: "書籍管理",
-      description: "書籍一覧を表示",
-    },
-    {
-      id: "UsersList",
-      label: "ユーザー管理",
-      description: "ユーザー管理画面を表示",
-    },
-  ];
-
-  const handleMenuSelect = (item: HamburgerMenuItem) => {
-    switch (item.id) {
-      case "home":
-        navigate("/home");
-        break;
-      case "books":
-        navigate("/login");
-        break;
-      case "UsersList":
-        navigate("/UsersList"); 
-        break;
-    }
-  };
-
   // メニューカード共通のベーススタイル
   const cardWrapperStyle = {
     backgroundColor: "#ffffff",
@@ -62,18 +30,11 @@ function HomePage() {
     <div style={{
       display: "flex",
       flexDirection: "column",
-      minHeight: "100vh",
+      minHeight: "10vh",
       paddingTop: "76px",
       paddingBottom: "112px",
       backgroundColor: "#f3f4f6"
     }}>
-      {/* ヘッダーエリア */}
-      <Header
-        title="書籍貸出管理システム"
-        eyebrow="BOOK MANAGEMENT SYSTEM"
-        menuItems={menuItems}
-        onMenuSelect={handleMenuSelect}
-      />
 
       {/* メインコンテンツエリア：ヘッダー以外の高さをフルに使い中央寄せ */}
       <main style={{
