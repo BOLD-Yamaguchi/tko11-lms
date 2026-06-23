@@ -3,8 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { fetchUsers } from "./api/usersApi";
 import "./UsersList.css";
-import Header from "./components/Header";
-import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 import type { User } from "./schemas/userSchema";
 
 const EMPTY_USERS: User[] = [];
@@ -95,35 +93,7 @@ function UsersList() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentUsers = displayedUsers.slice(startIndex, startIndex + itemsPerPage);
 
-  const menuItems: HamburgerMenuItem[] = [
-    { id: "home", label: "ホーム", description: "トップ画面へ移動" },
-    { id: "books", label: "書籍管理", description: "書籍一覧を表示" },
-    { id: "UsersList", label: "ユーザー管理", description: "ユーザー管理画面を表示" },
-  ];
-
-  const handleMenuSelect = (item: HamburgerMenuItem) => {
-    switch (item.id) {
-      case "home":
-        navigate("/");
-        break;
-      case "books":
-        navigate("/books");
-        break;
-      case "UsersList":
-        navigate("/UsersList");
-        break;
-    }
-  };
-
   return (
-    <div className="users-list">
-      <Header
-        title="書籍貸出管理システム"
-        eyebrow="BOOK MANAGEMENT SYSTEM"
-        menuItems={menuItems}
-        onMenuSelect={handleMenuSelect}
-      />
-
       <div className="search-container">
         <h1 className="section-title">社員検索</h1>
 
@@ -265,7 +235,6 @@ function UsersList() {
             </button>
           </div>
         </div>
-      </div>
 
       <div className="create-button-container">
         <button className="create-button" onClick={() => navigate("/user-create")}>

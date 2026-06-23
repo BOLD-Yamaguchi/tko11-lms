@@ -37,7 +37,8 @@ import {
 import { useLibraryDataValue } from '../../data/libraryQueries'
 import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
 import type { BookSearchState } from '../book-search/searchState'
-import type { BookStatusDetail, LoanStatus, UserRole } from '../../types'
+import type { BookStatusDetail, LoanStatus} from '../../types'
+import { UserRole } from '../../types'
 
 type BookDetailProps = {
   role: UserRole
@@ -148,17 +149,17 @@ function formatDate(date: string) {
 
 function getActions(role: UserRole, status: LoanStatus): ActionDefinition[] {
   if (status === '貸出可') {
-    if (role === 'general') {
+    if (role === UserRole.General) {
       return [{ id: 'reserve', label: '予約', icon: <CalendarIcon /> }]
     }
-    if (role === 'operator') {
+    if (role === UserRole.Operator) {
       return [{ id: 'loan', label: '貸出', icon: <BookIcon /> }]
     }
     return [{ id: 'loan', label: '貸出', icon: <BookIcon /> }]
   }
 
   if (status === '貸出中') {
-    if (role === 'admin') {
+    if (role === UserRole.Admin) {
       return [
         { id: 'return', label: '直接返却', icon: <ReturnIcon /> },
         { id: 'requestReturn', label: '返却申請', icon: <ReturnIcon /> },
@@ -168,7 +169,7 @@ function getActions(role: UserRole, status: LoanStatus): ActionDefinition[] {
   }
 
   if (status === '返却申請中') {
-    if (role === 'admin') {
+    if (role === UserRole.Admin) {
       return [
         { id: 'cancelReturnRequest', label: '返却申請取消', icon: <ReturnIcon /> },
         { id: 'approveReturn', label: '返却承認', icon: <ReturnIcon /> },
@@ -177,7 +178,7 @@ function getActions(role: UserRole, status: LoanStatus): ActionDefinition[] {
     return [{ id: 'cancelReturnRequest', label: '返却申請取消', icon: <ReturnIcon /> }]
   }
 
-  if (role === 'general') {
+  if (role === UserRole.General) {
     return [{ id: 'cancelReservation', label: '予約取消', icon: <CalendarIcon /> }]
   }
   return [
@@ -230,7 +231,7 @@ function BookDetail({
   if (!book) {
     return null
   }
-  if (book.collectionStatus === '廃棄' && role !== 'admin') {
+  if (book.collectionStatus === '廃棄' && role !== UserRole.Admin) {
     return <Navigate to="/search" replace />
   }
   const isDisposed = book.collectionStatus === '廃棄'
@@ -255,7 +256,7 @@ function BookDetail({
   const statusDetail = data?.bookStatusDetails[book.id]
   const returnedHistory = loanHistory.filter((history) => history.returnDate.trim())
   const visibleHistoryIds = historyVisibility[book.id] ?? returnedHistory.map((history) => history.id)
-  const displayedHistory = role === 'admin' && editingHistory
+  const displayedHistory = role === UserRole.Admin && editingHistory
     ? returnedHistory
     : returnedHistory.filter((history) => visibleHistoryIds.includes(history.id))
   const callBookActionApi = (
@@ -268,7 +269,7 @@ function BookDetail({
       ...(action === 'reserve'
         ? {
           userId: profile?.userId,
-          employeeNumber: profile?.employeeNumber,
+          employeeCode: profile?.employeeCode,
           userName: profile?.name,
         }
         : {}),
@@ -303,7 +304,7 @@ function BookDetail({
       return {
         lendUserId: profile?.userId,
         reserverName: profile?.name,
-        reservationEmployeeNumber: profile?.employeeNumber,
+        reservationemployeeCode: profile?.employeeCode,
         reservationDate: getCurrentDate(),
       }
     }
@@ -343,13 +344,13 @@ function BookDetail({
   }
 
   const requiresEmployeeId = (action: BookAction) => (
-    (role === 'operator'
+    (role === UserRole.Operator
       && ['loan', 'requestReturn', 'cancelReturnRequest', 'cancelReservation'].includes(action))
-    || (role === 'admin'
+    || (role === UserRole.Admin
       && ['loan', 'return', 'requestReturn'].includes(action))
   )
   const requiresPassword = (action: BookAction) => (
-    role === 'operator'
+    role === UserRole.Operator
     && ['loan', 'requestReturn', 'cancelReturnRequest', 'cancelReservation'].includes(action)
   )
   const startAction = (action: BookAction) => {
@@ -374,17 +375,17 @@ function BookDetail({
 
   const resolveUserName = (employeeId: string) => {
     const reservation = data.reservationRecords.find((record) => (
-      record.employeeNumber === employeeId
+      record.employeeCode === employeeId
     ))
     if (reservation) return reservation.reserver
 
     const borrowing = data.borrowingRecords.find((record) => (
-      record.employeeNumber === employeeId
+      record.employeeCode === employeeId
     ))
     if (borrowing) return borrowing.borrower
 
     return Object.values(data.roleProfiles).find((candidate) => (
-      candidate.employeeNumber === employeeId
+      candidate.employeeCode === employeeId
     ))?.name
   }
 
@@ -397,13 +398,13 @@ function BookDetail({
     }
 
     const isReservedBookOperatorAction = (
-      role === 'operator'
+      role === UserRole.Operator
       && book.loanStatus === '予約中'
       && ['loan', 'cancelReservation'].includes(action)
     )
     if (
       isReservedBookOperatorAction
-      && employeeId !== statusDetail?.reservationEmployeeNumber
+      && employeeId !== statusDetail?.reservationemployeeCode
     ) {
       return 'この書籍を予約したユーザーの社員番号を入力してください。'
     }
@@ -478,7 +479,7 @@ function BookDetail({
     : pendingAction === 'return'
       ? '直接返却確認'
       : modalSetting?.title ?? ''
-  const personLabel = pendingAction === 'cancelReservation' && role === 'general'
+  const personLabel = pendingAction === 'cancelReservation' && role === UserRole.General
     ? undefined
     : `${authenticatedUserName || profile?.name || '利用者'}さん`
 
@@ -488,7 +489,7 @@ function BookDetail({
         <BackButton label="前の画面に戻る" onClick={goBack} />
         <h1>書籍詳細</h1>
         <div className="detail-header-actions">
-          {role === 'admin' && (
+          {role === UserRole.Admin && (
             <Link className="edit-button" to={`/books/${book.id}/edit`}>
               <EditIcon />
               書籍編集
@@ -533,7 +534,7 @@ function BookDetail({
         <div className="loan-history">
           <div className="loan-history-heading">
             <h2 className="section-title"><ClockIcon />貸出履歴</h2>
-            {role === 'admin' && (
+            {role === UserRole.Admin && (
               <div className="history-edit-actions">
                 {editingHistory ? (
                   <>

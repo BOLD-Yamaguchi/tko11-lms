@@ -1,37 +1,27 @@
-import { useEffect, useState } from 'react'
-import type { ReactNode } from 'react'
+import { useEffect } from 'react'
+import { UserRole } from './types'
 import {
   BrowserRouter,
   Navigate,
   Route,
   Routes,
   useLocation,
-  useNavigate,
 } from 'react-router-dom'
-import HomePage from './HomePage'
+import HomePage from './pages/home/HomePage'
 import PasswordReset from './passwordReset'
 import UserEdit from './UserEdit'
 import UserManagement from './UserManagement'
 import UserList from './UsersList'
-import {
-  Footer,
-  Header,
-  LogoutConfirmationModal,
-} from './components'
-import type { HamburgerMenuItem } from './components'
-import Login from './Login'
+import Login from './pages/login/Login'
 import CreateBook from './pages/book-create/CreateBook'
 import BookDetail from './pages/book-detail/BookDetail'
 import EditBook from './pages/book-edit/EditBook'
 import BookSearch from './pages/book-search/BookSearch'
-import LoginPage from './pages/login/LoginPage'
 import MyPage from './pages/my-page/MyPage'
-import { useLibraryDataValue } from './data/libraryQueries'
 import type {
   Book,
   BookStatusDetail,
   LoanStatus,
-  UserRole,
 } from './types'
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -61,75 +51,6 @@ function ScrollToTop() {
   return null
 }
 
-type AppFrameProps = {
-  role: UserRole
-  onLogout: () => void
-  children: ReactNode
-}
-
-function AppFrame({
-  role,
-  onLogout,
-  children,
-}: AppFrameProps) {
-  const navigate = useNavigate()
-  const data = useLibraryDataValue()
-  const currentUser = data.roleProfiles[role]
-  const [logoutOpen, setLogoutOpen] = useState(false)
-  const menuItems: HamburgerMenuItem[] = [
-    { id: 'home', label: 'トップページ', description: 'トップページへ戻る' },
-    { id: 'mypage', label: 'マイページ', description: '利用状況を確認する' },
-    { id: 'search', label: '書籍検索', description: '蔵書を条件検索する' },
-    ...(role === 'admin'
-      ? [{ id: 'create', label: '書籍登録', description: '新しい書籍を登録する' }]
-      : []),
-    { id: 'logout', label: 'ログアウト', description: 'ログイン画面へ戻る' },
-  ]
-
-  const handleMenuSelect = (item: HamburgerMenuItem) => {
-    if (item.id === 'home') navigate('/home')
-    if (item.id === 'mypage') navigate('/mypage')
-    if (item.id === 'search') navigate('/search')
-    if (item.id === 'create') navigate('/create')
-    if (item.id === 'logout') setLogoutOpen(true)
-  }
-
-  const logout = () => {
-    setLogoutOpen(false)
-    onLogout()
-    navigate('/login', { replace: true })
-  }
-
-  return (
-    <div className="app-screen-layout">
-      <Header
-        title="書籍貸出管理システム"
-        eyebrow="BOOK MANAGEMENT SYSTEM"
-        menuItems={menuItems}
-        onMenuSelect={handleMenuSelect}
-      >
-        <span className={`logged-in-user header-login-user ${role}`}>
-          <span className="logged-in-prefix">ログイン中：</span>
-          <strong>{currentUser.name}</strong>
-          <span className="logged-in-id">（{currentUser.userId}）</span>
-        </span>
-      </Header>
-      <div className="app-screen-content">
-        {children}
-      </div>
-      <Footer
-        title="書籍貸出管理システム"
-        description="テスト段階のモック画面です。"
-      />
-      <LogoutConfirmationModal
-        open={logoutOpen}
-        onClose={() => setLogoutOpen(false)}
-        onConfirm={logout}
-      />
-    </div>
-  )
-}
-
 function AppRouter({
   role,
   onLogin,
@@ -142,65 +63,41 @@ function AppRouter({
   onReturnCommentChange,
 }: AppRouterProps) {
   return (
+    console.log("AppRouter role =", role),
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        <Route
-          path="/login"
-          element={role ? <Navigate to="/mypage" replace /> : <LoginPage onLogin={onLogin} />}
-        />
         <Route path="/" element={<Navigate to="/user-login" replace />} />
         <Route
           path="/system"
-          element={<Navigate to={role ? '/mypage' : '/login'} replace />}
+          element={<Navigate to={role ? '/mypage' : '/user-login'} replace />}
         />
         <Route
-          path="/mypage"
-          element={
-            role
-              ? (
-                <AppFrame role={role} onLogout={onLogout}>
-                  <MyPage role={role} onLogout={onLogout} />
-                </AppFrame>
-              )
-              : <Navigate to="/login" replace />
-          }
+          path="/mypage" element={<ProtectedRoute role={role} onLogout={onLogout}><MyPage role={role} onLogout={onLogout} /> </ProtectedRoute>}
         />
         <Route
-          path="/search"
-          element={
-            role
-              ? (
-                <AppFrame role={role} onLogout={onLogout}>
-                  <BookSearch role={role} onLogout={onLogout} />
-                </AppFrame>
-              )
-              : <Navigate to="/login" replace />
-          }
+          path="/search" element={(<ProtectedRoute role={role} onLogout={onLogout}><BookSearch role={role} onLogout={onLogout} /></ProtectedRoute>)}
         />
         <Route
           path="/create"
           element={
-            role === 'admin'
+            role === UserRole.Admin
               ? (
-                <AppFrame role={role} onLogout={onLogout}>
+                <ProtectedRoute role={role} onLogout={onLogout}>
                   <CreateBook
                     onCreate={onCreateBook}
                     onCsvCreate={onCreateBooks}
                     role={role}
                     onLogout={onLogout}
                   />
-                </AppFrame>
+                </ProtectedRoute>
               )
-              : <Navigate to={role ? '/mypage' : '/login'} replace />
+              : <Navigate to={role ? '/mypage' : '/user-login'} replace />
           }
         />
         <Route
           path="/books/:bookId"
-          element={
-            role
-              ? (
-                <AppFrame role={role} onLogout={onLogout}>
+          element={<ProtectedRoute role={role} onLogout={onLogout}>
                   <BookDetail
                     role={role}
                     onStatusChange={onLoanStatusChange}
@@ -208,42 +105,36 @@ function AppRouter({
                     onReturnCommentChange={onReturnCommentChange}
                     onLogout={onLogout}
                   />
-                </AppFrame>
-              )
-              : <Navigate to="/login" replace />
+                </ProtectedRoute>
           }
         />
         <Route
           path="/books/:bookId/edit"
           element={
-            role === 'admin'
+            role === UserRole.Admin
               ? (
-                <AppFrame role={role} onLogout={onLogout}>
+                <ProtectedRoute role={role} onLogout={onLogout}>
                   <EditBook
                     onUpdate={onUpdateBook}
                     role={role}
                     onLogout={onLogout}
                   />
-                </AppFrame>
+                </ProtectedRoute>
               )
-              : <Navigate to={role ? '/mypage' : '/login'} replace />
+              : <Navigate to={role ? '/mypage' : '/user-login'} replace />
           }
         />
-        <Route path="/books" element={<Navigate to={role ? '/mypage' : '/login'} replace />} />
-        <Route path="/delete" element={<Navigate to={role ? '/mypage' : '/login'} replace />} />
-        <Route path="/delete" element={<Navigate to={role ? '/system' : '/login'} replace />} />
+        <Route path="/books" element={<Navigate to={role ? '/mypage' : '/user-login'} replace />} />
+        <Route path="/delete" element={<Navigate to={role ? '/mypage' : '/user-login'} replace />} />
+        <Route path="/delete" element={<Navigate to={role ? '/system' : '/user-login'} replace />} />
 
-        <Route path="/" element={<HomePage />} />
-
-        <Route path="/books" element={<LoginPage onLogin={onLogin} />} />
-
-        <Route path="/home" element={<HomePage />} />
+        <Route path="/home" element={<ProtectedRoute role={role} onLogout={onLogout}><HomePage /></ProtectedRoute>} />
 
         {/* ユーザー管理その他ルート */}
-        <Route path="/user-login" element={<Login />} />
-        <Route path="/UsersList" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
-        <Route path="/users/:employeeCode" element={<ProtectedRoute><UserEdit /></ProtectedRoute>} />
-        <Route path="/user-create" element={<UserManagement />}/>
+        <Route path="/user-login" element={<Login  onLogin={onLogin} />} />
+        <Route path="/UsersList" element={<ProtectedRoute role={role} onLogout={onLogout}><UserList /></ProtectedRoute>} />
+        <Route path="/users/:employeeCode" element={<ProtectedRoute role={role} onLogout={onLogout}><UserEdit /></ProtectedRoute>} />
+        <Route path="/user-create" element={<ProtectedRoute role={role} onLogout={onLogout}><UserManagement /></ProtectedRoute>}/>
         <Route path="/passwordReset" element={<PasswordReset />} />
 
         <Route path="*" element={<Navigate to="/user-login" replace />} />

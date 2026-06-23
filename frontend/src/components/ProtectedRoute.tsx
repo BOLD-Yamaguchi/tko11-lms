@@ -1,19 +1,32 @@
-import { Navigate } from "react-router-dom";
+import type { ReactNode } from 'react'
+import { Navigate } from 'react-router-dom'
+import type { UserRole } from '../types'
+import AppFrame from './AppFrame'
 
 type Props = {
-  children: React.ReactNode;
-};
-
-function ProtectedRoute({ children }: Props) {
-
-  const adminKbn =
-    sessionStorage.getItem("adminKbn");
-
-  if (!adminKbn) {
-    return <Navigate to="/user-login" replace />;
-  }
-
-  return <>{children}</>;
+  role: UserRole | null
+  onLogout: () => void
+  children: ReactNode
 }
 
-export default ProtectedRoute;
+function ProtectedRoute({
+  role,
+  onLogout,
+  children,
+}: Props) {
+  console.log("ProtectedRoute role =", role)
+  if (role === null) {
+    return <Navigate to="/user-login" replace />
+  }
+
+  return (
+    <AppFrame
+      role={role}
+      onLogout={onLogout}
+    >
+      {children}
+    </AppFrame>
+  )
+}
+
+export default ProtectedRoute
