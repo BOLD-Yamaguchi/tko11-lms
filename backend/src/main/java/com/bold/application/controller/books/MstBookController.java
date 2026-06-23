@@ -54,7 +54,7 @@ public class MstBookController {
 				request.getPublishedAtEnd(),
 				request.getCategoryLevel1(),
 				request.getCategoryLevel2(),
-					request.getBookStatus(),
+				request.getBookStatus(),
 				request.getStatus(),
 				request.getRegion())
 				.stream()
