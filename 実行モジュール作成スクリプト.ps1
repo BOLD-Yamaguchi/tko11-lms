@@ -4,7 +4,7 @@ $ErrorActionPreference = "Stop"
 Write-Host "1. .\frontend 配下の文字列置換（http://localhost:8080 -> 空文字、UTF8、LF）を開始します..."
 $frontendPath = Join-Path $PSScriptRoot "frontend"
 # 置換対象の拡張子を指定（必要に応じて増やしてください）
-$targetExtensions = @("*.js", "*.ts", "*.html", "*.vue", "*.json", "*.css")
+$targetExtensions = @("*.js", "*.ts", "*.html", "*.vue", "*.json", "*.css", "*.example", "*.tsx", "*.jsx")
 
 Get-ChildItem -Path $frontendPath -Include $targetExtensions -Recurse -File | ForEach-Object {
     $filePath = $_.FullName
