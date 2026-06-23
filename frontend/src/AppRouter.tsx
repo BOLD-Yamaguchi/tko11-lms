@@ -7,7 +7,7 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom'
-import HomePage from './HomePage'
+import HomePage from './pages/home/HomePage'
 import PasswordReset from './passwordReset'
 import UserEdit from './UserEdit'
 import UserManagement from './UserManagement'
@@ -70,7 +70,7 @@ function AppRouter({
         <Route path="/" element={<Navigate to="/user-login" replace />} />
         <Route
           path="/system"
-          element={<Navigate to={role ? '/mypage' : '/login'} replace />}
+          element={<Navigate to={role ? '/mypage' : '/user-login'} replace />}
         />
         <Route
           path="/mypage" element={<ProtectedRoute role={role} onLogout={onLogout}><MyPage role={role} onLogout={onLogout} /> </ProtectedRoute>}
@@ -92,7 +92,7 @@ function AppRouter({
                   />
                 </ProtectedRoute>
               )
-              : <Navigate to={role ? '/mypage' : '/login'} replace />
+              : <Navigate to={role ? '/mypage' : '/user-login'} replace />
           }
         />
         <Route
@@ -124,9 +124,9 @@ function AppRouter({
               : <Navigate to={role ? '/mypage' : '/user-login'} replace />
           }
         />
-        <Route path="/books" element={<Navigate to={role ? '/mypage' : '/login'} replace />} />
-        <Route path="/delete" element={<Navigate to={role ? '/mypage' : '/login'} replace />} />
-        <Route path="/delete" element={<Navigate to={role ? '/system' : '/login'} replace />} />
+        <Route path="/books" element={<Navigate to={role ? '/mypage' : '/user-login'} replace />} />
+        <Route path="/delete" element={<Navigate to={role ? '/mypage' : '/user-login'} replace />} />
+        <Route path="/delete" element={<Navigate to={role ? '/system' : '/user-login'} replace />} />
 
         <Route path="/home" element={<ProtectedRoute role={role} onLogout={onLogout}><HomePage /></ProtectedRoute>} />
 
