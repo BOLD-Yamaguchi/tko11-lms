@@ -90,7 +90,7 @@ export type BorrowingRecord = {
   loanDate: string
   shelfNumber: string
   tierNumber: string
-  status: '貸出中' | '返却申請中'
+  status: string
   returnComment?: string
 }
 

@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Header } from "../../components/Header";
-import type { HamburgerMenuItem } from "../../components/HamburgerMenu";
-
 import { MenuCard } from "../../components/MenuCard";
 import { BookOpen, Users } from "lucide-react";
 

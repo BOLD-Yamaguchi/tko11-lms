@@ -58,4 +58,16 @@ public class MstBookService {
 	public MstBook findByBookId(int bookId) {
 		return mstBookRepository.findByBookId(bookId);
 	}
+	
+	// 借受リスト
+	public List<MstBook> findBorrowingBooks() {
+	    return mstBookRepository.findByStatusIn(
+	        List.of("1", "2")
+	    );
+	}
+
+	// 予約リスト
+	public List<MstBook> findReservedBooks() {
+	    return mstBookRepository.findByStatus("3");
+	}
 }

@@ -99,7 +99,7 @@ function MyPage({ role }: MyPageProps) {
   const adminKbn = Number(sessionStorage.getItem("adminKbn")) as UserRole
   const generalReservation = data.reservationRecords[0]
   // 貸出・予約操作の進行状況と、管理者一覧の選択・検索状態を画面内で管理する。
-  const [borrowings, setBorrowings] = useState<BorrowingRecord[]>(data.borrowingRecords)
+  const borrowings = data.borrowingRecords
   const [reservations, setReservations] = useState<ReservationRecord[]>(data.reservationRecords)
   const [pendingLoan, setPendingLoan] = useState<ReservationRecord | null>(null)
   const [loanStep, setLoanStep] = useState<LoanStep | null>(null)
@@ -122,22 +122,25 @@ function MyPage({ role }: MyPageProps) {
   })
 
   useEffect(() => {
-    void fetchMyPageInformation()
+    //oid fetchMyPageInformation()
     void fetchBorrowLists()
     void fetchReservationLists()
-    void fetchHistoryLists()
+    //oid fetchHistoryLists()
   }, [])
 
   // 選択した検索対象とキーワードから借受・予約・履歴の各一覧を絞り込む。
   const filteredBorrowings = useMemo(() => {
     const normalized = borrowingKeyword.trim().toLowerCase()
     if (!normalized) return borrowings
+
     return borrowings.filter((record) => {
-      const target = borrowingFilterKey === 'name'
-        ? record.borrower
-        : borrowingFilterKey === 'title'
+      const target =
+        borrowingFilterKey === 'name'
+          ? record.borrower
+          : borrowingFilterKey === 'title'
           ? record.title
           : record.employeeCode
+
       return target.toLowerCase().includes(normalized)
     })
   }, [borrowings, borrowingFilterKey, borrowingKeyword])
@@ -182,7 +185,6 @@ function MyPage({ role }: MyPageProps) {
       employeeCode,
       bookTitle: record?.title,
     })
-    setBorrowings((current) => current.filter((record) => record.employeeCode !== employeeCode))
     setSelectedIds((current) => current.filter((selectedId) => selectedId !== employeeCode))
     setMessage('返却を承認しました。')
     setPendingApproval(null)
@@ -195,11 +197,6 @@ function MyPage({ role }: MyPageProps) {
       bookTitle: record?.title,
       comment: record?.returnComment,
     })
-    setBorrowings((current) => current.map((record) => (
-      record.employeeCode === employeeCode
-        ? { ...record, status: '貸出中', returnComment: undefined }
-        : record
-    )))
     setMessage('返却申請を却下しました。')
     setPendingApproval(null)
   }
@@ -215,7 +212,6 @@ function MyPage({ role }: MyPageProps) {
 
   const bulkReturn = () => {
     void bulkReturnBooks(selectedBorrowings)
-    setBorrowings((current) => current.filter((record) => !selectedIds.includes(record.employeeCode)))
     setMessage(`${selectedIds.length}件の一括返却登録を実行しました。`)
     setSelectedIds([])
     setBulkReturnOpen(false)
@@ -226,11 +222,6 @@ function MyPage({ role }: MyPageProps) {
       employeeCode: employeeCode,
       comment,
     })
-    setBorrowings((current) => current.map((record) => (
-      record.employeeCode === employeeCode
-        ? { ...record, status: '返却申請中', returnComment: comment }
-        : record
-    )))
     setMessage('返却申請を受け付けました。')
     setPendingGeneralAction(null)
   }
@@ -253,19 +244,6 @@ function MyPage({ role }: MyPageProps) {
       bookTitle: pendingLoan.title,
     })
     setReservations((current) => current.filter((record) => record !== pendingLoan))
-    setBorrowings((current) => [
-      ...current,
-      {
-        employeeCode: pendingLoan.employeeCode,
-        borrower: pendingLoan.reserver,
-        title: pendingLoan.title,
-        author: pendingLoan.author,
-        loanDate: getCurrentDate(),
-        shelfNumber: pendingLoan.shelfNumber,
-        tierNumber: pendingLoan.tierNumber,
-        status: '貸出中',
-      },
-    ])
     setMessage(`${pendingLoan.reserver}さんへの貸出を登録しました。`)
     setPendingLoan(null)
     setLoanStep(null)
@@ -401,9 +379,9 @@ function MyPage({ role }: MyPageProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredBorrowings.map((record) => (
+                  {filteredBorrowings.map((record,index) => (
                     <tr
-                      key={record.employeeCode}
+                      key={index}
                       className={selectedIds.includes(record.employeeCode) ? 'selected' : ''}
                     >
                       <td>

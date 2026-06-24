@@ -11,36 +11,46 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bold.application.dto.BorrowingRecordResponse;
 import com.bold.application.dto.books.BookSearchRequest;
 import com.bold.application.dto.books.BookSearchResponse;
 import com.bold.application.entity.books.MstBook;
+import com.bold.application.service.books.BorrowingService;
 import com.bold.application.service.books.MstBookService;
 
 @RestController
 @RequestMapping("/book")
-@CrossOrigin(origins = "http://localhost:5173", methods = {
-		RequestMethod.GET,
-		RequestMethod.POST,
-		RequestMethod.PUT,
-		RequestMethod.DELETE,
-		RequestMethod.OPTIONS
-})
+@CrossOrigin(
+    origins = "http://localhost:5173",
+    methods = {
+        RequestMethod.GET,
+        RequestMethod.POST,
+        RequestMethod.PUT,
+        RequestMethod.DELETE,
+        RequestMethod.OPTIONS
+    }
+)
 public class MstBookController {
 
-	private final MstBookService mstBookService;
+    private final MstBookService mstBookService;
+    private final BorrowingService borrowingService;
 
-	public MstBookController(MstBookService mstBookService) {
-		this.mstBookService = mstBookService;
-	}
+    public MstBookController(
+            MstBookService mstBookService,
+            BorrowingService borrowingService) {
 
-	// テスト用
-	@GetMapping("/search/all")
-	public List<BookSearchResponse> getBooks() {
-		return mstBookService.findAll()
-				.stream()
-				.map(this::toSearchResponse)
-				.toList();
-	}
+        this.mstBookService = mstBookService;
+        this.borrowingService = borrowingService;
+    }
+
+    // テスト用
+    @GetMapping("/search/all")
+    public List<BookSearchResponse> getBooks() {
+        return mstBookService.findAll()
+                .stream()
+                .map(this::toSearchResponse)
+                .toList();
+    }
 
 	// 書籍検索API
 	@GetMapping("/search")
@@ -62,12 +72,28 @@ public class MstBookController {
 				.toList();
 	}
 
-	@PostMapping
-	public MstBook createBook(@RequestBody MstBook mstBook) {
-		return mstBookService.create(mstBook);
-	}
+    // 借受リスト
+    @GetMapping("/borrow-lists")
+    public List<BorrowingRecordResponse> getBorrowLists() {
+        return borrowingService.findBorrowingList();
+    }
 
-	private BookSearchResponse toSearchResponse(MstBook mstBook) {
-		return BookSearchResponse.from(mstBook);
-	}
+    // 予約リスト
+    @GetMapping("/reservation-lists")
+    public List<BookSearchResponse> getReservationLists() {
+        return mstBookService.findReservedBooks()
+                .stream()
+                .map(this::toSearchResponse)
+                .toList();
+    }
+
+    // 書籍登録
+    @PostMapping
+    public MstBook createBook(@RequestBody MstBook mstBook) {
+        return mstBookService.create(mstBook);
+    }
+
+    private BookSearchResponse toSearchResponse(MstBook mstBook) {
+        return BookSearchResponse.from(mstBook);
+    }
 }
