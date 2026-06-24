@@ -23,7 +23,7 @@ public interface MstBookRepository extends JpaRepository<MstBook, Integer> {
   List<MstBook> findByStatus(String status);
 
   // 書籍情報の登録・更新
-  MstBook save(MstBook mstBook, int bookId);
+  //MstBook save(MstBook mstBook, int bookId);
 
   // 書籍検索API
   //Nullか空値の場合は、検索条件をTrueとする

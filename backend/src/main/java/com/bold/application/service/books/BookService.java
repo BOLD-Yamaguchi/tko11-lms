@@ -48,7 +48,7 @@ public class BookService {
 		book.setTierNo(mstBook.getTierNo());
 		book.setMemo(mstBook.getMemo());
 		book.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
-		return repository.save(book, mstBook.getBookId());
+		return repository.save(book);
 	}
 
 	// 書籍状態から書籍情報を取得
@@ -61,13 +61,13 @@ public class BookService {
 		MstBook mstBook = repository.findByBookId(bookId);
 		mstBook.setStatus(status);
 		mstBook.setStatusUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
-		return repository.save(mstBook, bookId);
+		return repository.save(mstBook);
 	}
 
 	// 貸出先ユーザIDの更新
 	public MstBook lendUserUpdate(int bookId, UUID userId) {
 		MstBook mstBook = repository.findByBookId(bookId);
 		mstBook.setLendUserId(userId);
-		return repository.save(mstBook, bookId);
+		return repository.save(mstBook);
 	}
 }
