@@ -69,9 +69,9 @@ const collectionStatusByCode: Record<string, CollectionStatus> = {
 
 const loanStatusByCode: Record<string, LoanStatus> = {
   '0': '貸出可',
-  '1': '貸出中',
-  '2': '返却申請中',
-  '3': '予約中',
+  '1': '予約中',
+  '2': '貸出中',
+  '3': '返却申請中',
   貸出可: '貸出可',
   貸出中: '貸出中',
   返却申請中: '返却申請中',
@@ -122,9 +122,9 @@ const collectionStatusCodeByName: Record<string, string> = {
 
 const loanStatusCodeByName: Record<string, string> = {
   貸出可: '0',
-  貸出中: '1',
-  返却申請中: '2',
-  予約中: '3',
+  予約中: '1',
+  貸出中: '2',
+  返却申請中: '3',
 }
 
 const locationCodeByName: Record<string, string> = {
