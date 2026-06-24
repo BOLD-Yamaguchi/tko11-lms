@@ -22,4 +22,10 @@ public interface MstBookLogRepository extends JpaRepository<MstBookLog, Integer>
 	// 貸出IDによるレコード取得
 	MstBookLog findByLendId(int lendId);
 
+	// 新規登録・更新
+	//@SuppressWarnings("unchecked")
+	//MstBookLog save(MstBookLog mstBookLog);
+
+	// 複数登録
+	//List<MstBookLog> saveAll(List<MstBookLog> mstBookLogs);
 }

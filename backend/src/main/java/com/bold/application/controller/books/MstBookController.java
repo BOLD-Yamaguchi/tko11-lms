@@ -52,27 +52,25 @@ public class MstBookController {
                 .toList();
     }
 
-    // 書籍検索
-    @GetMapping("/search")
-    public List<BookSearchResponse> searchBooks(
-            @ModelAttribute BookSearchRequest request) {
-
-        return mstBookService.search(
-                request.getBookId(),
-                request.getBookName(),
-                request.getAuthorName(),
-                request.getPublisher(),
-                request.getPublishedAtStart(),
-                request.getPublishedAtEnd(),
-                request.getCategoryLevel1(),
-                request.getCategoryLevel2(),
-                request.getBookStatus(),
-                request.getStatus(),
-                request.getRegion())
-                .stream()
-                .map(this::toSearchResponse)
-                .toList();
-    }
+	// 書籍検索API
+	@GetMapping("/search")
+	public List<BookSearchResponse> searchBooks(@ModelAttribute BookSearchRequest request) {
+		return mstBookService.search(
+				request.getBookId(),
+				request.getBookName(),
+				request.getAuthorName(),
+				request.getPublisher(),
+				request.getPublishedAtStart(),
+				request.getPublishedAtEnd(),
+				request.getCategoryLevel1(),
+				request.getCategoryLevel2(),
+				request.getBookStatus(),
+				request.getStatus(),
+				request.getRegion())
+				.stream()
+				.map(this::toSearchResponse)
+				.toList();
+	}
 
     // 借受リスト
     @GetMapping("/borrow-lists")

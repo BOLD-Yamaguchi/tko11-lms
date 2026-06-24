@@ -35,32 +35,33 @@ public class BookLogService {
 	}
 
 	// 新規履歴登録
-	public void create(MstBookLog mstBookLog) {
-		repository.save(mstBookLog);
+	public MstBookLog create(MstBookLog mstBookLog) {
+		return repository.save(mstBookLog);
 	}
 
 	// 新規履歴登録（複数一括）
-	public void register(List<MstBookLog> mstBookLogList) {
-		repository.saveAll(mstBookLogList);
+	public List<MstBookLog> register(List<MstBookLog> mstBookLogList) {
+		return repository.saveAll(mstBookLogList);
 	}
 
 	// 履歴更新（感想）
-	public void updateReview(MstBookLog mstBookLog, int lendId) {
+	public MstBookLog updateReview(MstBookLog mstBookLog, int lendId) {
 		MstBookLog log = repository.findByLendId(lendId);
 		log.setReview(mstBookLog.getReview());
+		return repository.save(log);
 	}
 
 	// 履歴更新（返却日）
-	public void updateUpdatedAt(MstBookLog mstBookLog, int lendId) {
+	public MstBookLog updateUpdatedAt(MstBookLog mstBookLog, int lendId) {
 		MstBookLog log = repository.findByLendId(lendId);
 		log.setUpdatedAt(mstBookLog.getUpdatedAt());
-		repository.save(log);
+		return repository.save(log);
 	}
 
 	// 履歴更新（非表示フラグ）
-	public void updateHiddenFlg(MstBookLog mstBookLog, int lendId) {
+	public MstBookLog updateHiddenFlg(MstBookLog mstBookLog, int lendId) {
 		MstBookLog log = repository.findByLendId(lendId);
 		log.setHiddenFlg(mstBookLog.getHiddenFlg());
-		repository.save(log);
+		return repository.save(log);
 	}
 }
