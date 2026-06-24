@@ -28,6 +28,18 @@ type BookSearchResponse = {
   tierNo: number | string | null
 }
 
+export type BorrowingRecordResponse = {
+  employeeCode: string | null
+  borrower: string | null
+  title: string
+  author: string
+  loanDate: string
+  shelfNumber: string
+  tierNumber: string
+  status: string
+  returnComment?: string | null
+}
+
 export type SearchBooksConditions = {
   id?: string
   title?: string
@@ -161,6 +173,22 @@ function toCatalogBook(response: BookSearchResponse): CatalogBook {
   }
 }
 
+function toBorrowingRecord(
+  response: BorrowingRecordResponse,
+): BorrowingRecord {
+  return {
+    employeeCode: response.employeeCode,
+    borrower: response.borrower,
+    title: response.title,
+    author: response.author,
+    loanDate: response.loanDate,
+    shelfNumber: response.shelfNumber,
+    tierNumber: response.tierNumber,
+    status: response.status, 
+    returnComment: response.returnComment,
+  }
+}
+
 export async function fetchSearchBooks() {
   return searchBooks()
 }
@@ -219,16 +247,24 @@ export async function fetchBookDetail(bookId: string): Promise<void> {
   await callBookApi(() => httpClient.get(API_ENDPOINTS.bookDetail(bookId)).json())
 }
 
-export async function fetchBorrowLists(): Promise<void> {
-  await callBookApi(() => httpClient.get(API_ENDPOINTS.borrowLists).json<BorrowingRecord[]>())
+export async function fetchBorrowLists(): Promise<BorrowingRecord[]> {
+  const response = await httpClient
+    .get(API_ENDPOINTS.borrowLists)
+    .json<BorrowingRecordResponse[]>()
+
+  return response.map(toBorrowingRecord)
 }
 
-export async function fetchHistoryLists(): Promise<void> {
-  await callBookApi(() => httpClient.get(API_ENDPOINTS.historyLists).json<UserLoanHistory[]>())
+export async function fetchHistoryLists() {
+  return httpClient
+    .get(API_ENDPOINTS.historyLists)
+    .json<UserLoanHistory[]>()
 }
 
-export async function fetchReservationLists(): Promise<void> {
-  await callBookApi(() => httpClient.get(API_ENDPOINTS.reservationLists).json<ReservationRecord[]>())
+export async function fetchReservationLists() {
+  return httpClient
+    .get(API_ENDPOINTS.reservationLists)
+    .json<ReservationRecord[]>()
 }
 
 export async function searchBooks(
@@ -282,8 +318,10 @@ export async function importBooksFromCsv(books: Book[]) {
   await post(API_ENDPOINTS.csvImport, { books })
 }
 
-export async function fetchMyPageInformation(): Promise<void> {
-  await callBookApi(() => httpClient.get(API_ENDPOINTS.myPage).json())
+export async function fetchMyPageInformation() {
+  return httpClient
+    .get(API_ENDPOINTS.myPage)
+    .json()
 }
 
 export async function updateBookHistoryVisibility(

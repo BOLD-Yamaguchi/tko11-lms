@@ -134,7 +134,7 @@ function AppRouter({
         <Route path="/user-login" element={<Login  onLogin={onLogin} />} />
         <Route path="/UsersList" element={<ProtectedRoute role={role} onLogout={onLogout}><UserList /></ProtectedRoute>} />
         <Route path="/users/:employeeCode" element={<ProtectedRoute role={role} onLogout={onLogout}><UserEdit /></ProtectedRoute>} />
-        <Route path="/user-create" element={<ProtectedRoute role={role} onLogout={onLogout}><UserManagement /></ProtectedRoute>}/>
+        <Route path="/user-create" element={<UserManagement />} />
         <Route path="/passwordReset" element={<PasswordReset />} />
 
         <Route path="*" element={<Navigate to="/user-login" replace />} />

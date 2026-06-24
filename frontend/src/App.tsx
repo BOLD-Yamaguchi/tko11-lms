@@ -19,7 +19,8 @@ import type {
 const roleStorageKey = 'adminKbn'
 
 function readStoredRole(): UserRole | null {
-  const stored = Number(sessionStorage.getItem(roleStorageKey))
+  const storedString = sessionStorage.getItem(roleStorageKey)
+  const stored = storedString === null ? null : Number(storedString)
 
   switch (stored) {
     case UserRole.General:
