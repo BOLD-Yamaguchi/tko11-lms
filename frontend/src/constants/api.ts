@@ -16,7 +16,7 @@ export const API_ENDPOINTS = {
   returnApprove: 'book/return',
   reserve: 'book/reserve',
   lend: 'book/lend',
-  reserveCancel: 'book/reserve-cancel',
+  reserveCancel: 'book/cancel-reservation',
   returnReject: 'book/return-reject',
   directReturn: 'book/direcet-return',
   bookUpdate: (bookId: string) => `books/${encodeURIComponent(bookId)}`,
