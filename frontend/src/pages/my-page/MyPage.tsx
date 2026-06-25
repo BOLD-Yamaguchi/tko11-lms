@@ -100,7 +100,7 @@ function MyPage({ role }: MyPageProps) {
   const generalReservation = data.reservationRecords[0]
   // 貸出・予約操作の進行状況と、管理者一覧の選択・検索状態を画面内で管理する。
   const borrowings = data.borrowingRecords
-  const [reservations, setReservations] = useState<ReservationRecord[]>(data.reservationRecords)
+  const reservations = data.reservationRecords
   const [pendingLoan, setPendingLoan] = useState<ReservationRecord | null>(null)
   const [loanStep, setLoanStep] = useState<LoanStep | null>(null)
   const [pendingGeneralAction, setPendingGeneralAction] = useState<GeneralPendingAction | null>(null)
@@ -243,7 +243,6 @@ function MyPage({ role }: MyPageProps) {
       employeeCode: pendingLoan.employeeCode,
       bookTitle: pendingLoan.title,
     })
-    setReservations((current) => current.filter((record) => record !== pendingLoan))
     setMessage(`${pendingLoan.reserver}さんへの貸出を登録しました。`)
     setPendingLoan(null)
     setLoanStep(null)
@@ -258,6 +257,10 @@ function MyPage({ role }: MyPageProps) {
     setPendingLoan(null)
     setLoanStep(null)
   }
+  console.log("reservation =", filteredReservations)
+  console.log("typeof reservation =", typeof filteredReservations)
+  console.log("Array?", Array.isArray(filteredReservations))
+
 
   return (
     <main className="page-shell mypage">
@@ -717,6 +720,8 @@ function ReservationTable({
       && book.author === record.author
     ))
   )
+
+  
 
   return (
     <div className="table-scroll">

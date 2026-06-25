@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bold.application.dto.BorrowingRecordResponse;
+import com.bold.application.dto.ReservationRecordResponse;
 import com.bold.application.dto.books.BookSearchRequest;
 import com.bold.application.dto.books.BookSearchResponse;
 import com.bold.application.entity.books.MstBook;
 import com.bold.application.service.books.BookService;
 import com.bold.application.service.books.BorrowingService;
 import com.bold.application.service.books.MstBookService;
+import com.bold.application.service.books.ReservationService;
 
 @RestController
 @RequestMapping("/book")
@@ -39,16 +41,19 @@ public class MstBookController {
 
     private final MstBookService mstBookService;
     private final BorrowingService borrowingService;
+    private final ReservationService reservationService;
     private final BookService bookService; // ★昨日のロジック用に注入を追加
 
     // ★すべてのServiceをコンストラクタインジェクションに統一
     public MstBookController(
             MstBookService mstBookService,
             BorrowingService borrowingService,
+            ReservationService reservationService,
             BookService bookService) {
 
         this.mstBookService = mstBookService;
         this.borrowingService = borrowingService;
+        this.reservationService = reservationService;
         this.bookService = bookService;
     }
 
@@ -89,12 +94,10 @@ public class MstBookController {
 
     // 予約リスト（他の方が追加したエンドポイント）
     @GetMapping("/reservation-lists")
-    public List<BookSearchResponse> getReservationLists() {
-        return mstBookService.findReservedBooks()
-                .stream()
-                .map(this::toSearchResponse)
-                .toList();
+    public List<ReservationRecordResponse> getReservationLists() {
+        return reservationService.findReservationList();
     }
+
 
     // 書籍登録
     @PostMapping
