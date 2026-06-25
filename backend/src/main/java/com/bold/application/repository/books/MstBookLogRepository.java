@@ -1,6 +1,7 @@
 package com.bold.application.repository.books;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -14,7 +15,7 @@ public interface MstBookLogRepository extends JpaRepository<MstBookLog, Integer>
 	List<MstBookLog> findAll();
 
 	// ユーザ単位リスト取得
-	List<MstBookLog> findByLendUserId(String lendUserId);
+	List<MstBookLog> findByLendUserId(UUID lendUserId);
 
 	// 書籍単位リスト取得
 	List<MstBookLog> findByBookId(int bookId);
