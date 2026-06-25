@@ -62,12 +62,12 @@ public class MstBookService {
 	// 借受リスト
 	public List<MstBook> findBorrowingBooks() {
 	    return mstBookRepository.findByStatusIn(
-	        List.of("1", "2")
+	        List.of( "2")
 	    );
 	}
 
 	// 予約リスト
 	public List<MstBook> findReservedBooks() {
-	    return mstBookRepository.findByStatus("3");
+	    return mstBookRepository.findByStatus("1");
 	}
 }
