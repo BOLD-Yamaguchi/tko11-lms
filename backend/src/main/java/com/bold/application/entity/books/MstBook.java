@@ -53,6 +53,8 @@ public class MstBook {
 	@Column(length = 100)
 	private String memo;
 
+	@NotBlank
+	@Column(nullable = false)
 	private int categoryLevel1Id;
 	private int categoryLevel2Id;
 
