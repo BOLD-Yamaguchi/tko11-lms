@@ -1,8 +1,8 @@
 import type { LibraryData } from '../types'
-import { USE_MOCK_API } from '../constants/api'
 import {
   fetchBorrowLists,
   fetchSearchBooks,
+  fetchReservationLists,
 } from '../api/booksApi'
 import { mockLibraryData } from './mockLibraryData'
 
@@ -18,11 +18,15 @@ export async function fetchLibraryData(): Promise<LibraryData> {
 
       console.log("📘 API books:", books)
       console.log("📚 API borrowingRecords:", borrowingRecords)
+    
+    const reservationRecords =await fetchReservationLists()
+    console.log("📚 API reservationRecords:", reservationRecords)
 
     return {
       ...mockData,
       books,
       borrowingRecords,
+      reservationRecords,
     }
   } catch (error) {
     console.error(error)
