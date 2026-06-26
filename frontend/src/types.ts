@@ -83,6 +83,7 @@ export type LoanHistory = {
 }
 
 export type BorrowingRecord = {
+  bookId: string
   employeeCode: string
   borrower: string
   title: string
