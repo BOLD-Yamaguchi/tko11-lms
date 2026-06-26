@@ -2,6 +2,7 @@ package com.bold.application.dto;
 
 public class BorrowingRecordResponse {
 
+    private int bookId;
     private String employeeCode;
     private String borrower;
     private String title;
@@ -12,7 +13,15 @@ public class BorrowingRecordResponse {
     private String status;
     private String returnComment;
 
-    public String getEmployeeCode() {
+    public int getBookId() {
+		return bookId;
+	}
+
+	public void setBookId(int bookId) {
+		this.bookId = bookId;
+	}
+
+	public String getEmployeeCode() {
         return employeeCode;
     }
 

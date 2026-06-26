@@ -215,6 +215,7 @@ function MyPage({ role }: MyPageProps) {
     setMessage(`${selectedIds.length}件の一括返却登録を実行しました。`)
     setSelectedIds([])
     setBulkReturnOpen(false)
+    window.location.reload();
   }
 
   const requestReturn = (comment: string) => {

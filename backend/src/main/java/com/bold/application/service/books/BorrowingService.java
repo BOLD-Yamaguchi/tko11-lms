@@ -1,6 +1,7 @@
 package com.bold.application.service.books;
 
 import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.bold.application.dto.BorrowingRecordResponse;
@@ -33,6 +34,7 @@ public class BorrowingService {
                     BorrowingRecordResponse response =
                             new BorrowingRecordResponse();
 
+                    response.setBookId(book.getBookId());
                     response.setTitle(book.getBookName());
                     response.setAuthor(book.getAuthorName());
                     response.setShelfNumber(book.getShelfNo());
