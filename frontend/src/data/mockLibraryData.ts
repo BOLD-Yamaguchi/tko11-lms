@@ -41,21 +41,7 @@ const emptyBook: CatalogBook = {
   loanStatus: '貸出可',
 }
 
-const borrowingRecords: BorrowingRecord[] = [
-  { employeeCode: 'S0001', borrower: '山田太郎', title: 'AWS入門', author: '山田太郎', loanDate: '2025/05/20', shelfNumber: 'A-01-03', tierNumber: '01', status: '貸出中' },
-  { employeeCode: 'S0002', borrower: '佐藤花子', title: 'Python実践', author: '佐藤花子', loanDate: '2025/05/18', shelfNumber: 'B-02-01', tierNumber: '02', status: '貸出中' },
-  {
-    employeeCode: 'S0003',
-    borrower: '鈴木一郎',
-    title: 'データ分析の基礎',
-    author: '鈴木一郎',
-    loanDate: '2025/05/22',
-    shelfNumber: 'C-01-05',
-    tierNumber: '03',
-    status: '返却申請中',
-    returnComment: '図が多く、理解しやすかったです。',
-  },
-]
+const borrowingRecords: BorrowingRecord[] = []
 
 const reservationRecords: ReservationRecord[] = [
   { employeeCode: 'S0004', title: '機械学習の基礎', author: '渡辺直樹', reserver: '田中次郎', reservationDate: '2025/05/24', shelfNumber: 'A', tierNumber: '01' },
