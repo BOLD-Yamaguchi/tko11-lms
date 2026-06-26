@@ -26,7 +26,7 @@ public class MstCategoryLevel2{
 
 	public void setCategoryLevel2Id(Integer categoryLevel2Id) {
 		this.categoryLevel2Id = categoryLevel2Id;
-	}
+    }
 
     public String getCategoryLevel2Name() {
         return categoryLevel2Name;
