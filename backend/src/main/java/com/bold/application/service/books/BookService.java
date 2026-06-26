@@ -59,10 +59,23 @@ public class BookService {
 
 	// 書籍状態の更新
 	public MstBook statusUpdate(int bookId, String status) {
-		MstBook mstBook = repository.findByBookId(bookId);
-		mstBook.setStatus(status);
-		mstBook.setStatusUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
-		return repository.save(mstBook);
+
+    	System.out.println("★★★★★ statusUpdate START ★★★★★");
+
+	   	MstBook mstBook = repository.findByBookId(bookId);
+
+    	System.out.println("bookId = " + mstBook.getBookId());
+
+    	mstBook.setStatus(status);
+    	mstBook.setStatusUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
+
+    	System.out.println("save前");
+
+    	MstBook result = repository.save(mstBook);
+
+    	System.out.println("save後");
+
+    	return result;
 	}
 
 	// 貸出先ユーザIDの更新
