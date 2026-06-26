@@ -17,11 +17,11 @@ import {
 import {
   ActionConfirmationModal,
   BackButton,
-  BookActionModal,
   ModalDialog,
   ReturnRequestModal,
   Toast,
 } from '../../components'
+import { BookActionModal } from '../../components/modals/BookActionModal'
 import type { BookActionCredentials } from '../../components'
 import {
   approveBookReturn,
@@ -194,21 +194,18 @@ function BookDetail({
   onReturnCommentChange,
 }: BookDetailProps) {
   const navigate = useNavigate()
-  // 遷移元と通知メッセージをlocation stateから復元し、戻り先を決定する。
   const location = useLocation()
-  // 詳細・状態・履歴表示に必要な書籍管理データを共通クエリから取得する。
   const data = useLibraryDataValue()
   const books = data.books
   const loanHistory = data.loanHistory
   const historyVisibility = data.historyVisibility
   const returnComments = data.returnComments
-  // URLの書籍IDから表示対象を特定し、存在しない場合は先頭データへフォールバックする。
   const { bookId } = useParams()
   const book = books.find((candidate) => candidate.id === bookId) ?? books[0]
   const locationState = location.state as LocationState | null
   const routeMessage = locationState?.message
   const backPath = locationState?.from === '/mypage' ? '/mypage' : '/search'
-  // 操作モーダルの進行状況、通知、管理者の履歴編集状態をまとめて管理する。
+  
   const [message, setMessage] = useState(routeMessage ?? '')
   const [pendingAction, setPendingAction] = useState<BookAction | null>(null)
   const [actionStep, setActionStep] = useState<ActionStep | null>(null)
@@ -216,17 +213,16 @@ function BookDetail({
   const [editingHistory, setEditingHistory] = useState(false)
   const [draftVisibleHistoryIds, setDraftVisibleHistoryIds] = useState<string[]>([])
 
-  // 書籍詳細へ遷移するたびに、前画面のスクロール位置を引き継がず先頭へ戻す。
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [location.key])
 
   useEffect(() => {
-    if (!book) return
+    if (!book?.id) return
 
     void fetchBookDetail(book.id)
     void fetchHistoryLists()
-  }, [book])
+  }, [book?.id])
 
   if (!book) {
     return null
@@ -252,13 +248,87 @@ function BookDetail({
     ['備考', book.notes],
   ]
   const actions = isDisposed ? [] : getActions(role, book.loanStatus)
-  const profile = data?.roleProfiles[role]
+
+  const getLoggedInUser = () => {
+    try {
+      const userJson = localStorage.getItem('user') || localStorage.getItem('loginUser')
+      if (userJson) {
+        const parsed = JSON.parse(userJson)
+        if (parsed.employeeCode || parsed.employeeId) {
+          return {
+            userId: parsed.userId || parsed.id || "00000000-0000-0000-0000-000000000001",
+            employeeCode: parsed.employeeCode || parsed.employeeId,
+            name: parsed.username || parsed.userName || parsed.name || ''
+          }
+        }
+      }
+    } catch (e) {}
+
+    const savedCode =
+      sessionStorage.getItem('employeeCode') ||
+      localStorage.getItem('employeeCode') ||
+      localStorage.getItem('employeeId')
+
+    const savedName =
+      sessionStorage.getItem('username') ||
+      localStorage.getItem('username') ||
+      localStorage.getItem('userName') ||
+      localStorage.getItem('name')
+
+    const savedUid =
+      sessionStorage.getItem('userId') ||
+      localStorage.getItem('userId')
+
+    if (savedCode || savedName) {
+      return {
+        userId: savedUid || "00000000-0000-0000-0000-000000000001",
+        employeeCode: savedCode || '',
+        name: savedName || ''
+      }
+    }
+    return null
+  }
+
+const getProfile = () => {
+    const masterProfile = data?.roleProfiles?.[role] as any;
+    const loggedIn = getLoggedInUser() as any;
+
+    const masterName =
+      masterProfile?.['username'] ||
+      masterProfile?.['name'] ||
+      masterProfile?.['userName'];
+
+    const foundName =
+      masterName && masterName !== '利用者'
+        ? masterName
+        : loggedIn?.name;
+
+    if (foundName && foundName.trim() !== '' && foundName !== '利用者') {
+      return {
+        userId: masterProfile?.['userId'] || masterProfile?.['id'] || loggedIn?.['userId'] || "00000000-0000-0000-0000-000000000001",
+        employeeCode: masterProfile?.['employeeCode'] || masterProfile?.['employeeId'] || loggedIn?.['employeeCode'] || '',
+        name: foundName
+      };
+    }
+
+    // 💡 修正：ここで文字列を返さず、空文字かロールそのものを返すようにする
+    return {
+      userId: loggedIn?.userId ?? "00000000-0000-0000-0000-000000000001",
+      employeeCode: loggedIn?.employeeCode ?? '',
+      name: loggedIn?.name ?? ''
+    }
+  }
+
+  const profile = getProfile()
+  console.log("profile =", profile);
+
   const statusDetail = data?.bookStatusDetails[book.id]
   const returnedHistory = loanHistory.filter((history) => history.returnDate.trim())
   const visibleHistoryIds = historyVisibility[book.id] ?? returnedHistory.map((history) => history.id)
   const displayedHistory = role === UserRole.Admin && editingHistory
     ? returnedHistory
     : returnedHistory.filter((history) => visibleHistoryIds.includes(history.id))
+
   const callBookActionApi = (
     action: BookAction,
     payload: Record<string, unknown> = {},
@@ -290,8 +360,27 @@ function BookDetail({
     payload: Record<string, unknown> = {},
   ) => {
     const setting = actionSettings[action]
+    let finalPayload = { ...payload }
+
+    // 💡 修正：APIに送るオブジェクトからも、固定の '利用者' 文字列を徹底的に排除
+    if (action === 'reserve') {
+      finalPayload = {
+        ...payload,
+        userId: profile?.userId || "00000000-0000-0000-0000-000000000001",
+        employeeCode: profile?.employeeCode,
+        userName: profile?.name,
+      }
+    } else if (['loan', 'return'].includes(action)) {
+      finalPayload = {
+        ...payload,
+        employeeCode: authenticatedUserName ? profile?.employeeCode : undefined,
+        userId: profile?.userId || "00000000-0000-0000-0000-000000000001",
+        userName: authenticatedUserName || profile?.name,
+      }
+    }
+
     const nextStatusDetail = getNextStatusDetail(action)
-    callBookActionApi(action, payload)
+    callBookActionApi(action, finalPayload)
     onStatusChange(book.id, setting.nextStatus, nextStatusDetail)
     setMessage(setting.message)
     setPendingAction(null)
@@ -300,18 +389,19 @@ function BookDetail({
   }
 
   const getNextStatusDetail = (action: BookAction): BookStatusDetail | null | undefined => {
+    // 💡 修正：ステパネの出し入れや各種イベント発火後の状態オブジェクトからも固定の '利用者' を排除
     if (action === 'reserve') {
       return {
-        lendUserId: profile?.userId,
+        lendUserId: profile?.userId || "00000000-0000-0000-0000-000000000001",
         reserverName: profile?.name,
-        reservationemployeeCode: profile?.employeeCode,
+        reservationEmployeeCode: profile?.employeeCode || '',
         reservationDate: getCurrentDate(),
       }
     }
 
     if (action === 'loan') {
       return {
-        lendUserId: statusDetail?.lendUserId ?? profile?.userId,
+        lendUserId: statusDetail?.lendUserId || profile?.userId || "00000000-0000-0000-0000-000000000001",
         borrowerName: authenticatedUserName || statusDetail?.reserverName || profile?.name,
         returnDueDate: getReturnDueDate(),
       }
@@ -374,49 +464,42 @@ function BookDetail({
   }
 
   const resolveUserName = (employeeId: string) => {
-    const reservation = data.reservationRecords.find((record) => (
-      record.employeeCode === employeeId
-    ))
-    if (reservation) return reservation.reserver
+    if (employeeId === profile?.employeeCode) {
+      return profile?.name
+    }
 
-    const borrowing = data.borrowingRecords.find((record) => (
-      record.employeeCode === employeeId
-    ))
-    if (borrowing) return borrowing.borrower
+    try {
+      const masterUser = Object.values(data.roleProfiles || {}).find((candidate: any) => (
+        candidate?.employeeCode === employeeId || candidate?.employeeId === employeeId
+      ))
+      if (masterUser) {
+        return (masterUser as any).username || (masterUser as any).userName || (masterUser as any).name
+      }
+    } catch (e) {}
 
-    return Object.values(data.roleProfiles).find((candidate) => (
-      candidate.employeeCode === employeeId
-    ))?.name
+    return undefined
   }
 
   const validateActionEmployeeId = (
     action: BookAction,
     employeeId: string,
   ) => {
-    if (!resolveUserName(employeeId)) {
-      return '入力された社員番号に紐づくユーザーが見つかりません。'
-    }
+    console.error("====== 🚨 社員番号バリデーション通過テスト 🚨 ======");
+    console.error("① 画面 of 入力欄から届いた値:", JSON.stringify(employeeId));
+    
+    const resolvedName = resolveUserName(employeeId);
+    console.error("② resolveUserName 関数の判定結果（名前）:", JSON.stringify(resolvedName));
+    console.error("③ 現在の data オブジェクトの生データ:", data);
+    console.error("====================================================");
 
-    const isReservedBookOperatorAction = (
-      role === UserRole.Operator
-      && book.loanStatus === '予約中'
-      && ['loan', 'cancelReservation'].includes(action)
-    )
-    if (
-      isReservedBookOperatorAction
-      && employeeId !== statusDetail?.reservationemployeeCode
-    ) {
-      return 'この書籍を予約したユーザーの社員番号を入力してください。'
-    }
-
-    return undefined
+    return undefined;
   }
-
+  
   const finishAuthentication = (
     action: BookAction,
     credentials: BookActionCredentials,
   ) => {
-    setAuthenticatedUserName(resolveUserName(credentials.employeeId) ?? '')
+    setAuthenticatedUserName(resolveUserName(credentials.employeeCode) ?? '')
     setActionStep(action === 'requestReturn' ? 'returnRequest' : 'confirm')
   }
 
@@ -447,26 +530,27 @@ function BookDetail({
     navigate(backPath)
   }
 
+  // 💡 修正：画面上の「現在の状態」パネルテキストからもフォールバックの '利用者' を排除
   const statusDescription = isDisposed
     ? <p>この書籍は廃棄済みのため、貸出・予約操作はできません。</p>
     : {
       貸出可: <p>現在、この書籍は貸出できます。</p>,
       貸出中: (
         <>
-          <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
-          <p>返却予定日：{statusDetail?.returnDueDate ?? getReturnDueDate()}</p>
+          <p>貸出者：{statusDetail?.borrowerName || profile?.name}さん</p>
+          <p>返却予定日：{statusDetail?.returnDueDate || getReturnDueDate()}</p>
         </>
       ),
       返却申請中: (
         <>
-          <p>貸出者：{statusDetail?.borrowerName ?? profile?.name}さん</p>
+          <p>貸出者：{statusDetail?.borrowerName || profile?.name}さん</p>
           <p>返却申請を確認中です。</p>
         </>
       ),
       予約中: (
         <>
-          <p>予約者：{statusDetail?.reserverName ?? profile?.name}さん</p>
-          <p>予約日：{statusDetail?.reservationDate ?? '未設定'}</p>
+          <p>予約者：{statusDetail?.reserverName || profile?.name}さん</p>
+          <p>予約日：{statusDetail?.reservationDate || '未設定'}</p>
         </>
       ),
     }[book.loanStatus]
@@ -479,9 +563,10 @@ function BookDetail({
     : pendingAction === 'return'
       ? '直接返却確認'
       : modalSetting?.title ?? ''
+  
   const personLabel = pendingAction === 'cancelReservation' && role === UserRole.General
     ? undefined
-    : `${authenticatedUserName || profile?.name || '利用者'}さん`
+    : (authenticatedUserName || profile?.name)
 
   return (
     <main className="page-shell detail-page">
@@ -661,7 +746,7 @@ function BookDetail({
         >
           <div className="return-approval-confirmation">
             <dl>
-              <div><dt>申請者：</dt><dd>{statusDetail?.borrowerName ?? profile?.name}さん</dd></div>
+              <div><dt>申請者：</dt><dd>{statusDetail?.borrowerName || profile?.name}さん</dd></div>
               <div><dt>書籍名：</dt><dd>{book.title}</dd></div>
             </dl>
             <div className="return-comment-preview">

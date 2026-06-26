@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-
 @Entity
 @Table(name = "mst_book")
 public class MstBook {
@@ -53,7 +52,6 @@ public class MstBook {
 	@Column(length = 100)
 	private String memo;
 
-	@NotBlank
 	@Column(nullable = false)
 	private int categoryLevel1Id;
 	private int categoryLevel2Id;
