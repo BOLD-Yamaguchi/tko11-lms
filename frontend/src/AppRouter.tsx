@@ -73,10 +73,10 @@ function AppRouter({
           element={<Navigate to={role ? '/mypage' : '/user-login'} replace />}
         />
         <Route
-          path="/mypage" element={<ProtectedRoute role={role} onLogout={onLogout}><MyPage /> </ProtectedRoute>}
+          path="/mypage" element={<ProtectedRoute role={role} onLogout={onLogout}><MyPage/> </ProtectedRoute>}
         />
         <Route
-          path="/search" element={(<ProtectedRoute role={role} onLogout={onLogout}><BookSearch  /></ProtectedRoute>)}
+          path="/search" element={(<ProtectedRoute role={role} onLogout={onLogout}><BookSearch/></ProtectedRoute>)}
         />
         <Route
           path="/create"

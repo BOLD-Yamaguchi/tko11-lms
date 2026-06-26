@@ -16,7 +16,7 @@ public record BookSearchResponse(
     LocalDate publishedAt,
     String memo,
     int categoryLevel1,
-    int categoryLevel2,
+    Integer categoryLevel2,
     String region,
     String shelfNo,
     int tierNo,

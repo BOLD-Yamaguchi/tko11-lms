@@ -27,7 +27,7 @@ export const bookSchema = z.object({
     (value) => !value || isValidDate(value),
     '出版日はYYYY-MM-DD形式で入力してください。',
   ),
-  majorCategory: z.string(),
+  majorCategory: z.string().trim().min(1, '大分類を入力してください。'),
   minorCategory: z.string(),
   collectionStatus: z.enum(['開架', '閉架', '廃棄']),
   location: z.enum(['東京', '大阪']),

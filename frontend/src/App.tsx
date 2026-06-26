@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { UserRole } from './types'
 import AppRouter from './AppRouter'
 import {
   importBooksFromCsv,
@@ -14,29 +13,20 @@ import type {
   BookStatusDetail,
   LibraryData,
   LoanStatus,
+  UserRole,
 } from './types'
 
-const roleStorageKey = 'adminKbn'
+const roleStorageKey = 'tko11-mock-user-role'
 
 function readStoredRole(): UserRole | null {
-  const storedString = sessionStorage.getItem(roleStorageKey)
-  const stored = storedString === null ? null : Number(storedString)
-
-  switch (stored) {
-    case UserRole.General:
-    case UserRole.Operator:
-    case UserRole.Admin:
-      return stored
-
-    default:
-      return null
-  }
+  const stored = sessionStorage.getItem(roleStorageKey)
+  return stored === 'general' || stored === 'operator' || stored === 'admin'
+    ? stored as unknown as UserRole
+    : null
 }
 
 function App() {
-  // ログイン中の権限をセッションから復元し、画面全体の認可に利用する。
-  const [role, setRole] = useState<UserRole | null>(readStoredRole)
-  // React Queryのキャッシュを画面操作に応じて更新し、各画面へ即時反映する。
+  const [role, setRole] = useState<UserRole | null>(readStoredRole())
   const queryClient = useQueryClient()
   const { data, isPending, isError } = useLibraryData()
 
@@ -54,7 +44,7 @@ function App() {
     )
   }
 
-  const login = (nextRole: UserRole) => {
+const login = (nextRole: UserRole) => {
     sessionStorage.setItem(roleStorageKey, String(nextRole))
     setRole(nextRole)
   }
@@ -82,10 +72,24 @@ function App() {
     }))
   }
 
-  const createBook = (newBook: Book) => {
-    void registerBook(newBook)
-    addBooksToCache([newBook])
+  // 新規書籍登録
+const createBook = async (newBook: Book) => {
+  const bookToSend = {
+    ...newBook,
+    id: String(newBook.id)
   }
+
+  const savedMstBook = (await registerBook(bookToSend)) as any
+
+  const savedBook: Book = {
+    ...newBook,
+    id: savedMstBook && savedMstBook.bookId ? String(savedMstBook.bookId) : String(newBook.id)
+  }
+
+  addBooksToCache([savedBook])
+
+  return savedMstBook
+}
 
   const createBooks = (newBooks: Book[]) => {
     void importBooksFromCsv(newBooks)

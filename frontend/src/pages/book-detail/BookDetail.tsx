@@ -237,8 +237,8 @@ function BookDetail({
     ['書籍名', book.title],
     ['ISBN', book.isbn || '未設定'],
     ['著者名', book.author],
-    ['カテゴリ1', book.majorCategory || '未設定'],
-    ['カテゴリ2', book.minorCategory || '未設定'],
+    ['大分類', book.majorCategory],
+    ['中分類', book.minorCategory || '未設定'],
     ['出版社', book.publisher],
     ['出版日', formatDate(book.publishedAt)],
     ['配架分類', book.collectionStatus],
@@ -394,7 +394,7 @@ const getProfile = () => {
       return {
         lendUserId: profile?.userId || "00000000-0000-0000-0000-000000000001",
         reserverName: profile?.name,
-        reservationEmployeeCode: profile?.employeeCode || '',
+        reservationemployeeCode: profile?.employeeCode || '',
         reservationDate: getCurrentDate(),
       }
     }
@@ -481,7 +481,6 @@ const getProfile = () => {
   }
 
   const validateActionEmployeeId = (
-    action: BookAction,
     employeeId: string,
   ) => {
     console.error("====== 🚨 社員番号バリデーション通過テスト 🚨 ======");
@@ -499,7 +498,7 @@ const getProfile = () => {
     action: BookAction,
     credentials: BookActionCredentials,
   ) => {
-    setAuthenticatedUserName(resolveUserName(credentials.employeeCode) ?? '')
+    setAuthenticatedUserName(resolveUserName(credentials.employeeId) ?? '')
     setActionStep(action === 'requestReturn' ? 'returnRequest' : 'confirm')
   }
 
@@ -706,7 +705,7 @@ const getProfile = () => {
           requireEmployeeId={requiresEmployeeId(pendingAction)}
           requirePassword={requiresPassword(pendingAction)}
           validateEmployeeId={(employeeId) => (
-            validateActionEmployeeId(pendingAction, employeeId)
+            validateActionEmployeeId(employeeId)
           )}
           onClose={closeAction}
           onConfirm={(credentials) => finishAuthentication(pendingAction, credentials)}

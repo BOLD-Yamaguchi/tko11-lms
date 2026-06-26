@@ -38,7 +38,7 @@ export type BorrowingRecordResponse = {
   shelfNumber: string
   tierNumber: string
   status: string
-  returnComment?: string | null
+  returnComment?: string
 }
 
 export type SearchBooksConditions = {
@@ -90,19 +90,17 @@ const majorCategoryById: Record<number, string> = {
 }
 
 const minorCategoryById: Record<number, string> = {
-  0: 'クラウド',
-  1: 'プログラミング',
-  2: 'ネットワーク',
-  3: 'データベース',
-  4: '小説',
-  5: 'エッセイ',
+  1: 'クラウド',
+  2: 'プログラミング',
+  3: 'ネットワーク',
+  4: 'データベース',
+  5: '資格・試験',
   6: 'マネジメント',
-  7: 'マーケティング',
-  8: '基本情報',
-  9: '応用情報',
-  10: 'キャリア',
-  11: '学習法',
-  12: 'その他',
+  7: 'キャリア',
+  8: '学習法',
+  9: 'その他',
+  10: 'その他',
+  11: 'その他',
 }
 
 const majorCategoryCodeByName: Record<string, string> = {
@@ -179,14 +177,14 @@ function toBorrowingRecord(
 ): BorrowingRecord {
   return {
     bookId: String(response.bookId),
-    employeeCode: response.employeeCode,
-    borrower: response.borrower,
+    employeeCode: response.employeeCode ?? "",
+    borrower: response.borrower ?? "",
     title: response.title,
     author: response.author,
     loanDate: response.loanDate,
     shelfNumber: response.shelfNumber,
     tierNumber: response.tierNumber,
-    status: response.status, 
+    status: response.status as "貸出中" | "返却申請中",
     returnComment: response.returnComment,
   }
 }
@@ -227,13 +225,14 @@ function toSearchParams(conditions: SearchBooksConditions = {}) {
 
 type UnknownPayload = Record<string, unknown>
 
-async function callBookApi(request: () => Promise<unknown>) {
+async function callBookApi<T>(request: () => Promise<T>): Promise<T | undefined> {
   try {
-    await request()
+    return await request()
   } catch (error) {
     if (!USE_MOCK_API) {
       throw error
     }
+    return undefined
   }
 }
 
@@ -241,8 +240,9 @@ function post(endpoint: string, payload: UnknownPayload) {
   return callBookApi(() => httpClient.post(endpoint, { json: payload }).json())
 }
 
-export async function registerBook(book: Book) {
-  await post(API_ENDPOINTS.book, { book })
+export async function registerBook(book: Book): Promise<any> {
+  const response: any = await post(API_ENDPOINTS.book + '/create', book)
+  return response?.data ?? response
 }
 
 export async function fetchBookDetail(bookId: string): Promise<void> {
