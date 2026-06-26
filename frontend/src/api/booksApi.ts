@@ -29,6 +29,7 @@ type BookSearchResponse = {
 }
 
 export type BorrowingRecordResponse = {
+  bookId: string
   employeeCode: string
   borrower: string 
   title: string
@@ -175,6 +176,7 @@ function toBorrowingRecord(
   response: BorrowingRecordResponse,
 ): BorrowingRecord {
   return {
+    // bookId:String(response.bookId),
     employeeCode: response.employeeCode,
     borrower: response.borrower,
     title: response.title,
@@ -223,10 +225,9 @@ function toSearchParams(conditions: SearchBooksConditions = {}) {
 
 type UnknownPayload = Record<string, unknown>
 
-// 1. callBookApi の中で、リクエストの結果をしっかり return するように修正
 async function callBookApi<T>(request: () => Promise<T>): Promise<T | undefined> {
   try {
-    return await request() // ★ 修正：await の前に return を追加
+    return await request()
   } catch (error) {
     if (!USE_MOCK_API) {
       throw error
@@ -235,19 +236,12 @@ async function callBookApi<T>(request: () => Promise<T>): Promise<T | undefined>
   }
 }
 
-// 2. post 関数が callBookApi の戻り値をそのまま上に返せるように修正
 function post(endpoint: string, payload: UnknownPayload) {
-  // callBookApi が return するようになったので、自動的に中身が呼び出し元に返ります
   return callBookApi(() => httpClient.post(endpoint, { json: payload }).json())
 }
 
-// 3. registerBook でデータを受け取る
 export async function registerBook(book: Book): Promise<any> {
   const response: any = await post(API_ENDPOINTS.book + '/create', book)
-  
-  // お使いの httpClient.post(...).json() の仕様によって、
-  // response 自体にデータが入るか、response.data に入るかが変わります。
-  // 安全のため、両方に対応できるようにしておきます。
   return response?.data ?? response
 }
 

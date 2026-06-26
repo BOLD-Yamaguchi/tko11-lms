@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull; // 追加
 
 @Entity
 @Table(name = "mst_book")
@@ -49,7 +48,6 @@ public class MstBook {
 	@Column(name = "MEMO", length = 100)
 	private String memo;
 
-	@NotNull
 	@Column(name = "CATEGORY_LEVEL1_ID", nullable = false)
 	private int categoryLevel1Id;
 
@@ -80,14 +78,11 @@ public class MstBook {
 	@Column(name = "STATUS", nullable = false, length = 1)
 	private String status;
 
-	// ⭕ 修正：SQLの TIMESTAMP 型に合わせて LocalDateTime に変更
 	@Column(name = "RETURNED_AT")
 	private LocalDateTime returnedAt;
 
 	@Column(name = "STATUS_UPDATED_AT")
 	private LocalDateTime statusUpdatedAt;
-
-	// --- 以下、Getter / Setter ---
 
 	public int getBookId() {
 		return bookId;

@@ -79,12 +79,10 @@ const createBook = async (newBook: Book) => {
     id: String(newBook.id)
   }
 
-  // ⭕ 修正: await の後ろ、または結果に対して `as any` をつけて型を柔軟にします
   const savedMstBook = (await registerBook(bookToSend)) as any
 
   const savedBook: Book = {
     ...newBook,
-    // ⭕ これで savedMstBook.bookId がエラーなく読み取れるようになります！
     id: savedMstBook && savedMstBook.bookId ? String(savedMstBook.bookId) : String(newBook.id)
   }
 

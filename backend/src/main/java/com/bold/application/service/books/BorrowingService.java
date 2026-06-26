@@ -33,6 +33,8 @@ public class BorrowingService {
                     BorrowingRecordResponse response =
                             new BorrowingRecordResponse();
 
+
+                    // response.setBookId(book.getBookId());
                     response.setTitle(book.getBookName());
                     response.setAuthor(book.getAuthorName());
                     response.setShelfNumber(book.getShelfNo());
