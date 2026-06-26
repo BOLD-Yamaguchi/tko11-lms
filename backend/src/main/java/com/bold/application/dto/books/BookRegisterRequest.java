@@ -23,10 +23,9 @@ public class BookRegisterRequest {
     private String tierNumber;
     private String notes;
 
-    // 既存構造対応用のネスト対策
+    // 構造のネスト対策
     private BookRegisterRequest book;
 
-    // ゲッター・セッター
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
     public String getIsbn() { return isbn; }
