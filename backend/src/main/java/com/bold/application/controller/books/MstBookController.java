@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bold.application.dto.BorrowingRecordResponse;
 import com.bold.application.dto.ReservationRecordResponse;
-import com.bold.application.dto.books.BookRegisterRequest; // DTO追加
+import com.bold.application.dto.books.BookRegisterRequest;
 import com.bold.application.dto.books.BookSearchRequest;
 import com.bold.application.dto.books.BookSearchResponse;
 import com.bold.application.entity.books.MstBook;
