@@ -30,19 +30,16 @@ import type {
   SearchConditions,
 } from './searchState'
 
-type BookSearchProps = {
-  role: UserRole
-  onLogout: () => void
-}
 
 type SearchLocationState = {
   searchState?: BookSearchState
 }
 
-function BookSearch({ role }: BookSearchProps) {
+function BookSearch() {
   const navigate = useNavigate()
   // 詳細画面から戻った場合、遷移時に渡した検索条件・並び順・ページを復元する。
   const location = useLocation()
+  const role = Number(sessionStorage.getItem("adminKbn")) as UserRole
   const restoredState = (
     location.state as SearchLocationState | null
   )?.searchState ?? initialBookSearchState

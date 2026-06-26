@@ -24,6 +24,9 @@ public interface MstBookRepository extends JpaRepository<MstBook, Integer> {
   
   List<MstBook> findByStatusIn(List<String> statuses);
 
+  // 書籍IDによるレコード取得
+  List<MstBook> findByBookIdIn(List<Integer> bookIdList);
+
   // 書籍検索API
   //Nullか空値の場合は、検索条件をTrueとする
   @Query("""

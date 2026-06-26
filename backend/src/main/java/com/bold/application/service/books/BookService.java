@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.bold.application.dto.BorrowingRecordResponse;
 import com.bold.application.entity.books.MstBook;
 import com.bold.application.repository.books.MstBookRepository;
 
@@ -69,5 +70,25 @@ public class BookService {
 		MstBook mstBook = repository.findByBookId(bookId);
 		mstBook.setLendUserId(userId);
 		return repository.save(mstBook);
+	}
+
+	// 一括返却
+	public List<MstBook> bulkReturnBooks(List<BorrowingRecordResponse> borrowingRecordList) {
+		try {
+			//// BorrowingRecordResponseオブジェクトのリストから、bookId変数（int）だけを抽出してList<Integer>を作る
+			List<Integer> bookIdList = borrowingRecordList.stream().map(BorrowingRecordResponse::getBookId).toList();
+			// 書籍IDリストをキーに書籍データリストを取得
+			List<MstBook> mstBookList = repository.findByBookIdIn(bookIdList);
+
+			// List内の全オブジェクトの Status、StatusUpdatedAt を "0" 、現在日時に一括変更
+			mstBookList.forEach(mstBook -> mstBook.setStatus("0"));
+			mstBookList.forEach(mstBook -> mstBook.setLendUserId(null));
+			mstBookList.forEach(mstBook -> mstBook.setStatusUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo"))));
+
+			return repository.saveAll(mstBookList);
+
+		} catch (Exception e) {
+			throw e;
+		}
 	}
 }

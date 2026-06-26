@@ -20,6 +20,9 @@ public interface MstBookLogRepository extends JpaRepository<MstBookLog, Integer>
 	// 書籍単位リスト取得
 	List<MstBookLog> findByBookId(int bookId);
 
+	// 書籍IDによるレコード取得
+	List<MstBookLog> findByBookIdIn(List<Integer> bookIdList);
+
 	// 貸出IDによるレコード取得
 	MstBookLog findByLendId(int lendId);
 

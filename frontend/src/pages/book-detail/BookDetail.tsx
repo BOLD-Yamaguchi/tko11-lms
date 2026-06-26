@@ -41,7 +41,6 @@ import type { BookStatusDetail, LoanStatus} from '../../types'
 import { UserRole } from '../../types'
 
 type BookDetailProps = {
-  role: UserRole
   onStatusChange: (
     bookId: string,
     status: LoanStatus,
@@ -188,7 +187,6 @@ function getActions(role: UserRole, status: LoanStatus): ActionDefinition[] {
 }
 
 function BookDetail({
-  role,
   onStatusChange,
   onHistoryVisibilityChange,
   onReturnCommentChange,
@@ -196,6 +194,7 @@ function BookDetail({
   const navigate = useNavigate()
   // 遷移元と通知メッセージをlocation stateから復元し、戻り先を決定する。
   const location = useLocation()
+  const role = Number(sessionStorage.getItem("adminKbn")) as UserRole
   // 詳細・状態・履歴表示に必要な書籍管理データを共通クエリから取得する。
   const data = useLibraryDataValue()
   const books = data.books

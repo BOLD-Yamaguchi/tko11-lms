@@ -30,8 +30,8 @@ type BookSearchResponse = {
 
 export type BorrowingRecordResponse = {
   bookId: string
-  employeeCode: string
-  borrower: string 
+  employeeCode: string | null
+  borrower: string | null
   title: string
   author: string
   loanDate: string
@@ -176,9 +176,9 @@ function toBorrowingRecord(
   response: BorrowingRecordResponse,
 ): BorrowingRecord {
   return {
-    // bookId:String(response.bookId),
-    employeeCode: response.employeeCode,
-    borrower: response.borrower,
+    bookId: String(response.bookId),
+    employeeCode: response.employeeCode ?? "",
+    borrower: response.borrower ?? "",
     title: response.title,
     author: response.author,
     loanDate: response.loanDate,
