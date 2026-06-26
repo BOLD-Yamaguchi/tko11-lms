@@ -96,7 +96,7 @@ function AppRouter({
           }
         />
         <Route
-          path="/book/:bookId"
+          path="/books/:bookId"
           element={<ProtectedRoute role={role} onLogout={onLogout}>
                   <BookDetail
                     role={role!}
