@@ -29,6 +29,7 @@ type BookSearchResponse = {
 }
 
 export type BorrowingRecordResponse = {
+  bookId: string
   employeeCode: string | null
   borrower: string | null
   title: string
@@ -177,6 +178,7 @@ function toBorrowingRecord(
   response: BorrowingRecordResponse,
 ): BorrowingRecord {
   return {
+    bookId: String(response.bookId),
     employeeCode: response.employeeCode,
     borrower: response.borrower,
     title: response.title,
