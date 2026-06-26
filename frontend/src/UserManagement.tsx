@@ -319,7 +319,7 @@ function UserManagement() {
 
               <button
                 type="button"
-                onClick={() => navigate("/user-login")}
+                onClick={() => navigate("/UsersList")}
                 style={{
                   background: "none",
                   border: "none",

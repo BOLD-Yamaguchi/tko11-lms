@@ -26,8 +26,6 @@ import {
   bulkReturnBooks,
   cancelBookReservation,
   fetchBorrowLists,
-  fetchHistoryLists,
-  fetchMyPageInformation,
   fetchReservationLists,
   lendBook,
   rejectBookReturnRequest,
@@ -40,7 +38,7 @@ import {
 } from '../../constants/myPage'
 import { getMyPageTitle } from '../../constants/navigation'
 import { useLibraryDataValue } from '../../data/libraryQueries'
-import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
+import { getReturnDueDate } from '../../dateUtils'
 import type {
   BorrowingRecord,
   CatalogBook,
@@ -48,11 +46,6 @@ import type {
   UserLoanHistory,
 } from '../../types'
 import { UserRole , getRoleName} from '../../types'
-
-type MyPageProps = {
-  role: UserRole
-  onLogout: () => void
-}
 
 type GeneralPendingAction = 'requestReturn' | 'cancelReservation'
 type LoanStep = 'auth' | 'confirm'
@@ -90,7 +83,7 @@ function AccordionPanel({
   )
 }
 
-function MyPage({ role }: MyPageProps) {
+function MyPage() {
   const navigate = useNavigate()
   // 権限別プロフィールと貸出・予約・履歴の初期データを共通クエリから取得する。
   const data = useLibraryDataValue()
@@ -117,7 +110,7 @@ function MyPage({ role }: MyPageProps) {
   const [message, setMessage] = useState('')
   const visibleLoanHistory = data.userLoanHistory.filter((record) => {
     if (!record.returnDate.trim()) return false
-    if (role === UserRole.Admin) return true
+    if (adminKbn === UserRole.Admin) return true
     return data.books.find((book) => book.id === record.bookId)?.collectionStatus !== '廃棄'
   })
 
@@ -269,32 +262,32 @@ function MyPage({ role }: MyPageProps) {
         <BackButton label="トップへ戻る" onClick={() => navigate('/home')} />
       </div>
 
-      <h1 className="standalone-title">{getMyPageTitle(role)}</h1>
+      <h1 className="standalone-title">{getMyPageTitle(adminKbn)}</h1>
 
       <section className="user-card">
         <span className="user-avatar">
-          {role === UserRole.General ? <UserIcon size={46} /> : <UsersIcon size={46} />}
+          {adminKbn === UserRole.General ? <UserIcon size={46} /> : <UsersIcon size={46} />}
         </span>
         <h2>ユーザー情報</h2>
         <div className="user-meta">
           <p>社員番号：{employeeCode}</p>
           <p>名前：{currentUser}</p>
         </div>
-        <span className={`role-chip ${role}`}>{getRoleName(adminKbn)}</span>
+        <span className={`role-chip ${adminKbn}`}>{getRoleName(adminKbn)}</span>
       </section>
 
       <div className="mypage-primary-actions">
         <button type="button" className="outline-action search-action" onClick={() => navigate('/search')}>
           <SearchIcon />書籍検索
         </button>
-        {role === UserRole.Admin && (
+        {adminKbn === UserRole.Admin && (
           <button type="button" className="outline-action" onClick={() => navigate('/create')}>
             <PlusIcon />書籍登録
           </button>
         )}
       </div>
 
-      {role === UserRole.General && (
+      {adminKbn === UserRole.General && (
         <GeneralUserSections
           borrowing={borrowings.find((record) => record.employeeCode === employeeCode)}
           reservation={generalReservation}
@@ -308,7 +301,7 @@ function MyPage({ role }: MyPageProps) {
         />
       )}
 
-      {role === UserRole.Operator && (
+      {adminKbn === UserRole.Operator && (
         <div className="operator-accordions">
           <AccordionPanel title="借受リスト（全員分）" icon={<BookIcon />}>
             <ListFilter
@@ -346,7 +339,7 @@ function MyPage({ role }: MyPageProps) {
         </div>
       )}
 
-      {role === UserRole.Admin && (
+      {adminKbn === UserRole.Admin && (
         <>
           <section className="mypage-section admin-borrowings">
             <h2 className="mypage-section-title"><BookIcon />借受リスト（全員分）</h2>
