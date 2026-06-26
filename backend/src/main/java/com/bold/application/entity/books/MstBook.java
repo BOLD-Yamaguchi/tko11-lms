@@ -12,70 +12,82 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull; // 追加
 
 @Entity
 @Table(name = "mst_book")
 public class MstBook {
 
 	@Id
-	@GeneratedValue(
-			strategy = GenerationType.SEQUENCE,
-			generator = "book_seq"
-	)
-	@SequenceGenerator(
-			name = "book_seq",
-			sequenceName = "book_seq",
-			initialValue = 100001,
-			allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "book_seq")
+	@SequenceGenerator(name = "book_seq", sequenceName = "book_seq", initialValue = 100001, allocationSize = 1)
+	@Column(name = "BOOK_ID")
 	private int bookId;
 
 	@NotBlank
-	@Column(nullable = false, length = 100)
+	@Column(name = "BOOK_NAME", nullable = false, length = 100)
 	private String bookName;
 
-	@Column(length = 15)
+	@Column(name = "ISBN", length = 15)
 	private String isbn;
 
 	@NotBlank
-	@Column(nullable = false, length = 100)
+	@Column(name = "AUTHOR_NAME", nullable = false, length = 100)
 	private String authorName;
 
 	@NotBlank
-	@Column(nullable = false, length = 1)
+	@Column(name = "BOOK_STATUS", nullable = false, length = 1)
 	private String bookStatus;
 
 	@NotBlank
-	@Column(nullable = false, length = 40)
+	@Column(name = "PUBLISHER", nullable = false, length = 40)
 	private String publisher;
 
+	@Column(name = "PUBLISHED_AT")
 	private LocalDate publishedAt;
 
-	@Column(length = 100)
+	@Column(name = "MEMO", length = 100)
 	private String memo;
 
-	@NotBlank
-	@Column(nullable = false)
+	@NotNull
+	@Column(name = "CATEGORY_LEVEL1_ID", nullable = false)
 	private int categoryLevel1Id;
-	private int categoryLevel2Id;
+
+	@Column(name = "CATEGORY_LEVEL2_ID")
+	private Integer categoryLevel2Id;
 
 	@NotBlank
-	@Column(nullable = false, length = 1)
+	@Column(name = "REGION", nullable = false, length = 1)
 	private String region;
 
-	@Column(length = 20)
+	@NotBlank
+	@Column(name = "SHELF_NO", nullable = false, length = 20)
 	private String shelfNo;
 
+	@Column(name = "TIER_NO")
 	private int tierNo;
+
+	@Column(name = "CREATED_AT")
 	private LocalDateTime createdAt;
+
+	@Column(name = "BOOK_INFO_UPDATED_AT")
 	private LocalDateTime bookInfoUpdatedAt;
+
+	@Column(name = "LEND_USER_ID")
 	private UUID lendUserId;
 
 	@NotBlank
-	@Column(nullable = false, length = 1)
+	@Column(name = "STATUS", nullable = false, length = 1)
 	private String status;
 
-	private LocalDate returnedAt;
+	// ⭕ 修正：SQLの TIMESTAMP 型に合わせて LocalDateTime に変更
+	@Column(name = "RETURNED_AT")
+	private LocalDateTime returnedAt;
+
+	@Column(name = "STATUS_UPDATED_AT")
 	private LocalDateTime statusUpdatedAt;
+
+	// --- 以下、Getter / Setter ---
 
 	public int getBookId() {
 		return bookId;
@@ -149,11 +161,11 @@ public class MstBook {
 		this.categoryLevel1Id = categoryLevel1Id;
 	}
 
-	public int getCategoryLevel2Id() {
+	public Integer getCategoryLevel2Id() {
 		return categoryLevel2Id;
 	}
 
-	public void setCategoryLevel2Id(int categoryLevel2Id) {
+	public void setCategoryLevel2Id(Integer categoryLevel2Id) {
 		this.categoryLevel2Id = categoryLevel2Id;
 	}
 
@@ -221,11 +233,11 @@ public class MstBook {
 		this.status = status;
 	}
 
-	public LocalDate getReturnedAt() {
+	public LocalDateTime getReturnedAt() {
 		return returnedAt;
 	}
 
-	public void setReturnedAt(LocalDate returnedAt) {
+	public void setReturnedAt(LocalDateTime returnedAt) {
 		this.returnedAt = returnedAt;
 	}
 

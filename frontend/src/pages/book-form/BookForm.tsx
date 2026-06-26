@@ -75,24 +75,28 @@ function BookForm({
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const result = bookSchema.safeParse(form)
+    try {
+      event.preventDefault()
+      const result = bookSchema.safeParse(form)
 
-    if (!result.success) {
-      const errors: BookValidationErrors = {}
-      result.error.issues.forEach((issue) => {
-        const field = issue.path[0] as keyof Book
-        errors[field] ??= issue.message
+      if (!result.success) {
+        const errors: BookValidationErrors = {}
+        result.error.issues.forEach((issue) => {
+          const field = issue.path[0] as keyof Book
+          errors[field] ??= issue.message
+        })
+        setValidationErrors(errors)
+        return
+      }
+
+      setValidationErrors({})
+      onSubmit(result.data)
+      navigate(`/books/${result.data.id}`, {
+        state: { message: isEdit ? '書籍情報を更新しました。' : '書籍を登録しました。' },
       })
-      setValidationErrors(errors)
-      return
+    } catch (error) {
+      console.error("書籍の保存に失敗しました", error)
     }
-
-    setValidationErrors({})
-    onSubmit(result.data)
-    navigate(`/books/${result.data.id}`, {
-      state: { message: isEdit ? '書籍情報を更新しました。' : '書籍を登録しました。' },
-    })
   }
 
   const handleCsv = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -222,7 +226,8 @@ function BookForm({
         </div>
 
         <div className="field">
-          <label htmlFor="majorCategory">大分類</label>
+          <label htmlFor="majorCategory">大分類<span className="required">*</span>
+          </label>
           <select
             id="majorCategory"
             name="majorCategory"
@@ -234,6 +239,7 @@ function BookForm({
               <option key={category} value={category}>{category}</option>
             ))}
           </select>
+          {validationErrors.author && <p className="field-error">{validationErrors.author}</p>}
         </div>
 
         <div className="field">

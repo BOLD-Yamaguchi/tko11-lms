@@ -5,9 +5,8 @@ import type {
   LoanHistory,
   ReservationRecord,
   UserLoanHistory,
-  UserRole,
-  UserProfile,
 } from '../types'
+import { UserRole } from '../types' // UserRoleをインポート
 
 const baseBook = {
   isbn: '978-4-123456-78-9',
@@ -22,26 +21,7 @@ const baseBook = {
 }
 
 const books: CatalogBook[] = [
-  { ...baseBook, id: 'B0001', title: 'AWS入門', author: '山田太郎', shelfNumber: 'A-01', loanStatus: '貸出可' },
-  { ...baseBook, id: 'B0002', title: 'AWS入門', author: '山田太郎', shelfNumber: 'A-01', loanStatus: '貸出中' },
-  { ...baseBook, id: 'B0003', title: 'AWS入門', author: '山田太郎', shelfNumber: 'A-03', loanStatus: '返却申請中' },
-  { ...baseBook, id: 'B0004', title: 'Python実践', author: '佐藤花子', shelfNumber: 'B-02', loanStatus: '予約中' },
-  { ...baseBook, id: 'B0005', title: 'Python実践', author: '佐藤花子', shelfNumber: 'B-01', loanStatus: '貸出中' },
-  { ...baseBook, id: 'B0006', title: 'データ分析の基礎', author: '鈴木一郎', shelfNumber: 'C-01', loanStatus: '返却申請中' },
-  { ...baseBook, id: 'B0007', title: 'データ分析の基礎', author: '鈴木一郎', shelfNumber: 'C-01', loanStatus: '貸出可' },
-  { ...baseBook, id: 'B0008', title: '機械学習の教科書', author: '高橋健一', shelfNumber: 'A-03', loanStatus: '貸出中' },
-  { ...baseBook, id: 'B0009', title: 'Webアプリ開発入門', author: '伊藤美咲', shelfNumber: 'B-03', loanStatus: '返却申請中' },
-  { ...baseBook, id: 'B0010', title: 'Webアプリ開発入門', author: '伊藤美咲', shelfNumber: 'B-03', loanStatus: '貸出可' },
-  { ...baseBook, id: 'B0011', title: 'セキュリティの基礎', author: '中村拓也', shelfNumber: 'C-02', loanStatus: '返却申請中' },
-  {
-    ...baseBook,
-    id: 'B0012',
-    title: 'ネットワーク入門',
-    author: '小林優子',
-    shelfNumber: 'C-02',
-    collectionStatus: '廃棄',
-    loanStatus: '貸出可',
-  },
+  { ...baseBook, id: 'B0001', title: 'AWS入門', author: '山田太郎', shelfNumber: 'A-01', loanStatus: '貸出可' }
 ]
 
 const emptyBook: CatalogBook = {
@@ -75,60 +55,44 @@ const borrowingRecords: BorrowingRecord[] = [
     status: '返却申請中',
     returnComment: '図が多く、理解しやすかったです。',
   },
-  { employeeCode: 'S0004', borrower: '田中次郎', title: 'Linuxの基礎', author: '田中次郎', loanDate: '2025/05/16', shelfNumber: 'A-02-02', tierNumber: '01', status: '貸出中' },
-  { employeeCode: 'S0005', borrower: '高橋美咲', title: 'SQL入門', author: '高橋美咲', loanDate: '2025/05/16', shelfNumber: 'B-01-04', tierNumber: '03', status: '貸出中' },
-  { employeeCode: 'S0006', borrower: '伊藤健一', title: 'データベース設計', author: '伊藤健一', loanDate: '2025/05/17', shelfNumber: 'C-03-01', tierNumber: '03', status: '貸出中' },
-  { employeeCode: 'S0007', borrower: '渡辺直樹', title: '機械学習の基礎', author: '渡辺直樹', loanDate: '2025/05/19', shelfNumber: 'A-03-02', tierNumber: '01', status: '貸出中' },
-  { employeeCode: 'S0008', borrower: '中村真由美', title: 'Webアプリ開発入門', author: '中村真由美', loanDate: '2025/05/21', shelfNumber: 'B-03-03', tierNumber: '02', status: '貸出中' },
-  { employeeCode: 'S0009', borrower: '小林大輔', title: 'ネットワークの基礎', author: '小林大輔', loanDate: '2025/05/14', shelfNumber: 'C-02-04', tierNumber: '03', status: '貸出中' },
-  { employeeCode: 'S0010', borrower: '加藤優子', title: '情報セキュリティ入門', author: '加藤優子', loanDate: '2025/05/13', shelfNumber: 'A-01-05', tierNumber: '01', status: '貸出中' },
 ]
 
 const reservationRecords: ReservationRecord[] = [
   { employeeCode: 'S0004', title: '機械学習の基礎', author: '渡辺直樹', reserver: '田中次郎', reservationDate: '2025/05/24', shelfNumber: 'A', tierNumber: '01' },
-  { employeeCode: 'S0008', title: 'ネットワークの基礎', author: '小林大輔', reserver: '中村真由美', reservationDate: '2025/05/23', shelfNumber: 'C', tierNumber: '03' },
-  { employeeCode: 'S0010', title: 'Webアプリ開発入門', author: '中村真由美', reserver: '加藤優子', reservationDate: '2025/05/24', shelfNumber: 'B', tierNumber: '02' },
 ]
 
 const userLoanHistory: UserLoanHistory[] = [
   { bookId: 'B0001', title: 'Linuxの基礎', author: '田中次郎', borrower: '田中次郎', loanDate: '2025/04/26', returnDate: '2025/05/10', shelfNumber: 'A', tierNumber: '02' },
-  { bookId: 'B0004', title: 'SQL入門', author: '高橋美咲', borrower: '高橋美咲', loanDate: '2025/04/12', returnDate: '2025/04/28', shelfNumber: 'B', tierNumber: '01' },
-  { bookId: 'B0006', title: 'データベース設計', author: '伊藤健一', borrower: '伊藤健一', loanDate: '2025/04/01', returnDate: '2025/04/15', shelfNumber: 'C', tierNumber: '03' },
-  { bookId: 'B0012', title: 'ネットワーク入門', author: '小林優子', borrower: '小林優子', loanDate: '2025/03/10', returnDate: '2025/03/24', shelfNumber: 'C', tierNumber: '02' },
 ]
 
 const loanHistory: LoanHistory[] = [
   { id: 'L001', borrower: '○○さん', loanDate: '2026/03/01', returnDate: '2026/03/15', comment: 'とても分かりやすく、実践的な内容でした。' },
-  { id: 'L002', borrower: '△△さん', loanDate: '2026/02/01', returnDate: '2026/02/14', comment: '図が多く、理解しやすかったです。' },
-  { id: 'L003', borrower: '□□さん', loanDate: '2026/01/05', returnDate: '2026/01/18', comment: '初心者にもおすすめの一冊です。' },
-  { id: 'L004', borrower: '××さん', loanDate: '2025/12/01', returnDate: '2025/12/15', comment: 'クラウドの基礎がしっかり学べました。' },
-  { id: 'L005', borrower: '◇◇さん', loanDate: '2025/11/01', returnDate: '2025/11/15', comment: '実例が多く、参考になりました。' },
 ]
 
-const roleProfiles: Record<UserRole, UserProfile> = {
-  general: {
+const roleProfiles = {
+  [UserRole.General]: {
     title: 'ユーザー情報',
     label: '一般ユーザー',
     userId: 'U0001',
     employeeCode: 'S0001',
     name: '山田 太郎',
-    location: '東京',
+    location: '東京' as const,
   },
-  operator: {
+  [UserRole.Operator]: {
     title: 'ユーザー情報',
     label: '貸出ユーザー',
     userId: 'L0001',
     employeeCode: 'S0101',
     name: '貸出 担当',
-    location: '東京',
+    location: '東京' as const,
   },
-  admin: {
+  [UserRole.Admin]: {
     title: 'ユーザー情報',
     label: '管理者ユーザー',
     userId: 'A0001',
     employeeCode: 'S9001',
     name: '管理 太郎',
-    location: '東京',
+    location: '東京' as const,
   },
 }
 
@@ -141,44 +105,23 @@ export const mockLibraryData: LibraryData = {
   loanHistory,
   roleProfiles,
   categoryOptions: {
-    major: ['技術書', '文学', 'ビジネス', '資格・試験', '自己啓発', 'その他'],
+    major: ['技術書', '自己啓発', 'その他'],
     minor: [
-      'クラウド',
-      'プログラミング',
-      'ネットワーク',
-      'データベース',
-      '小説',
-      'エッセイ',
-      'マネジメント',
-      'マーケティング',
-      '基本情報',
-      '応用情報',
-      'キャリア',
-      '学習法',
-      'その他',
+      'クラウド', 'プログラミング', 'ネットワーク', 'データベース',
+      '資格・試験', 'キャリア', '学習法', 'その他',
     ],
     minorByMajor: {
-      技術書: ['クラウド', 'プログラミング', 'ネットワーク', 'データベース'],
-      文学: ['小説', 'エッセイ'],
-      ビジネス: ['マネジメント', 'マーケティング'],
-      '資格・試験': ['基本情報', '応用情報'],
-      自己啓発: ['キャリア', '学習法'],
+      技術書: ['クラウド', 'プログラミング', 'ネットワーク', 'データベース','資格・試験','その他'],
+      自己啓発: ['キャリア', '学習法','その他'],
       その他: ['その他'],
     },
   },
   locations: ['東京', '大阪'],
+
   bookStatusDetails: {
     B0002: {
       borrowerName: '山田太郎',
       returnDueDate: '2026/12/12',
-    },
-    B0003: {
-      borrowerName: '山田太郎',
-    },
-    B0004: {
-      reserverName: '佐藤花子',
-      reservationemployeeCode: 'S0002',
-      reservationDate: '2026/04/01',
     },
   },
   historyVisibility: Object.fromEntries(
@@ -186,8 +129,5 @@ export const mockLibraryData: LibraryData = {
   ),
   returnComments: {
     B0003: '図が多く、理解しやすかったです。',
-    B0006: '具体例が豊富で、業務にも活用できそうです。',
-    B0009: '画面構成の説明が分かりやすかったです。',
-    B0011: '',
   },
 }

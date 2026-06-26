@@ -29,15 +29,15 @@ type BookSearchResponse = {
 }
 
 export type BorrowingRecordResponse = {
-  employeeCode: string | null
-  borrower: string | null
+  employeeCode: string
+  borrower: string 
   title: string
   author: string
   loanDate: string
   shelfNumber: string
   tierNumber: string
   status: string
-  returnComment?: string | null
+  returnComment?: string
 }
 
 export type SearchBooksConditions = {
@@ -89,19 +89,17 @@ const majorCategoryById: Record<number, string> = {
 }
 
 const minorCategoryById: Record<number, string> = {
-  0: 'クラウド',
-  1: 'プログラミング',
-  2: 'ネットワーク',
-  3: 'データベース',
-  4: '小説',
-  5: 'エッセイ',
+  1: 'クラウド',
+  2: 'プログラミング',
+  3: 'ネットワーク',
+  4: 'データベース',
+  5: '資格・試験',
   6: 'マネジメント',
-  7: 'マーケティング',
-  8: '基本情報',
-  9: '応用情報',
-  10: 'キャリア',
-  11: '学習法',
-  12: 'その他',
+  7: 'キャリア',
+  8: '学習法',
+  9: 'その他',
+  10: 'その他',
+  11: 'その他',
 }
 
 const majorCategoryCodeByName: Record<string, string> = {
@@ -184,7 +182,7 @@ function toBorrowingRecord(
     loanDate: response.loanDate,
     shelfNumber: response.shelfNumber,
     tierNumber: response.tierNumber,
-    status: response.status, 
+    status: response.status as "貸出中" | "返却申請中",
     returnComment: response.returnComment,
   }
 }
@@ -225,22 +223,32 @@ function toSearchParams(conditions: SearchBooksConditions = {}) {
 
 type UnknownPayload = Record<string, unknown>
 
-async function callBookApi(request: () => Promise<unknown>) {
+// 1. callBookApi の中で、リクエストの結果をしっかり return するように修正
+async function callBookApi<T>(request: () => Promise<T>): Promise<T | undefined> {
   try {
-    await request()
+    return await request() // ★ 修正：await の前に return を追加
   } catch (error) {
     if (!USE_MOCK_API) {
       throw error
     }
+    return undefined
   }
 }
 
+// 2. post 関数が callBookApi の戻り値をそのまま上に返せるように修正
 function post(endpoint: string, payload: UnknownPayload) {
+  // callBookApi が return するようになったので、自動的に中身が呼び出し元に返ります
   return callBookApi(() => httpClient.post(endpoint, { json: payload }).json())
 }
 
-export async function registerBook(book: Book) {
-  await post(API_ENDPOINTS.book, { book })
+// 3. registerBook でデータを受け取る
+export async function registerBook(book: Book): Promise<any> {
+  const response: any = await post(API_ENDPOINTS.book + '/create', book)
+  
+  // お使いの httpClient.post(...).json() の仕様によって、
+  // response 自体にデータが入るか、response.data に入るかが変わります。
+  // 安全のため、両方に対応できるようにしておきます。
+  return response?.data ?? response
 }
 
 export async function fetchBookDetail(bookId: string): Promise<void> {

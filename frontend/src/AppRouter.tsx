@@ -73,10 +73,10 @@ function AppRouter({
           element={<Navigate to={role ? '/mypage' : '/user-login'} replace />}
         />
         <Route
-          path="/mypage" element={<ProtectedRoute role={role} onLogout={onLogout}><MyPage role={role} onLogout={onLogout} /> </ProtectedRoute>}
+          path="/mypage" element={<ProtectedRoute role={role} onLogout={onLogout}><MyPage role={role!} onLogout={onLogout} /> </ProtectedRoute>}
         />
         <Route
-          path="/search" element={(<ProtectedRoute role={role} onLogout={onLogout}><BookSearch role={role} onLogout={onLogout} /></ProtectedRoute>)}
+          path="/search" element={(<ProtectedRoute role={role} onLogout={onLogout}><BookSearch role={role!} onLogout={onLogout} /></ProtectedRoute>)}
         />
         <Route
           path="/create"
@@ -96,10 +96,10 @@ function AppRouter({
           }
         />
         <Route
-          path="/books/:bookId"
+          path="/book/:bookId"
           element={<ProtectedRoute role={role} onLogout={onLogout}>
                   <BookDetail
-                    role={role}
+                    role={role!}
                     onStatusChange={onLoanStatusChange}
                     onHistoryVisibilityChange={onHistoryVisibilityChange}
                     onReturnCommentChange={onReturnCommentChange}

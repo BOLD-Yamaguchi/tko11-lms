@@ -2,13 +2,11 @@ package com.bold.application.entity.books;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "mst_category_level2")
@@ -18,17 +16,15 @@ public class MstCategoryLevel2{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int categoryLevel2Id;
 
-	@NotBlank
-	@Column(nullable = false, length = 100)
     private String categoryLevel2Name;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public int getCategoryLevel2Id() {
+    public Integer getCategoryLevel2Id() {
         return categoryLevel2Id;
     }
 
-	public void setCategoryLevel2Id(int categoryLevel2Id) {
+	public void setCategoryLevel2Id(Integer categoryLevel2Id) {
 		this.categoryLevel2Id = categoryLevel2Id;
 	}
 

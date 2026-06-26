@@ -7,26 +7,27 @@ import {
 import { mockLibraryData } from './mockLibraryData'
 
 export async function fetchLibraryData(): Promise<LibraryData> {
-  const mockData = structuredClone(mockLibraryData)
-
-
   try {
-    const books = await fetchSearchBooks()
-
+    const books =
+      await fetchSearchBooks()
     const borrowingRecords =
       await fetchBorrowLists()
 
-      console.log("📘 API books:", books)
-      console.log("📚 API borrowingRecords:", borrowingRecords)
-    
-    const reservationRecords =await fetchReservationLists()
-    console.log("📚 API reservationRecords:", reservationRecords)
+    console.log("📘 API books:", books)
+    console.log("📚 API borrowingRecords:", borrowingRecords)
+    const reservationRecords =
+      await fetchReservationLists()
+    console.log("📚 API reservationRecords:", reservationRecords
+    )
 
     return {
-      ...mockData,
+      ...mockLibraryData,
       books,
       borrowingRecords,
       reservationRecords,
+      bookStatusDetails: mockLibraryData.bookStatusDetails,
+      historyVisibility: mockLibraryData.historyVisibility,
+      returnComments: mockLibraryData.returnComments,
     }
   } catch (error) {
     console.error(error)
