@@ -65,6 +65,9 @@ public class MstBookController {
     public ResponseEntity<MstBook> createBookNew(@Valid @RequestBody BookRegisterRequest request) {
         BookRegisterRequest data = request.getBook() != null ? request.getBook() : request;
 
+        System.out.println("MajorCategory (String): " + data.getMajorCategory());
+        System.out.println("MinorCategory (String): " + data.getMinorCategory());
+
         MstBook mstBook = new MstBook();
         mstBook.setBookName(data.getTitle());
         mstBook.setIsbn(data.getIsbn());
