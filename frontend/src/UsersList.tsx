@@ -10,6 +10,9 @@ const EMPTY_USERS: User[] = [];
 function UsersList() {
   const navigate = useNavigate();
 
+  //  管理者区分取得 20260706
+  const adminKbn = sessionStorage.getItem("adminKbn");
+
   const usersQuery = useQuery({
     queryKey: ["users"],
     queryFn: fetchUsers,
@@ -235,12 +238,13 @@ function UsersList() {
             </button>
           </div>
         </div>
-
-      <div className="create-button-container">
-        <button className="create-button" onClick={() => navigate("/user-create")}>
-          ＋
-        </button>
-      </div>
+      {adminKbn === "2" && (
+        <div className="create-button-container">
+          <button className="create-button" onClick={() => navigate("/user-create")}>
+            ＋
+          </button>
+        </div>
+      )}
     </div>
   );
 }
