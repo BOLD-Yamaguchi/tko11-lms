@@ -13,9 +13,6 @@ import com.bold.application.entity.books.MstBook;
 @Repository
 public interface MstBookRepository extends JpaRepository<MstBook, Integer> {
 
-  // 一覧取得
-  List<MstBook> findAll();
-
   // 書籍情報取得（１件）
   MstBook findByBookId(int bookId);
 
