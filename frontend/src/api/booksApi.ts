@@ -257,10 +257,17 @@ export async function fetchBorrowLists(): Promise<BorrowingRecord[]> {
   return response.map(toBorrowingRecord)
 }
 
-export async function fetchHistoryLists() {
+//export async function fetchHistoryLists() {
+//  return httpClient
+//    .get(API_ENDPOINTS.historyLists)
+//    .json<UserLoanHistory[]>()
+//}
+export async function fetchHistoryLists(userId: string) {
   return httpClient
-    .get(API_ENDPOINTS.historyLists)
-    .json<UserLoanHistory[]>()
+    .get(API_ENDPOINTS.historyLists, {
+      searchParams: { userId }
+    })
+    .json<UserLoanHistory[]>()  // 型エラーを防ぐためいったんanyで受ける
 }
 
 export async function fetchReservationLists() {

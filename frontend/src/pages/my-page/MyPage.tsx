@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query' // 💡 useQuery を追加
 import {
   BookIcon,
   BookmarkIcon,
@@ -21,12 +22,14 @@ import {
   TextBox,
   Toast,
 } from '../../components'
+// 💡 ここに fetchHistoryLists を移動させ、パスを「../../api/booksApi」に統一します
 import {
   approveBookReturn,
   bulkReturnBooks,
   cancelBookReservation,
   fetchBorrowLists,
   fetchReservationLists,
+  fetchHistoryLists, // 👈 ここに追加！
   lendBook,
   rejectBookReturnRequest,
   requestBookReturn,
@@ -85,14 +88,36 @@ function AccordionPanel({
 
 function MyPage() {
   const navigate = useNavigate()
+  
   // 権限別プロフィールと貸出・予約・履歴の初期データを共通クエリから取得する。
   const data = useLibraryDataValue()
+  
+  // 💡 sessionStorage からログインユーザーの情報を取得
   const currentUser = sessionStorage.getItem("username") ?? ""
   const employeeCode = sessionStorage.getItem("employeeCode") ?? ""
+  const userId = sessionStorage.getItem("userId") ?? "" // 👈 Javaに送るUUIDをセッションから取得
   const adminKbn = Number(sessionStorage.getItem("adminKbn")) as UserRole
-  const generalReservation = data.reservationRecords[0]
-  // 貸出・予約操作の進行状況と、管理者一覧の選択・検索状態を画面内で管理する。
+
+  // 💡 [追加] 自分の userId を使って、Javaから本物の履歴データを取得する
+  const { data: myHistory = [] } = useQuery({
+    queryKey: ['user-history', userId],
+    queryFn: () => fetchHistoryLists(userId),
+    enabled: !!userId && adminKbn === UserRole.General, // 一般ユーザーかつuserIdがある時だけ動かす
+  })
+
+  // 正しいデータを取得するよう修正 20260706
+  const generalReservation = data.reservationRecords.find(
+    (record) => record.employeeCode === employeeCode
+  ) ?? null;
+
+  // １．自分専用の借受レコード（一般ユーザー表示用） 20260706
+  const myBorrowing = data.borrowingRecords.find(
+    (record) => record.employeeCode === employeeCode
+  ) ?? null;
+
+  // ２．全員の借受レコード  20260706
   const borrowings = data.borrowingRecords
+
   const reservations = data.reservationRecords
   const [pendingLoan, setPendingLoan] = useState<ReservationRecord | null>(null)
   const [loanStep, setLoanStep] = useState<LoanStep | null>(null)
@@ -108,6 +133,9 @@ function MyPage() {
   const [historyFilterKey, setHistoryFilterKey] = useState('borrower')
   const [historyKeyword, setHistoryKeyword] = useState('')
   const [message, setMessage] = useState('')
+  
+  // 💡 管理者・オペレータ用の全員分の履歴は、本物のデータ（myHistory）ではなく、
+  // 廃棄フィルタが走る既存の data.userLoanHistory（または後ほど全件用APIに変更）をそのまま使います
   const visibleLoanHistory = data.userLoanHistory.filter((record) => {
     if (!record.returnDate.trim()) return false
     if (adminKbn === UserRole.Admin) return true
@@ -115,10 +143,8 @@ function MyPage() {
   })
 
   useEffect(() => {
-    //oid fetchMyPageInformation()
     void fetchBorrowLists()
     void fetchReservationLists()
-    //oid fetchHistoryLists()
   }, [])
 
   // 選択した検索対象とキーワードから借受・予約・履歴の各一覧を絞り込む。
@@ -199,7 +225,6 @@ function MyPage() {
       setMessage('返却する行を選択してください。')
       return
     }
-
     setBulkReturnOpen(true)
   }
 
@@ -221,6 +246,8 @@ function MyPage() {
   }
 
   const cancelReservation = () => {
+    if (!generalReservation) return
+
     void cancelBookReservation({
       employeeCode: employeeCode,
       bookTitle: generalReservation?.title,
@@ -251,10 +278,6 @@ function MyPage() {
     setPendingLoan(null)
     setLoanStep(null)
   }
-  console.log("reservation =", filteredReservations)
-  console.log("typeof reservation =", typeof filteredReservations)
-  console.log("Array?", Array.isArray(filteredReservations))
-
 
   return (
     <main className="page-shell mypage">
@@ -289,12 +312,12 @@ function MyPage() {
 
       {adminKbn === UserRole.General && (
         <GeneralUserSections
-          borrowing={borrowings.find((record) => record.employeeCode === employeeCode)}
+          borrowing={myBorrowing}
           reservation={generalReservation}
           hasReservation={hasReservation}
           onRequestReturn={() => setPendingGeneralAction('requestReturn')}
           onCancelReservation={() => setPendingGeneralAction('cancelReservation')}
-          historyRecords={visibleLoanHistory}
+          historyRecords={myHistory} // 💡 モック配列から、先ほど取得した本物の「myHistory」に差し替え！
           onOpenBook={(bookId) => navigate(`/books/${bookId}`, {
             state: { from: '/mypage' },
           })}
@@ -376,7 +399,7 @@ function MyPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredBorrowings.map((record,index) => (
+                  {filteredBorrowings.map((record, index) => (
                     <tr
                       key={index}
                       className={selectedIds.includes(record.employeeCode) ? 'selected' : ''}
@@ -428,7 +451,7 @@ function MyPage() {
                 onKeywordChange={setReservationKeyword}
                 onSearch={() => setMessage(`${filteredReservations.length}件見つかりました。`)}
               />
-              <ReservationTable records={filteredReservations} />
+              <ReservationTable records={filteredReservations} books={data.books} />
             </AccordionPanel>
             <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
               <ListFilter
@@ -523,8 +546,8 @@ function MyPage() {
 }
 
 type GeneralUserSectionsProps = {
-  borrowing?: BorrowingRecord
-  reservation?: ReservationRecord
+  borrowing: BorrowingRecord | null
+  reservation: ReservationRecord | null
   hasReservation: boolean
   onRequestReturn: () => void
   onCancelReservation: () => void
@@ -623,7 +646,7 @@ function GeneralUserSections({
                   </td>
                 </tr>
               )}
-              {!borrowing && !hasReservation && (
+              {!borrowing && !reservation && (
                 <tr><td colSpan={7}>現在の貸出・予約はありません。</td></tr>
               )}
             </tbody>
@@ -637,8 +660,8 @@ function GeneralUserSections({
           <table className="data-table">
             <thead><tr><th>書籍名</th><th>著者</th><th>貸出日付</th><th>返却日</th><th>詳細</th></tr></thead>
             <tbody>
-              {historyRecords.map((record) => (
-                <tr key={record.title}>
+              {historyRecords.map((record, index) => (
+                <tr key={`${record.title}-${index}`}>
                   <td>{record.title}</td>
                   <td>{record.author}</td>
                   <td>{record.loanDate}</td>
@@ -654,6 +677,9 @@ function GeneralUserSections({
                   </td>
                 </tr>
               ))}
+              {historyRecords.length === 0 && (
+                <tr><td colSpan={5}>貸出履歴はありません。</td></tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -715,8 +741,6 @@ function ReservationTable({
     ))
   )
 
-  
-
   return (
     <div className="table-scroll">
       <table className="data-table">
@@ -771,8 +795,8 @@ function HistoryTable({ records }: { records: UserLoanHistory[] }) {
       <table className="data-table">
         <thead><tr><th>書籍名</th><th>著者</th><th>借受者</th><th>貸出日付</th><th>返却日</th><th>棚番号</th><th>段番号</th></tr></thead>
         <tbody>
-          {records.map((record) => (
-            <tr key={record.title}>
+          {records.map((record, index) => (
+            <tr key={`${record.title}-${index}`}>
               <td>{record.title}</td>
               <td>{record.author}</td>
               <td>{record.borrower}</td>
@@ -791,4 +815,4 @@ function HistoryTable({ records }: { records: UserLoanHistory[] }) {
   )
 }
 
-export default MyPage
+export default MyPage;
