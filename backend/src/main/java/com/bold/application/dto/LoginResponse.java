@@ -7,6 +7,7 @@ public class LoginResponse {
     private Integer adminKbn;
     private String employeeCode;
     private String username;
+    private String userId;
 
     public LoginResponse() {
     }
@@ -16,13 +17,15 @@ public class LoginResponse {
             String message,
             Integer adminKbn,
             String employeeCode,
-            String username) {
+            String username,
+            String userId) {
 
         this.success = success;
         this.message = message;
         this.adminKbn = adminKbn;
         this.employeeCode = employeeCode;
         this.username = username;
+        this.userId = userId;
     }
 
     public boolean isSuccess() {
@@ -63,5 +66,8 @@ public class LoginResponse {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+    public String getUserId() {
+        return userId;
     }
 }

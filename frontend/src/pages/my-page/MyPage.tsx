@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query' // 💡 useQuery を追加
 import {
   BookIcon,
   BookmarkIcon,
@@ -22,14 +21,13 @@ import {
   TextBox,
   Toast,
 } from '../../components'
-// 💡 ここに fetchHistoryLists を移動させ、パスを「../../api/booksApi」に統一します
 import {
   approveBookReturn,
   bulkReturnBooks,
   cancelBookReservation,
   fetchBorrowLists,
   fetchReservationLists,
-  fetchHistoryLists, // 👈 ここに追加！
+  fetchHistoryLists,
   lendBook,
   rejectBookReturnRequest,
   requestBookReturn,
@@ -48,7 +46,7 @@ import type {
   ReservationRecord,
   UserLoanHistory,
 } from '../../types'
-import { UserRole , getRoleName} from '../../types'
+import { UserRole, getRoleName } from '../../types'
 
 type GeneralPendingAction = 'requestReturn' | 'cancelReservation'
 type LoanStep = 'auth' | 'confirm'
@@ -87,43 +85,65 @@ function AccordionPanel({
 }
 
 function MyPage() {
+  
+  // MyPage.tsx の useState 定義部分に追加
+  const [userLoanHistory, setUserLoanHistory] = useState<UserLoanHistory[]>([]);
+
   const navigate = useNavigate()
-  
-  // 権限別プロフィールと貸出・予約・履歴の初期データを共通クエリから取得する。
   const data = useLibraryDataValue()
-  
-  // 💡 sessionStorage からログインユーザーの情報を取得
+
   const currentUser = sessionStorage.getItem("username") ?? ""
   const employeeCode = sessionStorage.getItem("employeeCode") ?? ""
-  const userId = sessionStorage.getItem("userId") ?? "" // 👈 Javaに送るUUIDをセッションから取得
+  const userId = sessionStorage.getItem("userId") ?? ""
+
+  console.log("セッションのuserId (UUID):", userId);
+
+  // 履歴データの1件目の構造を確認
+  if (data.userLoanHistory.length > 0) {
+    console.log("履歴データ1件目の全プロパティ:", Object.keys(data.userLoanHistory[0]));
+    console.log("履歴のlend_user_id:", data.userLoanHistory[0].lend_user_id);
+  }
+
   const adminKbn = Number(sessionStorage.getItem("adminKbn")) as UserRole
 
-  // 💡 [追加] 自分の userId を使って、Javaから本物の履歴データを取得する
-  const { data: myHistory = [] } = useQuery({
-    queryKey: ['user-history', userId],
-    queryFn: () => fetchHistoryLists(userId),
-    enabled: !!userId && adminKbn === UserRole.General, // 一般ユーザーかつuserIdがある時だけ動かす
-  })
+  const cleanCurrentUser = currentUser.replace(/\s+/g, '')
 
-  // 正しいデータを取得するよう修正 20260706
-  const generalReservation = data.reservationRecords.find(
-    (record) => record.employeeCode === employeeCode
-  ) ?? null;
+  // 【修正】visibleLoanHistory を一番最初に1回だけ定義する
+  const visibleLoanHistory = useMemo(() => {
+    // data.userLoanHistory ではなく、新しい userLoanHistory を使う
+    return userLoanHistory.filter((record) => {
 
-  // １．自分専用の借受レコード（一般ユーザー表示用） 20260706
-  const myBorrowing = data.borrowingRecords.find(
-    (record) => record.employeeCode === employeeCode
-  ) ?? null;
+    // ログを出力して確認
+    //console.log(`デバッグ: 比較 - 履歴名[${recordBorrower}] vs ログイン名[${userName}]`);
+    console.log("デバッグ: recordの中身",record);
 
-  // ２．全員の借受レコード  20260706
+      // 取得したデータはすべて自分のものなので
+      // 廃棄チェックなどせずすべて画面に表示させる
+      return userLoanHistory
+    })
+  }, [userLoanHistory])
+
+  const generalReservations = useMemo(() => {
+    return data.reservationRecords.filter((record) => {
+      const recordReserver = (record.reserver ?? '').replace(/\s+/g, '')
+      return record.employeeCode === employeeCode || recordReserver === cleanCurrentUser
+    })
+  }, [data.reservationRecords, employeeCode, cleanCurrentUser])
+
+  const myBorrowings = useMemo(() => {
+    return data.borrowingRecords.filter((record) => {
+      const recordBorrower = (record.borrower ?? '').replace(/\s+/g, '')
+      return record.employeeCode === employeeCode || recordBorrower === cleanCurrentUser
+    })
+  }, [data.borrowingRecords, employeeCode, cleanCurrentUser])
+
   const borrowings = data.borrowingRecords
-
   const reservations = data.reservationRecords
+
   const [pendingLoan, setPendingLoan] = useState<ReservationRecord | null>(null)
   const [loanStep, setLoanStep] = useState<LoanStep | null>(null)
   const [pendingGeneralAction, setPendingGeneralAction] = useState<GeneralPendingAction | null>(null)
   const [pendingApproval, setPendingApproval] = useState<BorrowingRecord | null>(null)
-  const [hasReservation, setHasReservation] = useState(true)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [bulkReturnOpen, setBulkReturnOpen] = useState(false)
   const [borrowingFilterKey, setBorrowingFilterKey] = useState('employeeCode')
@@ -133,33 +153,59 @@ function MyPage() {
   const [historyFilterKey, setHistoryFilterKey] = useState('borrower')
   const [historyKeyword, setHistoryKeyword] = useState('')
   const [message, setMessage] = useState('')
-  
-  // 💡 管理者・オペレータ用の全員分の履歴は、本物のデータ（myHistory）ではなく、
-  // 廃棄フィルタが走る既存の data.userLoanHistory（または後ほど全件用APIに変更）をそのまま使います
-  const visibleLoanHistory = data.userLoanHistory.filter((record) => {
-    if (!record.returnDate.trim()) return false
-    if (adminKbn === UserRole.Admin) return true
-    return data.books.find((book) => book.id === record.bookId)?.collectionStatus !== '廃棄'
-  })
 
-  useEffect(() => {
+  const refreshData = () => {
     void fetchBorrowLists()
     void fetchReservationLists()
-  }, [])
 
-  // 選択した検索対象とキーワードから借受・予約・履歴の各一覧を絞り込む。
+    // userIdが存在するか、またそれが正しいかを確認
+    console.log("refreshData内 - userId:", userId);
+  if (userId) {
+      void fetchHistoryLists(userId).then((res) => {
+        console.log("API userLoanHistoryレスポンス:", res);
+        setUserLoanHistory(res); // ★ここで取得したデータをステートに保存！
+      });
+    } else {
+      console.warn("userIdが空のため、履歴取得APIをスキップしました");
+    }
+  }
+
+  useEffect(() => {
+    console.log("全履歴データ:", userLoanHistory);
+    console.log("フィルタリング後の履歴:", visibleLoanHistory);
+  }, [userLoanHistory, visibleLoanHistory]);
+
+  useEffect(() => {
+    console.log("現在ログイン中の社員番号:", employeeCode);
+    console.log("全履歴データ:", data.userLoanHistory);
+  
+    data.userLoanHistory.forEach((rec, i) => {
+      console.log(`履歴${i} - 名前: ${rec.borrower}, 社員番号: ${rec.employeeCode}`);
+    });
+  }, [data.userLoanHistory, employeeCode]);
+
+  useEffect(() => {
+    const userId = sessionStorage.getItem("userId");
+    console.log("現在セッションにあるuserId:", userId); // これが出力されているか確認
+  
+    if (userId) {
+      refreshData();
+    } else {
+      console.error("userIdが見つかりません！セッションを確認してください");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      refreshData()
+    }
+  }, [userId])
+
   const filteredBorrowings = useMemo(() => {
     const normalized = borrowingKeyword.trim().toLowerCase()
     if (!normalized) return borrowings
-
     return borrowings.filter((record) => {
-      const target =
-        borrowingFilterKey === 'name'
-          ? record.borrower
-          : borrowingFilterKey === 'title'
-          ? record.title
-          : record.employeeCode
-
+      const target = borrowingFilterKey === 'name' ? record.borrower : borrowingFilterKey === 'title' ? record.title : record.employeeCode
       return target.toLowerCase().includes(normalized)
     })
   }, [borrowings, borrowingFilterKey, borrowingKeyword])
@@ -168,9 +214,7 @@ function MyPage() {
     const normalized = reservationKeyword.trim().toLowerCase()
     if (!normalized) return reservations
     return reservations.filter((record) => {
-      const target = reservationFilterKey === 'title'
-        ? record.title
-        : record.reserver
+      const target = reservationFilterKey === 'title' ? record.title : record.reserver
       return target.toLowerCase().includes(normalized)
     })
   }, [reservations, reservationFilterKey, reservationKeyword])
@@ -179,31 +223,20 @@ function MyPage() {
     const normalized = historyKeyword.trim().toLowerCase()
     if (!normalized) return visibleLoanHistory
     return visibleLoanHistory.filter((record) => {
-      const target = historyFilterKey === 'title'
-        ? record.title
-        : record.borrower
+      const target = historyFilterKey === 'title' ? record.title : record.borrower
       return target.toLowerCase().includes(normalized)
     })
   }, [historyFilterKey, historyKeyword, visibleLoanHistory])
 
-  const selectedBorrowings = borrowings.filter((record) => (
-    selectedIds.includes(record.employeeCode)
-  ))
+  const selectedBorrowings = borrowings.filter((record) => selectedIds.includes(record.employeeCode))
 
   const toggleSelected = (id: string) => {
-    setSelectedIds((current) => (
-      current.includes(id)
-        ? current.filter((selectedId) => selectedId !== id)
-        : [...current, id]
-    ))
+    setSelectedIds((current) => current.includes(id) ? current.filter((selectedId) => selectedId !== id) : [...current, id])
   }
 
   const approveReturn = (employeeCode: string) => {
     const record = borrowings.find((current) => current.employeeCode === employeeCode)
-    void approveBookReturn({
-      employeeCode,
-      bookTitle: record?.title,
-    })
+    void approveBookReturn({ employeeCode, bookTitle: record?.title }).then(() => refreshData())
     setSelectedIds((current) => current.filter((selectedId) => selectedId !== employeeCode))
     setMessage('返却を承認しました。')
     setPendingApproval(null)
@@ -211,11 +244,7 @@ function MyPage() {
 
   const rejectReturn = (employeeCode: string) => {
     const record = borrowings.find((current) => current.employeeCode === employeeCode)
-    void rejectBookReturnRequest({
-      employeeCode,
-      bookTitle: record?.title,
-      comment: record?.returnComment,
-    })
+    void rejectBookReturnRequest({ employeeCode, bookTitle: record?.title, comment: record?.returnComment }).then(() => refreshData())
     setMessage('返却申請を却下しました。')
     setPendingApproval(null)
   }
@@ -229,41 +258,29 @@ function MyPage() {
   }
 
   const bulkReturn = () => {
-    void bulkReturnBooks(selectedBorrowings)
+    void bulkReturnBooks(selectedBorrowings).then(() => refreshData())
     setMessage(`${selectedIds.length}件の一括返却登録を実行しました。`)
     setSelectedIds([])
     setBulkReturnOpen(false)
-    window.location.reload();
   }
 
   const requestReturn = (comment: string) => {
-    void requestBookReturn({
-      employeeCode: employeeCode,
-      comment,
-    })
+    void requestBookReturn({ employeeCode: employeeCode, comment }).then(() => refreshData())
     setMessage('返却申請を受け付けました。')
     setPendingGeneralAction(null)
   }
 
   const cancelReservation = () => {
-    if (!generalReservation) return
-
-    void cancelBookReservation({
-      employeeCode: employeeCode,
-      bookTitle: generalReservation?.title,
-    })
-    setHasReservation(false)
+    const firstReservation = generalReservations[0]
+    if (!firstReservation) return
+    void cancelBookReservation({ employeeCode: employeeCode, bookTitle: firstReservation.title }).then(() => refreshData())
     setMessage('予約を取り消しました。')
     setPendingGeneralAction(null)
   }
 
   const loanReservedBook = () => {
     if (!pendingLoan) return
-
-    void lendBook({
-      employeeCode: pendingLoan.employeeCode,
-      bookTitle: pendingLoan.title,
-    })
+    void lendBook({ employeeCode: pendingLoan.employeeCode, bookTitle: pendingLoan.title }).then(() => refreshData())
     setMessage(`${pendingLoan.reserver}さんへの貸出を登録しました。`)
     setPendingLoan(null)
     setLoanStep(null)
@@ -312,52 +329,29 @@ function MyPage() {
 
       {adminKbn === UserRole.General && (
         <GeneralUserSections
-          borrowing={myBorrowing}
-          reservation={generalReservation}
-          hasReservation={hasReservation}
+          borrowings={myBorrowings}
+          reservations={generalReservations}
           onRequestReturn={() => setPendingGeneralAction('requestReturn')}
           onCancelReservation={() => setPendingGeneralAction('cancelReservation')}
-          historyRecords={myHistory} // 💡 モック配列から、先ほど取得した本物の「myHistory」に差し替え！
-          onOpenBook={(bookId) => navigate(`/books/${bookId}`, {
-            state: { from: '/mypage' },
-          })}
+          //historyRecords={myHistory}
+          historyRecords={visibleLoanHistory}
+          onOpenBook={(bookId) => navigate(`/books/${bookId}`, { state: { from: '/mypage' } })}
         />
       )}
 
       {adminKbn === UserRole.Operator && (
         <div className="operator-accordions">
           <AccordionPanel title="借受リスト（全員分）" icon={<BookIcon />}>
-            <ListFilter
-              filterKey={borrowingFilterKey}
-              keyword={borrowingKeyword}
-              options={BORROWING_FILTER_OPTIONS}
-              onFilterKeyChange={setBorrowingFilterKey}
-              onKeywordChange={setBorrowingKeyword}
-              onSearch={() => setMessage(`${filteredBorrowings.length}件見つかりました。`)}
-            />
+            <ListFilter filterKey={borrowingFilterKey} keyword={borrowingKeyword} options={BORROWING_FILTER_OPTIONS} onFilterKeyChange={setBorrowingFilterKey} onKeywordChange={setBorrowingKeyword} onSearch={() => setMessage(`${filteredBorrowings.length}件見つかりました。`)} />
             <SimpleBorrowingTable records={filteredBorrowings} />
           </AccordionPanel>
           <AccordionPanel title="予約リスト（全員分）" tone="orange" icon={<BookmarkIcon />}>
-            <ListFilter
-              filterKey={reservationFilterKey}
-              keyword={reservationKeyword}
-              options={RESERVATION_FILTER_OPTIONS}
-              onFilterKeyChange={setReservationFilterKey}
-              onKeywordChange={setReservationKeyword}
-              onSearch={() => setMessage(`${filteredReservations.length}件見つかりました。`)}
-            />
+            <ListFilter filterKey={reservationFilterKey} keyword={reservationKeyword} options={RESERVATION_FILTER_OPTIONS} onFilterKeyChange={setReservationFilterKey} onKeywordChange={setReservationKeyword} onSearch={() => setMessage(`${filteredReservations.length}件見つかりました。`)} />
             <ReservationTable records={filteredReservations} books={data.books} onLoan={startLoan} />
           </AccordionPanel>
           <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
-            <ListFilter
-              filterKey={historyFilterKey}
-              keyword={historyKeyword}
-              options={HISTORY_FILTER_OPTIONS}
-              onFilterKeyChange={setHistoryFilterKey}
-              onKeywordChange={setHistoryKeyword}
-              onSearch={() => setMessage(`${filteredLoanHistory.length}件見つかりました。`)}
-            />
-            <HistoryTable records={filteredLoanHistory} />
+            <ListFilter filterKey={historyFilterKey} keyword={historyKeyword} options={HISTORY_FILTER_OPTIONS} onFilterKeyChange={setHistoryFilterKey} onKeywordChange={setHistoryKeyword} onSearch={() => setMessage(`${filteredLoanHistory.length}件見つかりました。`)} />
+            <HistoryTable records={filteredLoanHistory} showBorrower={false} />
           </AccordionPanel>
         </div>
       )}
@@ -367,101 +361,37 @@ function MyPage() {
           <section className="mypage-section admin-borrowings">
             <h2 className="mypage-section-title"><BookIcon />借受リスト（全員分）</h2>
             <div className="admin-filter">
-              <DropdownField
-                label="検索対象"
-                value={borrowingFilterKey}
-                onChange={setBorrowingFilterKey}
-                options={BORROWING_FILTER_OPTIONS}
-              />
+              <DropdownField label="検索対象" value={borrowingFilterKey} onChange={setBorrowingFilterKey} options={BORROWING_FILTER_OPTIONS} />
               <TextBox label="キーワード" value={borrowingKeyword} onChange={setBorrowingKeyword} placeholder="キーワードを入力" />
-              <button
-                type="button"
-                className="compact-search"
-                onClick={() => setMessage(`${filteredBorrowings.length}件見つかりました。`)}
-              >
-                <SearchIcon size={19} />検索
-              </button>
+              <button type="button" className="compact-search" onClick={() => setMessage(`${filteredBorrowings.length}件見つかりました。`)}><SearchIcon size={19} />検索</button>
             </div>
             <div className="table-scroll">
               <table className="data-table admin-table">
                 <thead>
-                  <tr>
-                    <th aria-label="選択" />
-                    <th>社員番号</th>
-                    <th>借受人名</th>
-                    <th>書籍名</th>
-                    <th>著者</th>
-                    <th>貸出日付</th>
-                    <th>棚番号</th>
-                    <th>段番号</th>
-                    <th>状態</th>
-                    <th>操作</th>
-                  </tr>
+                  <tr><th aria-label="選択" /><th>社員番号</th><th>借受人名</th><th>書籍名</th><th>著者</th><th>貸出日付</th><th>棚番号</th><th>段番号</th><th>状態</th><th>操作</th></tr>
                 </thead>
                 <tbody>
-                  {filteredBorrowings.map((record, index) => (
-                    <tr
-                      key={index}
-                      className={selectedIds.includes(record.employeeCode) ? 'selected' : ''}
-                    >
-                      <td>
-                        <input
-                          type="checkbox"
-                          aria-label={`${record.borrower}を選択`}
-                          checked={selectedIds.includes(record.employeeCode)}
-                          onChange={() => toggleSelected(record.employeeCode)}
-                        />
-                      </td>
-                      <td>{record.employeeCode}</td>
-                      <td>{record.borrower}</td>
-                      <td>{record.title}</td>
-                      <td>{record.author}</td>
-                      <td>{record.loanDate}</td>
-                      <td>{record.shelfNumber}</td>
-                      <td>{record.tierNumber}</td>
+                  {filteredBorrowings.map((record) => (
+                    <tr key={`${record.employeeCode}-${record.title}`} className={selectedIds.includes(record.employeeCode) ? 'selected' : ''}>
+                      <td><input type="checkbox" aria-label={`${record.borrower}を選択`} checked={selectedIds.includes(record.employeeCode)} onChange={() => toggleSelected(record.employeeCode)} /></td>
+                      <td>{record.employeeCode}</td><td>{record.borrower}</td><td>{record.title}</td><td>{record.author}</td><td>{record.loanDate}</td><td>{record.shelfNumber}</td><td>{record.tierNumber}</td>
                       <td><RecordStatus status={record.status} /></td>
-                      <td>
-                        {record.status === '返却申請中' ? (
-                          <button
-                            type="button"
-                            className="list-action-button approve"
-                            onClick={() => setPendingApproval(record)}
-                          >
-                            返却承認
-                          </button>
-                        ) : '−'}
-                      </td>
+                      <td>{record.status === '返却申請中' ? <button type="button" className="list-action-button approve" onClick={() => setPendingApproval(record)}>返却承認</button> : '−'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <button type="button" className="bulk-return-button" onClick={openBulkReturnConfirmation}>
-              <BookIcon size={21} />一括返却登録
-            </button>
+            <button type="button" className="bulk-return-button" onClick={openBulkReturnConfirmation}><BookIcon size={21} />一括返却登録</button>
           </section>
 
           <div className="operator-accordions admin-secondary-lists">
             <AccordionPanel title="予約リスト（全員分）" tone="orange" icon={<BookmarkIcon />}>
-              <ListFilter
-                filterKey={reservationFilterKey}
-                keyword={reservationKeyword}
-                options={RESERVATION_FILTER_OPTIONS}
-                onFilterKeyChange={setReservationFilterKey}
-                onKeywordChange={setReservationKeyword}
-                onSearch={() => setMessage(`${filteredReservations.length}件見つかりました。`)}
-              />
+              <ListFilter filterKey={reservationFilterKey} keyword={reservationKeyword} options={RESERVATION_FILTER_OPTIONS} onFilterKeyChange={setReservationFilterKey} onKeywordChange={setReservationKeyword} onSearch={() => setMessage(`${filteredReservations.length}件見つかりました。`)} />
               <ReservationTable records={filteredReservations} books={data.books} />
             </AccordionPanel>
             <AccordionPanel title="貸出履歴（全員分）" icon={<ClockIcon />}>
-              <ListFilter
-                filterKey={historyFilterKey}
-                keyword={historyKeyword}
-                options={HISTORY_FILTER_OPTIONS}
-                onFilterKeyChange={setHistoryFilterKey}
-                onKeywordChange={setHistoryKeyword}
-                onSearch={() => setMessage(`${filteredLoanHistory.length}件見つかりました。`)}
-              />
+              <ListFilter filterKey={historyFilterKey} keyword={historyKeyword} options={HISTORY_FILTER_OPTIONS} onFilterKeyChange={setHistoryFilterKey} onKeywordChange={setHistoryKeyword} onSearch={() => setMessage(`${filteredLoanHistory.length}件見つかりました。`)} />
               <HistoryTable records={filteredLoanHistory} />
             </AccordionPanel>
           </div>
@@ -469,86 +399,30 @@ function MyPage() {
       )}
 
       {pendingLoan && loanStep === 'auth' && (
-        <BookActionModal
-          open
-          title="予約書籍の貸出"
-          description={`${pendingLoan.reserver}さんへ「${pendingLoan.title}」を貸し出します。`}
-          confirmLabel="内容を確認"
-          requireEmployeeId
-          requirePassword
-          onClose={closeLoanFlow}
-          onConfirm={() => setLoanStep('confirm')}
-        />
+        <BookActionModal open title="予約書籍の貸出" description={`${pendingLoan.reserver}さんへ「${pendingLoan.title}」を貸し出します。`} confirmLabel="内容を確認" requireEmployeeId requirePassword onClose={closeLoanFlow} onConfirm={() => setLoanStep('confirm')} />
       )}
       {pendingLoan && loanStep === 'confirm' && (
-        <ActionConfirmationModal
-          open
-          title="貸出確認"
-          personLabel={`${pendingLoan.reserver}さん`}
-          bookTitle={pendingLoan.title}
-          returnDueDate={getReturnDueDate()}
-          prompt="上記の内容で貸出を実施しますか？"
-          onClose={closeLoanFlow}
-          onConfirm={loanReservedBook}
-        />
+        <ActionConfirmationModal open title="貸出確認" personLabel={`${pendingLoan.reserver}さん`} bookTitle={pendingLoan.title} returnDueDate={getReturnDueDate()} prompt="上記の内容で貸出を実施しますか？" onClose={closeLoanFlow} onConfirm={loanReservedBook} />
       )}
-      {pendingGeneralAction === 'requestReturn' && (
-        <ReturnRequestModal
-          open
-          onClose={() => setPendingGeneralAction(null)}
-          onConfirm={requestReturn}
-        />
-      )}
-      {pendingGeneralAction === 'cancelReservation' && (
-        <ActionConfirmationModal
-          open
-          title="予約取消の確認"
-          bookTitle={generalReservation?.title ?? ''}
-          prompt="上記の書籍の予約を取り消しますか？"
-          confirmLabel="予約を取り消す"
-          onClose={() => setPendingGeneralAction(null)}
-          onConfirm={cancelReservation}
-        />
-      )}
+      {pendingGeneralAction === 'requestReturn' && <ReturnRequestModal open onClose={() => setPendingGeneralAction(null)} onConfirm={requestReturn} />}
+      {pendingGeneralAction === 'cancelReservation' && <ActionConfirmationModal open title="予約取消の確認" bookTitle={generalReservations[0]?.title ?? ''} prompt="上記の書籍の予約を取り消しますか？" confirmLabel="予約を取り消す" onClose={() => setPendingGeneralAction(null)} onConfirm={cancelReservation} />}
       {pendingApproval && (
-        <ModalDialog
-          open
-          title="返却承認確認"
-          confirmLabel="返却を承認"
-          secondaryActionLabel="却下"
-          maxWidth="sm"
-          onClose={() => setPendingApproval(null)}
-          onConfirm={() => approveReturn(pendingApproval.employeeCode)}
-          onSecondaryAction={() => rejectReturn(pendingApproval.employeeCode)}
-        >
+        <ModalDialog open title="返却承認確認" confirmLabel="返却を承認" secondaryActionLabel="却下" maxWidth="sm" onClose={() => setPendingApproval(null)} onConfirm={() => approveReturn(pendingApproval.employeeCode)} onSecondaryAction={() => rejectReturn(pendingApproval.employeeCode)}>
           <div className="return-approval-confirmation">
-            <dl>
-              <div><dt>申請者：</dt><dd>{pendingApproval.borrower}さん</dd></div>
-              <div><dt>書籍名：</dt><dd>{pendingApproval.title}</dd></div>
-            </dl>
-            <div className="return-comment-preview">
-              <strong>返却申請時の感想</strong>
-              <p>{pendingApproval.returnComment || '感想は入力されていません。'}</p>
-            </div>
-            <p>内容を確認し、返却申請の承認または却下を選択してください。</p>
+            <dl><div><dt>申請者：</dt><dd>{pendingApproval.borrower}さん</dd></div><div><dt>書籍名：</dt><dd>{pendingApproval.title}</dd></div></dl>
+            <div className="return-comment-preview"><strong>返却申請時の感想</strong><p>{pendingApproval.returnComment || '感想は入力されていません。'}</p></div>
           </div>
         </ModalDialog>
       )}
-      <BulkReturnConfirmationModal
-        open={bulkReturnOpen}
-        records={selectedBorrowings}
-        onClose={() => setBulkReturnOpen(false)}
-        onConfirm={bulkReturn}
-      />
+      <BulkReturnConfirmationModal open={bulkReturnOpen} records={selectedBorrowings} onClose={() => setBulkReturnOpen(false)} onConfirm={bulkReturn} />
       <Toast open={Boolean(message)} message={message} severity="success" onClose={() => setMessage('')} />
     </main>
   )
 }
 
 type GeneralUserSectionsProps = {
-  borrowing: BorrowingRecord | null
-  reservation: ReservationRecord | null
-  hasReservation: boolean
+  borrowings: BorrowingRecord[]
+  reservations: ReservationRecord[]
   onRequestReturn: () => void
   onCancelReservation: () => void
   historyRecords: UserLoanHistory[]
@@ -572,23 +446,9 @@ function ListFilter({
 }) {
   return (
     <div className="admin-filter list-filter">
-      <DropdownField
-        label="検索対象"
-        value={filterKey}
-        onChange={onFilterKeyChange}
-        options={options}
-      />
-      <TextBox
-        label="キーワード"
-        value={keyword}
-        onChange={onKeywordChange}
-        placeholder="キーワードを入力"
-      />
-      <button
-        type="button"
-        className="compact-search"
-        onClick={onSearch}
-      >
+      <DropdownField label="検索対象" value={filterKey} onChange={onFilterKeyChange} options={options} />
+      <TextBox label="キーワード" value={keyword} onChange={onKeywordChange} placeholder="キーワードを入力" />
+      <button type="button" className="compact-search" onClick={onSearch}>
         <SearchIcon size={19} />検索
       </button>
     </div>
@@ -596,9 +456,8 @@ function ListFilter({
 }
 
 function GeneralUserSections({
-  borrowing,
-  reservation,
-  hasReservation,
+  borrowings,
+  reservations,
   onRequestReturn,
   onCancelReservation,
   historyRecords,
@@ -614,8 +473,8 @@ function GeneralUserSections({
               <tr><th>書籍名</th><th>著者</th><th>利用日付</th><th>棚番号</th><th>段番号</th><th>状態</th><th>操作</th></tr>
             </thead>
             <tbody>
-              {borrowing && (
-                <tr>
+              {borrowings.map((borrowing) => (
+                <tr key={`borrow-${borrowing.employeeCode}-${borrowing.title}`}>
                   <td>{borrowing.title}</td>
                   <td>{borrowing.author}</td>
                   <td>{borrowing.loanDate}</td>
@@ -624,15 +483,13 @@ function GeneralUserSections({
                   <td><RecordStatus status={borrowing.status} /></td>
                   <td>
                     {borrowing.status === '貸出中' ? (
-                      <button type="button" className="list-action-button request" onClick={onRequestReturn}>
-                        返却申請
-                      </button>
+                      <button type="button" className="list-action-button request" onClick={onRequestReturn}>返却申請</button>
                     ) : '申請済み'}
                   </td>
                 </tr>
-              )}
-              {hasReservation && reservation && (
-                <tr>
+              ))}
+              {reservations.map((reservation) => (
+                <tr key={`reserve-${reservation.employeeCode}-${reservation.title}`}>
                   <td>{reservation.title}</td>
                   <td>{reservation.author}</td>
                   <td>{reservation.reservationDate}</td>
@@ -640,13 +497,11 @@ function GeneralUserSections({
                   <td>{reservation.tierNumber}</td>
                   <td><span className="record-status reserved">予約中</span></td>
                   <td>
-                    <button type="button" className="list-action-button cancel" onClick={onCancelReservation}>
-                      予約取消
-                    </button>
+                    <button type="button" className="list-action-button cancel" onClick={onCancelReservation}>予約取消</button>
                   </td>
                 </tr>
-              )}
-              {!borrowing && !reservation && (
+              ))}
+              {borrowings.length === 0 && reservations.length === 0 && (
                 <tr><td colSpan={7}>現在の貸出・予約はありません。</td></tr>
               )}
             </tbody>
@@ -664,16 +519,10 @@ function GeneralUserSections({
                 <tr key={`${record.title}-${index}`}>
                   <td>{record.title}</td>
                   <td>{record.author}</td>
-                  <td>{record.loanDate}</td>
-                  <td>{record.returnDate}</td>
+                  <td>{record.loanDate || (record.createdAt ? new Date(record.createdAt).toLocaleDateString() : '-')}</td>
+                  <td>{record.updatedAt ? new Date(record.updatedAt).toLocaleDateString() : ''}</td>
                   <td>
-                    <button
-                      type="button"
-                      className="row-detail"
-                      onClick={() => onOpenBook(record.bookId)}
-                    >
-                      ›
-                    </button>
+                    <button type="button" className="row-detail" onClick={() => onOpenBook(record.bookId)}>›</button>
                   </td>
                 </tr>
               ))}
@@ -689,11 +538,7 @@ function GeneralUserSections({
 }
 
 function RecordStatus({ status }: { status: BorrowingRecord['status'] }) {
-  return (
-    <span className={`record-status ${status === '返却申請中' ? 'returning' : ''}`}>
-      {status}
-    </span>
-  )
+  return <span className={`record-status ${status === '返却申請中' ? 'returning' : ''}`}>{status}</span>
 }
 
 function SimpleBorrowingTable({ records }: { records: BorrowingRecord[] }) {
@@ -705,7 +550,7 @@ function SimpleBorrowingTable({ records }: { records: BorrowingRecord[] }) {
         </thead>
         <tbody>
           {records.map((record) => (
-            <tr key={record.employeeCode}>
+            <tr key={`${record.employeeCode}-${record.title}`}>
               <td>{record.title}</td>
               <td>{record.author}</td>
               <td>{record.borrower}</td>
@@ -734,11 +579,7 @@ function ReservationTable({
   onLoan?: (record: ReservationRecord) => void
 }) {
   const isDisposedRecord = (record: ReservationRecord) => (
-    books.some((book) => (
-      book.collectionStatus === '廃棄'
-      && book.title === record.title
-      && book.author === record.author
-    ))
+    books.some((book) => book.collectionStatus === '廃棄' && book.title === record.title && book.author === record.author)
   )
 
   return (
@@ -753,7 +594,6 @@ function ReservationTable({
         <tbody>
           {records.map((record) => {
             const isDisposed = isDisposedRecord(record)
-
             return (
               <tr key={`${record.title}-${record.reserver}`}>
                 <td>{record.title}</td>
@@ -767,13 +607,7 @@ function ReservationTable({
                     {isDisposed ? (
                       <span className="record-status disposed">廃棄済</span>
                     ) : (
-                      <button
-                        type="button"
-                        className="list-action-button loan"
-                        onClick={() => onLoan(record)}
-                      >
-                        貸出
-                      </button>
+                      <button type="button" className="list-action-button loan" onClick={() => onLoan(record)}>貸出</button>
                     )}
                   </td>
                 )}
@@ -789,17 +623,23 @@ function ReservationTable({
   )
 }
 
-function HistoryTable({ records }: { records: UserLoanHistory[] }) {
+function HistoryTable({ records, showBorrower = true }: { records: UserLoanHistory[], showBorrower?: boolean }) {
   return (
     <div className="table-scroll">
       <table className="data-table">
-        <thead><tr><th>書籍名</th><th>著者</th><th>借受者</th><th>貸出日付</th><th>返却日</th><th>棚番号</th><th>段番号</th></tr></thead>
+        <thead>
+          <tr>
+            <th>書籍名</th><th>著者</th>
+            {showBorrower && <th>借受者</th>}
+            <th>貸出日付</th><th>返却日</th><th>棚番号</th><th>段番号</th>
+          </tr>
+        </thead>
         <tbody>
           {records.map((record, index) => (
             <tr key={`${record.title}-${index}`}>
               <td>{record.title}</td>
               <td>{record.author}</td>
-              <td>{record.borrower}</td>
+              {showBorrower && <td>{record.borrower}</td>}
               <td>{record.loanDate}</td>
               <td>{record.returnDate}</td>
               <td>{record.shelfNumber}</td>
@@ -807,7 +647,7 @@ function HistoryTable({ records }: { records: UserLoanHistory[] }) {
             </tr>
           ))}
           {records.length === 0 && (
-            <tr><td colSpan={7}>貸出履歴はありません。</td></tr>
+            <tr><td colSpan={showBorrower ? 7 : 6}>貸出履歴はありません。</td></tr>
           )}
         </tbody>
       </table>

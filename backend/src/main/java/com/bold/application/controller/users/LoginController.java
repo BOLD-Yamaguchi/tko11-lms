@@ -39,7 +39,8 @@ public class LoginController {
                             "ログイン成功",
                             user.getAdminKbn(),
                             user.getEmployeeCode(),
-                            user.getUsername()));
+                            user.getUsername(),
+                            user.getUserId().toString()));
         }
 
         return ResponseEntity.status(
@@ -48,6 +49,6 @@ public class LoginController {
                         new LoginResponse(
                                 false,
                                 "社員コードまたはパスワードが違います",
-                                null,null,null));
+                                null,null,null,null));
     }
 }

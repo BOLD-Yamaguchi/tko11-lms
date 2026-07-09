@@ -36,4 +36,9 @@ public class UserService {
 
         return user;
     }
+    // UserService.java に追加
+    public User getUserByEmployeeCode(String employeeCode) {
+        return userRepository.findByEmployeeCode(employeeCode)
+                .orElse(null);
+    }
 }
