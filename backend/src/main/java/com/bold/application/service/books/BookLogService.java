@@ -3,6 +3,7 @@ package com.bold.application.service.books;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -11,8 +12,10 @@ import org.springframework.stereotype.Service;
 
 import com.bold.application.dto.BorrowingRecordResponse;
 import com.bold.application.dto.books.BookLogDto;
+import com.bold.application.entity.books.MstBook;
 import com.bold.application.entity.books.MstBookLog;
 import com.bold.application.repository.books.MstBookLogRepository;
+import com.bold.application.repository.books.MstBookRepository;
 
 @Service
 public class BookLogService {
@@ -20,6 +23,9 @@ public class BookLogService {
 	@Autowired
 	private MstBookLogRepository repository;
 	
+	@Autowired
+	private MstBookRepository bookRepository;
+
 	// 貸出履歴一覧取得（全て）
 	public List<BookLogDto> getAll() {
 		return repository.findAll()
@@ -36,12 +42,28 @@ public class BookLogService {
 				.toList();
 	}
 
-	// 貸出履歴一覧取得（ユーザ固有）
+	// 貸出履歴一覧取得（ユーザ固有：書籍情報を結合して返却）
 	public List<BookLogDto> getLogList(UUID userId) {
-		return repository.findByLendUserId(userId)
-				.stream()
-				.map(this::toDto)
+		List<MstBookLog> logs = repository.findByLendUserId(userId);
+		
+		List<Integer> bookIds = logs.stream()
+				.map(MstBookLog::getBookId)
+				.distinct()
 				.toList();
+		
+		List<MstBook> books = bookRepository.findByBookIdIn(bookIds);
+		Map<Integer, MstBook> bookMap = books.stream()
+				.collect(Collectors.toMap(MstBook::getBookId, b -> b));
+		
+		return logs.stream().map(log -> {
+			BookLogDto dto = toDto(log);
+			MstBook book = bookMap.get(log.getBookId());
+			if (book != null) {
+				dto.setTitle(book.getBookName());
+				dto.setAuthor(book.getAuthorName());
+			}
+			return dto;
+		}).toList();
 	}
 
 	private BookLogDto toDto(MstBookLog entity) {
@@ -101,16 +123,12 @@ public class BookLogService {
 	// 一括返却
 	public List<MstBookLog> bulkReturnBooks(List<BorrowingRecordResponse> borrowingRecordList) {
 		try {
-			//// BorrowingRecordResponseオブジェクトのリストから、bookId変数（int）だけを抽出してList<Integer>を作る
 			List<Integer> bookIdList = borrowingRecordList.stream().map(BorrowingRecordResponse::getBookId).toList();
-			// 書籍IDリストをキーに履歴データリストを取得
 			List<MstBookLog> mstBookLogList = repository.findByBookIdIn(bookIdList);
-			// UpdatedAt変数が NULL のレコードだけを絞り込む
 			List<MstBookLog> filteredList = mstBookLogList.stream()
 			    .filter(mstBookLog -> mstBookLog.getUpdatedAt() == null)
 			    .collect(Collectors.toList());
 
-			// List内の全オブジェクトの UpdatedAt を 現在日時に一括変更
 			filteredList.forEach(mstBookLog -> mstBookLog.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo"))));
 
 			return repository.saveAll(filteredList);

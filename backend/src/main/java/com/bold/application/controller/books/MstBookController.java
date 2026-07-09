@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,8 +28,6 @@ import com.bold.application.service.books.BookService;
 import com.bold.application.service.books.BorrowingService;
 import com.bold.application.service.books.MstBookService;
 import com.bold.application.service.books.ReservationService;
-
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/book")
@@ -284,4 +284,10 @@ public class MstBookController {
     private BookSearchResponse toSearchResponse(MstBook mstBook) {
         return BookSearchResponse.from(mstBook);
     }
+
+    // MstBookController.java に追加
+//    @GetMapping("/history-lists-user")
+//    public List<BorrowingRecordResponse> getHistoryList(@RequestParam String employeeCode) {
+//        return borrowingService.findHistoryByEmployeeCode(employeeCode);
+//    }
 }
