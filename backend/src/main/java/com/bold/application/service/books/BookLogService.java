@@ -14,8 +14,10 @@ import com.bold.application.dto.BorrowingRecordResponse;
 import com.bold.application.dto.books.BookLogDto;
 import com.bold.application.entity.books.MstBook;
 import com.bold.application.entity.books.MstBookLog;
+import com.bold.application.entity.users.User;
 import com.bold.application.repository.books.MstBookLogRepository;
 import com.bold.application.repository.books.MstBookRepository;
+import com.bold.application.repository.users.UserRepository; // 1. インポート追加
 
 @Service
 public class BookLogService {
@@ -26,44 +28,23 @@ public class BookLogService {
 	@Autowired
 	private MstBookRepository bookRepository;
 
+	@Autowired // 2. 依存性の注入を追加
+	private UserRepository userRepository;
+
 	// 貸出履歴一覧取得（全て）
 	public List<BookLogDto> getAll() {
-		return repository.findAll()
-				.stream()
-				.map(this::toDto)
-				.toList();
+		// 3. 共通ロジックを使用して書籍情報とユーザー名を結合して取得
+		return mapLogsWithBookInfo(repository.findAll());
 	}
 
 	// 貸出履歴一覧取得（書籍固有）
 	public List<BookLogDto> getLogList(int bookId) {
-		return repository.findByBookId(bookId)
-				.stream()
-				.map(this::toDto)
-				.toList();
+		return mapLogsWithBookInfo(repository.findByBookId(bookId));
 	}
 
-	// 貸出履歴一覧取得（ユーザ固有：書籍情報を結合して返却）
+	// 貸出履歴一覧取得（ユーザ固有）
 	public List<BookLogDto> getLogList(UUID userId) {
-		List<MstBookLog> logs = repository.findByLendUserId(userId);
-		
-		List<Integer> bookIds = logs.stream()
-				.map(MstBookLog::getBookId)
-				.distinct()
-				.toList();
-		
-		List<MstBook> books = bookRepository.findByBookIdIn(bookIds);
-		Map<Integer, MstBook> bookMap = books.stream()
-				.collect(Collectors.toMap(MstBook::getBookId, b -> b));
-		
-		return logs.stream().map(log -> {
-			BookLogDto dto = toDto(log);
-			MstBook book = bookMap.get(log.getBookId());
-			if (book != null) {
-				dto.setTitle(book.getBookName());
-				dto.setAuthor(book.getAuthorName());
-			}
-			return dto;
-		}).toList();
+		return mapLogsWithBookInfo(repository.findByLendUserId(userId));
 	}
 
 	private BookLogDto toDto(MstBookLog entity) {
@@ -84,57 +65,84 @@ public class BookLogService {
 		return dto;
 	}
 
-	// 貸出履歴取得（１件）
 	public MstBookLog getBookLog(int lendId) {
 		return repository.findByLendId(lendId);
 	}
 
-	// 新規履歴登録
 	public MstBookLog create(MstBookLog mstBookLog) {
 		return repository.save(mstBookLog);
 	}
 
-	// 新規履歴登録（複数一括）
 	public List<MstBookLog> register(List<MstBookLog> mstBookLogList) {
 		return repository.saveAll(mstBookLogList);
 	}
 
-	// 履歴更新（感想）
 	public MstBookLog updateReview(MstBookLog mstBookLog, int lendId) {
 		MstBookLog log = repository.findByLendId(lendId);
 		log.setReview(mstBookLog.getReview());
 		return repository.save(log);
 	}
 
-	// 履歴更新（返却日）
 	public MstBookLog updateUpdatedAt(MstBookLog mstBookLog, int lendId) {
 		MstBookLog log = repository.findByLendId(lendId);
 		log.setUpdatedAt(mstBookLog.getUpdatedAt());
 		return repository.save(log);
 	}
 
-	// 履歴更新（非表示フラグ）
 	public MstBookLog updateHiddenFlg(MstBookLog mstBookLog, int lendId) {
 		MstBookLog log = repository.findByLendId(lendId);
 		log.setHiddenFlg(mstBookLog.getHiddenFlg());
 		return repository.save(log);
 	}
 
-	// 一括返却
 	public List<MstBookLog> bulkReturnBooks(List<BorrowingRecordResponse> borrowingRecordList) {
-		try {
-			List<Integer> bookIdList = borrowingRecordList.stream().map(BorrowingRecordResponse::getBookId).toList();
-			List<MstBookLog> mstBookLogList = repository.findByBookIdIn(bookIdList);
-			List<MstBookLog> filteredList = mstBookLogList.stream()
-			    .filter(mstBookLog -> mstBookLog.getUpdatedAt() == null)
-			    .collect(Collectors.toList());
+		List<Integer> bookIdList = borrowingRecordList.stream().map(BorrowingRecordResponse::getBookId).toList();
+		List<MstBookLog> mstBookLogList = repository.findByBookIdIn(bookIdList);
+		List<MstBookLog> filteredList = mstBookLogList.stream()
+			.filter(mstBookLog -> mstBookLog.getUpdatedAt() == null)
+			.collect(Collectors.toList());
 
-			filteredList.forEach(mstBookLog -> mstBookLog.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo"))));
+		filteredList.forEach(mstBookLog -> mstBookLog.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo"))));
+		return repository.saveAll(filteredList);
+	}
 
-			return repository.saveAll(filteredList);
-
-		} catch (Exception e) {
-			throw e;
+	public List<BookLogDto> getLogListByUser(User user) {
+		// 管理者(2)の場合は全件取得
+		if (user.getAdminKbn() != null && user.getAdminKbn() == 2) {
+			return mapLogsWithBookInfo(repository.findAll());
 		}
+		// それ以外は自分自身の履歴のみ取得
+		return getLogList(user.getUserId());
+	}
+
+	// 書籍情報とユーザー名を結合する共通ロジック
+	private List<BookLogDto> mapLogsWithBookInfo(List<MstBookLog> logs) {
+		List<Integer> bookIds = logs.stream().map(MstBookLog::getBookId).distinct().toList();
+		List<UUID> userIds = logs.stream().map(MstBookLog::getLendUserId).distinct().toList();
+		
+		List<MstBook> books = bookRepository.findByBookIdIn(bookIds);
+		Map<Integer, MstBook> bookMap = books.stream().collect(Collectors.toMap(MstBook::getBookId, b -> b));
+		
+		List<User> users = userRepository.findByUserIdIn(userIds);
+		Map<UUID, User> userMap = users.stream().collect(Collectors.toMap(
+			    User::getUserId, 
+			    u -> u, 
+			    (existing, replacement) -> existing
+			));		
+		return logs.stream().map(log -> {
+			BookLogDto dto = toDto(log);
+			
+			MstBook book = bookMap.get(log.getBookId());
+			if (book != null) {
+				dto.setTitle(book.getBookName());
+				dto.setAuthor(book.getAuthorName());
+			}
+			
+			User user = userMap.get(log.getLendUserId());
+			System.out.println("★デバッグ: 検索ID=" + log.getLendUserId() + " 取得できたUser=" + user); // これを追加
+			dto.setBorrower(user != null ? user.getUsername() : "不明");
+			
+			return dto;
+		}).toList();
 	}
 }
