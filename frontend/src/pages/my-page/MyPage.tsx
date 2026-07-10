@@ -28,6 +28,7 @@ import {
   fetchBorrowLists,
   fetchReservationLists,
   fetchHistoryLists,
+  fetchHistoryListsAll,
   lendBook,
   rejectBookReturnRequest,
   requestBookReturn,
@@ -85,43 +86,36 @@ function AccordionPanel({
 }
 
 function MyPage() {
-  
-  // MyPage.tsx の useState 定義部分に追加
   const [userLoanHistory, setUserLoanHistory] = useState<UserLoanHistory[]>([]);
-
   const navigate = useNavigate()
   const data = useLibraryDataValue()
+  console.log(data);
+  console.log("借出レコードのサンプル:", data.borrowingRecords[0]);
 
   const currentUser = sessionStorage.getItem("username") ?? ""
   const employeeCode = sessionStorage.getItem("employeeCode") ?? ""
   const userId = sessionStorage.getItem("userId") ?? ""
 
-  console.log("セッションのuserId (UUID):", userId);
-
-  // 履歴データの1件目の構造を確認
-  if (data.userLoanHistory.length > 0) {
-    console.log("履歴データ1件目の全プロパティ:", Object.keys(data.userLoanHistory[0]));
-    console.log("履歴のlend_user_id:", data.userLoanHistory[0].lend_user_id);
-  }
-
   const adminKbn = Number(sessionStorage.getItem("adminKbn")) as UserRole
-
   const cleanCurrentUser = currentUser.replace(/\s+/g, '')
 
-  // 【修正】visibleLoanHistory を一番最初に1回だけ定義する
   const visibleLoanHistory = useMemo(() => {
-    // data.userLoanHistory ではなく、新しい userLoanHistory を使う
-    return userLoanHistory.filter((record) => {
-
-    // ログを出力して確認
-    //console.log(`デバッグ: 比較 - 履歴名[${recordBorrower}] vs ログイン名[${userName}]`);
-    console.log("デバッグ: recordの中身",record);
-
-      // 取得したデータはすべて自分のものなので
-      // 廃棄チェックなどせずすべて画面に表示させる
-      return userLoanHistory
-    })
-  }, [userLoanHistory])
+    return userLoanHistory.map((history: any) => {
+      const bookInfo = data.books.find((b) => String(b.id) === String(history.bookId));
+    
+      return {
+        ...history,
+        title: bookInfo?.title ?? '不明',
+        author: bookInfo?.author ?? '不明',
+        // historyオブジェクト内に既にborrowerが存在するため、それを使います
+        borrower: history.borrower ?? '不明',
+        loanDate: history.createdAt ? new Date(history.createdAt).toLocaleDateString() : '-',
+        returnDate: history.updatedAt ? new Date(history.updatedAt).toLocaleDateString() : '-',
+        shelfNumber: bookInfo?.shelfNumber ?? '-',
+        tierNumber: bookInfo?.tierNumber ?? '-',
+      };
+    });
+  }, [userLoanHistory, data.books]); // nameMap生成ロジックを削除したので依存からも外します
 
   const generalReservations = useMemo(() => {
     return data.reservationRecords.filter((record) => {
@@ -158,48 +152,34 @@ function MyPage() {
     void fetchBorrowLists()
     void fetchReservationLists()
 
-    // userIdが存在するか、またそれが正しいかを確認
-    console.log("refreshData内 - userId:", userId);
-  if (userId) {
-      void fetchHistoryLists(userId).then((res) => {
-        console.log("API userLoanHistoryレスポンス:", res);
-        setUserLoanHistory(res); // ★ここで取得したデータをステートに保存！
-      });
+    if (adminKbn === 2 || adminKbn === 1) {
+      void fetchHistoryListsAll()
+        .then((res) => {
+          console.log("履歴データ:", res);
+          setUserLoanHistory(res);
+        })
+        .catch((err) => {
+          console.error("履歴取得に失敗しました", err);
+        });
+    } else if (userId) {
+      void fetchHistoryLists(userId)
+        .then((res) => {
+          setUserLoanHistory(res);
+        })
+        .catch((err) => {
+          console.error("履歴取得に失敗しました", err);
+        });
     } else {
       console.warn("userIdが空のため、履歴取得APIをスキップしました");
     }
   }
 
   useEffect(() => {
-    console.log("全履歴データ:", userLoanHistory);
-    console.log("フィルタリング後の履歴:", visibleLoanHistory);
-  }, [userLoanHistory, visibleLoanHistory]);
-
-  useEffect(() => {
-    console.log("現在ログイン中の社員番号:", employeeCode);
-    console.log("全履歴データ:", data.userLoanHistory);
-  
-    data.userLoanHistory.forEach((rec, i) => {
-      console.log(`履歴${i} - 名前: ${rec.borrower}, 社員番号: ${rec.employeeCode}`);
-    });
-  }, [data.userLoanHistory, employeeCode]);
-
-  useEffect(() => {
     const userId = sessionStorage.getItem("userId");
-    console.log("現在セッションにあるuserId:", userId); // これが出力されているか確認
-  
     if (userId) {
       refreshData();
-    } else {
-      console.error("userIdが見つかりません！セッションを確認してください");
     }
   }, []);
-
-  useEffect(() => {
-    if (userId) {
-      refreshData()
-    }
-  }, [userId])
 
   const filteredBorrowings = useMemo(() => {
     const normalized = borrowingKeyword.trim().toLowerCase()
@@ -333,7 +313,6 @@ function MyPage() {
           reservations={generalReservations}
           onRequestReturn={() => setPendingGeneralAction('requestReturn')}
           onCancelReservation={() => setPendingGeneralAction('cancelReservation')}
-          //historyRecords={myHistory}
           historyRecords={visibleLoanHistory}
           onOpenBook={(bookId) => navigate(`/books/${bookId}`, { state: { from: '/mypage' } })}
         />
@@ -420,15 +399,6 @@ function MyPage() {
   )
 }
 
-type GeneralUserSectionsProps = {
-  borrowings: BorrowingRecord[]
-  reservations: ReservationRecord[]
-  onRequestReturn: () => void
-  onCancelReservation: () => void
-  historyRecords: UserLoanHistory[]
-  onOpenBook: (bookId: string) => void
-}
-
 function ListFilter({
   filterKey,
   keyword,
@@ -453,6 +423,15 @@ function ListFilter({
       </button>
     </div>
   )
+}
+
+type GeneralUserSectionsProps = {
+  borrowings: BorrowingRecord[]
+  reservations: ReservationRecord[]
+  onRequestReturn: () => void
+  onCancelReservation: () => void
+  historyRecords: UserLoanHistory[]
+  onOpenBook: (bookId: string) => void
 }
 
 function GeneralUserSections({
@@ -522,7 +501,9 @@ function GeneralUserSections({
                   <td>{record.loanDate || (record.createdAt ? new Date(record.createdAt).toLocaleDateString() : '-')}</td>
                   <td>{record.updatedAt ? new Date(record.updatedAt).toLocaleDateString() : ''}</td>
                   <td>
-                    <button type="button" className="row-detail" onClick={() => onOpenBook(record.bookId)}>›</button>
+                    <button type="button" className="row-detail" onClick={() => onOpenBook(String(record.bookId))}>
+                      ›
+                    </button>
                   </td>
                 </tr>
               ))}

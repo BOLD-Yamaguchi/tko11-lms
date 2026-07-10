@@ -354,3 +354,11 @@ export async function deleteBook(id: string) {
     }).json()
   ))
 }
+
+// api/booksApi.ts のイメージ
+export async function fetchHistoryListsAll() {
+  // httpClient を使い、他の関数と同様に .json() で受ける形式にします
+  return httpClient
+    .get('book/history-lists-all')
+    .json<UserLoanHistory[]>(); // 必要に応じて適切な型（配列など）を指定してください
+}

@@ -13,6 +13,7 @@ public class BookLogDto {
 	private LocalDateTime updatedAt;
 	private String title;
 	private String author;
+	private String borrower;
 
 	public int getLendId() {
 		return lendId;
@@ -66,6 +67,15 @@ public class BookLogDto {
 		return updatedAt;
 	}
 
+	// Getter/Setter を追加
+	public String getBorrower() {
+		return borrower;
+	}
+
+	public void setBorrower(String borrower) {
+		this.borrower = borrower;
+	}	
+	
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
