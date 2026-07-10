@@ -221,7 +221,7 @@ function BookDetail({
     if (!book?.id) return
 
     void fetchBookDetail(book.id)
-    void fetchHistoryLists()
+    void fetchHistoryLists(book.id)
   }, [book?.id])
 
   if (!book) {
@@ -293,15 +293,7 @@ const getProfile = () => {
     const masterProfile = data?.roleProfiles?.[role] as any;
     const loggedIn = getLoggedInUser() as any;
 
-    const masterName =
-      masterProfile?.['username'] ||
-      masterProfile?.['name'] ||
-      masterProfile?.['userName'];
-
-    const foundName =
-      masterName && masterName !== '利用者'
-        ? masterName
-        : loggedIn?.name;
+    const foundName = loggedIn?.name || masterProfile?.['username'] || masterProfile?.['name'] || masterProfile?.['userName'];
 
     if (foundName && foundName.trim() !== '' && foundName !== '利用者') {
       return {
