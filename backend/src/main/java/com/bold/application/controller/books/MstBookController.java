@@ -284,4 +284,10 @@ public class MstBookController {
     private BookSearchResponse toSearchResponse(MstBook mstBook) {
         return BookSearchResponse.from(mstBook);
     }
+
+    // MstBookController.java に追加
+//    @GetMapping("/history-lists-user")
+//    public List<BorrowingRecordResponse> getHistoryList(@RequestParam String employeeCode) {
+//        return borrowingService.findHistoryByEmployeeCode(employeeCode);
+//    }
 }

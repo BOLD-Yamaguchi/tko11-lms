@@ -106,7 +106,7 @@ export type ReservationRecord = {
 }
 
 export type UserLoanHistory = {
-  bookId: string
+  bookId: number
   title: string
   author: string
   borrower: string
@@ -114,6 +114,10 @@ export type UserLoanHistory = {
   returnDate: string
   shelfNumber: string
   tierNumber: string
+  lend_user_id: string
+  employeeCode?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type LibraryData = {

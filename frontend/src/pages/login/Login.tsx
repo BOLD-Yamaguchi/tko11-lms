@@ -42,8 +42,11 @@ function Login({ onLogin }: LoginProps) {
       });
 
       const result = await response.json();
+      console.log("ログインAPIの全レスポンス：",result);
 
       if (response.ok) {
+        sessionStorage.setItem("userId", result.userId);
+
         sessionStorage.setItem("adminKbn", String(result.adminKbn));
         sessionStorage.setItem("employeeCode", result.employeeCode);
         sessionStorage.setItem("username", result.username);

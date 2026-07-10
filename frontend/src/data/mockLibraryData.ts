@@ -44,11 +44,11 @@ const emptyBook: CatalogBook = {
 const borrowingRecords: BorrowingRecord[] = []
 
 const reservationRecords: ReservationRecord[] = [
-  { employeeCode: 'S0004', title: '機械学習の基礎', author: '渡辺直樹', reserver: '田中次郎', reservationDate: '2025/05/24', shelfNumber: 'A', tierNumber: '01' },
+//  { employeeCode: 'S0004', title: '機械学習の基礎', author: '渡辺直樹', reserver: '田中次郎', reservationDate: '2025/05/24', shelfNumber: 'A', tierNumber: '01' },
 ]
 
 const userLoanHistory: UserLoanHistory[] = [
-  { bookId: 'B0001', title: 'Linuxの基礎', author: '田中次郎', borrower: '田中次郎', loanDate: '2025/04/26', returnDate: '2025/05/10', shelfNumber: 'A', tierNumber: '02' },
+//  { bookId: 'B0001', title: 'Linuxの基礎', author: '田中次郎', borrower: '田中次郎', loanDate: '2025/04/26', returnDate: '2025/05/10', shelfNumber: 'A', tierNumber: '02' },
 ]
 
 const loanHistory: LoanHistory[] = [

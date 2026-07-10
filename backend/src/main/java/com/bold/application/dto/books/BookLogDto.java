@@ -11,6 +11,8 @@ public class BookLogDto {
 	private String hiddenFlg;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
+	private String title;
+	private String author;
 
 	public int getLendId() {
 		return lendId;
@@ -67,4 +69,10 @@ public class BookLogDto {
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
+	// Getter/Setter の追記
+	public String getTitle() { return title; }
+	public void setTitle(String title) { this.title = title; }
+
+	public String getAuthor() { return author; }
+	public void setAuthor(String author) { this.author = author; }
 }
