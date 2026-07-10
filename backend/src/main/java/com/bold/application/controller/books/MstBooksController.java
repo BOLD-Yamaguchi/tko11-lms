@@ -22,7 +22,7 @@ import lombok.Data;
 
 @RestController
 @RequestMapping("/books")
-@CrossOrigin(origins = "http://localhost:5173", methods = {
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"}, methods = {
 		RequestMethod.GET,
 		RequestMethod.POST,
 		RequestMethod.PUT,

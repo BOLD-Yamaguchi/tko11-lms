@@ -52,7 +52,7 @@ function UserEdit() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch("http://localhost:8080/users");
+        const response = await fetch("http://localhost:8081/users");
         const users: User[] = await response.json();
 
         const currentUser = users.find((u) => u.employeeCode === employeeCode);
@@ -102,7 +102,7 @@ function UserEdit() {
     };
 
     try {
-      const response = await fetch(`http://localhost:8080/users/${employeeCode}`, {
+      const response = await fetch(`http://localhost:8081/users/${employeeCode}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +135,7 @@ function UserEdit() {
   const handleDelete = async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:8080/users/${employeeCode}`, {
+      const response = await fetch(`http://localhost:8081/users/${employeeCode}`, {
         method: "DELETE",
       });
 

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -27,12 +29,10 @@ import com.bold.application.service.books.BorrowingService;
 import com.bold.application.service.books.MstBookService;
 import com.bold.application.service.books.ReservationService;
 
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/book")
 @CrossOrigin(
-    origins = "http://localhost:5173",
+    origins = {"http://localhost:5173", "http://localhost:5174"},
     methods = {
         RequestMethod.GET,
         RequestMethod.POST,

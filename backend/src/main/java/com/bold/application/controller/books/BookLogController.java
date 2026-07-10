@@ -17,7 +17,7 @@ import com.bold.application.service.books.BookLogService;
 
 @RestController
 @RequestMapping("/book")
-@CrossOrigin(origins = "http://localhost:5173", methods = {
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"}, methods = {
 		RequestMethod.GET,
 		RequestMethod.POST,
 		RequestMethod.PUT,

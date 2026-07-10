@@ -75,7 +75,7 @@ function UserManagement() {
 
       console.log("新規登録実行:", payload);
       try {
-        const response = await fetch("http://localhost:8080/users", {
+        const response = await fetch("http://localhost:8081/users", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -102,7 +102,7 @@ function UserManagement() {
 
       console.log("パスワードリセット実行:", payload);
       try {
-        const response = await fetch(`http://localhost:8080/users/password-reset`, {
+        const response = await fetch(`http://localhost:8081/users/password-reset`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
