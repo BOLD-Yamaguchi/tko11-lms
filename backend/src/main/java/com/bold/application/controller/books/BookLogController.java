@@ -1,6 +1,8 @@
 package com.bold.application.controller.books;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bold.application.dto.books.BookLogDto;
 import com.bold.application.entity.books.MstBookLog;
+import com.bold.application.entity.users.User;
 import com.bold.application.service.UserService;
 import com.bold.application.service.books.BookLogService;
 
@@ -51,16 +54,23 @@ public class BookLogController {
 	// 貸出履歴取得API（ユーザ固有：マイページ用）
 	@GetMapping("/history-lists-user")
 	public List<BookLogDto> getBookLogsByUserId(
-	        @RequestParam String userId) { // この中身は現在UUID文字列
+	        @RequestParam String userId) { 
 	    
 	    System.out.println("★デバッグ: 受け取ったUUID = " + userId);
 	    
 	    // UUID文字列を UUID 型に変換
-	    java.util.UUID uuid = java.util.UUID.fromString(userId);
+	    UUID uuid = UUID.fromString(userId);
 	    
-	    // 社員番号で検索するのではなく、直接 UUID を使って履歴を取得する
-	    // (もし bookLogService に UUID で検索するメソッドがない場合は作成が必要です)
-	    List<BookLogDto> list = bookLogService.getLogList(uuid);
+	    // UserServiceを使って、UUIDからUser情報をデータベースから取得する
+	    User user = userService.getUserById(uuid);
+	    
+	    if (user == null) {
+	        System.out.println("★デバッグ: ユーザーが見つかりませんでした");
+	        return Collections.emptyList(); 
+	    }
+	    
+	    // 取得したUser情報を、権限判定付きのメソッドに渡す
+	    List<BookLogDto> list = bookLogService.getLogListByUser(user);
 	    
 	    System.out.println("★デバッグ: 取得した履歴件数 = " + list.size());
 	    

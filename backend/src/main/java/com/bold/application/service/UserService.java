@@ -41,4 +41,10 @@ public class UserService {
         return userRepository.findByEmployeeCode(employeeCode)
                 .orElse(null);
     }
+
+    //
+    public User getUserById(java.util.UUID userId) {
+        // ユーザーID(UUID)で検索してUserを返す
+        return userRepository.findById(userId).orElse(null);
+    }    
 }

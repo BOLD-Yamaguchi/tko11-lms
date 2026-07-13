@@ -1,5 +1,6 @@
 package com.bold.application.repository.users;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,4 +22,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     // 重複チェック用
     boolean existsByMailAddress(String mailAddress);
     boolean existsByEmployeeCode(String employeeCode);
+
+    List<User> findByUserIdIn(List<UUID> userIds);
+
 }
+
