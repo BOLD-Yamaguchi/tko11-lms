@@ -18,6 +18,9 @@ import type {
   UserRole,
 } from '../../types'
 
+// BookForm.tsx の冒頭でインポート（例）
+import { collectionStatusByCode, majorCategoryById, minorCategoryById, locationCodeByName } from '../../api/booksApi';
+
 type BookFormProps = {
   mode: 'create' | 'edit'
   initialValues: Book
@@ -74,7 +77,7 @@ function BookForm({
     setValidationErrors((current) => ({ ...current, [name]: undefined }))
   }
 
-const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     try {
       event.preventDefault()
       const result = bookSchema.safeParse(form)
@@ -91,24 +94,62 @@ const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 
       setValidationErrors({})
 
-      // 💡 対策：result.data を一度変数に固定し、onSubmit の戻り値を Record<string, any> として受ける
-      const validatedData = result.data
-      
-      // ⭕ onSubmit の型エラーを回避するため、結果を明示的に any または Record型 として扱います
-      const response = await onSubmit(validatedData) as any
+      //const majorMap: Record<string, number> = { '技術書': 0, '自己啓発': 1, 'その他': 2 };
+      //const collectionMap: Record<string, number> = { '開架': 0, '閉架': 1, '廃棄': 2 };
+      //const locationMap: Record<string, number> = { '東京': 0, '大阪': 1 };
 
-      // ⭕ response の中身から、Java側で採番された bookId または id を安全に抽出
-      // どちらも取れなかった場合のフォールバックとして validatedData.id を使用します
-      const nextId = response?.bookId ?? response?.id ?? validatedData.id
+      // 既存のテーブルから「値→キー」の逆引きマップをその場で作成
+      const getCode = (map: Record<string | number, string>, value: string) => {
+        return Object.keys(map).find(key => map[key] === value) ?? '0';
+      };
 
-      // ⭕ 確定した nextId を使って詳細画面へ遷移
+      // APIの bookRegisterRequest (Java側) に合わせたフィールド名に修正
+      const payload = {
+        // フロントの 'title' を 'bookName' へ
+        title: form.title,
+        isbn: form.isbn,
+        // フロントの 'author' を 'authorName' へ
+        author: form.author,
+        publisher: form.publisher,
+        publishedAt: form.publishedAt,
+
+        // 数値に変換
+        majorCategory: Number(getCode(majorCategoryById, form.majorCategory)), 
+        minorCategory: Number(getCode(minorCategoryById, form.minorCategory)),
+        collectionStatus: Number(getCode(collectionStatusByCode, form.collectionStatus)),
+        location: Number(getCode(locationCodeByName, form.location)),
+
+
+        // 数値に変換
+        //majorCategory: majorMap[form.majorCategory] ?? 0, 
+        //minorCategory: Number(form.minorCategory) || 0,
+        //collectionStatus: collectionMap[form.collectionStatus] ?? 0,
+        //location: locationMap[form.location] ?? 0,
+
+//        majorCategory: form.majorCategory,
+//        minorCategory: form.minorCategory,
+//        collectionStatus: form.collectionStatus,
+//        location: form.location,
+        // APIエラーに出ていた 'shelfNumber' と 'tierNumber' を対応するフィールド名へ
+        // ※もしAPI側がこれらをそのまま 'shelfNumber', 'tierNumber' で受け取る場合はそのままでOKですが
+        // エラーに出ていたので API の期待する変数名に変える必要があります
+        shelfNumber: form.shelfNumber,
+        tierNumber: form.tierNumber,
+        notes: form.notes
+      }
+
+      // デバッグ用：何が送られているかコンソールで確認
+      console.log("送信ペイロード:", payload);
+
+      const response = await onSubmit(payload as any) as any
+
+      const nextId = response?.bookId ?? response?.id ?? result.data.id
+
       navigate(`/books/${nextId}`, {
         state: { message: isEdit ? '書籍情報を更新しました。' : '書籍を登録しました。' },
       })
 
     } catch (error) {
-      // 万が一バックエンドが500エラー等を返しても、ここでキャッチされるため
-      // アプリが全損して user-login に強制送還されるのを防ぎます
       console.error("書籍の保存に失敗しました", error)
     }
   }
