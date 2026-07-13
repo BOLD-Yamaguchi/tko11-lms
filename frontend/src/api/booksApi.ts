@@ -55,7 +55,7 @@ export type SearchBooksConditions = {
   location?: string
 }
 
-const collectionStatusByCode: Record<string, CollectionStatus> = {
+export const collectionStatusByCode: Record<string, CollectionStatus> = {
   '0': '開架',
   '1': '閉架',
   '2': '廃棄',
@@ -83,13 +83,13 @@ const loanStatusByCode: Record<string, LoanStatus> = {
   reserved: '予約中',
 }
 
-const majorCategoryById: Record<number, string> = {
+export const majorCategoryById: Record<number, string> = {
   0: '技術書',
   1: '自己啓発',
   2: 'その他',
 }
 
-const minorCategoryById: Record<number, string> = {
+export const minorCategoryById: Record<number, string> = {
   1: 'クラウド',
   2: 'プログラミング',
   3: 'ネットワーク',
@@ -126,7 +126,7 @@ const loanStatusCodeByName: Record<string, string> = {
   返却申請中: '3',
 }
 
-const locationCodeByName: Record<string, string> = {
+export const locationCodeByName: Record<string, string> = {
   東京: '0',
   大阪: '1',
 }
