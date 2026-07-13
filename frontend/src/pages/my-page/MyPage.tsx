@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+//import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   BookIcon,
   BookmarkIcon,
@@ -88,6 +89,19 @@ function AccordionPanel({
 function MyPage() {
   const [userLoanHistory, setUserLoanHistory] = useState<UserLoanHistory[]>([]);
   const navigate = useNavigate()
+
+  const location = useLocation(); // 追加
+  const messageFromState = (location.state as { message?: string })?.message; // 追加
+
+  // ここでコンソールに出力して確認！
+  console.log("前の画面から受け取ったメッセージ:", messageFromState);
+
+  useEffect(() => {
+    if (messageFromState) {
+      setMessage(messageFromState);
+    }
+  }, [messageFromState]);
+
   const data = useLibraryDataValue()
   console.log(data);
   console.log("借出レコードのサンプル:", data.borrowingRecords[0]);
@@ -394,7 +408,7 @@ function MyPage() {
         </ModalDialog>
       )}
       <BulkReturnConfirmationModal open={bulkReturnOpen} records={selectedBorrowings} onClose={() => setBulkReturnOpen(false)} onConfirm={bulkReturn} />
-      <Toast open={Boolean(message)} message={message} severity="success" onClose={() => setMessage('')} />
+      <Toast open={true} message={message || "テストメッセージ"} severity="success" onClose={() => setMessage('')} />
     </main>
   )
 }
