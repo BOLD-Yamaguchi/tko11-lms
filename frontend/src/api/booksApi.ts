@@ -83,35 +83,26 @@ const loanStatusByCode: Record<string, LoanStatus> = {
   reserved: '予約中',
 }
 
-export const majorCategoryById: Record<number, string> = {
-  0: '技術書',
-  1: '自己啓発',
-  2: 'その他',
-}
+//export const majorCategoryById: Record<number, string> = {
+//  0: '技術書',
+//  1: '自己啓発',
+//  2: 'その他',
+//}
 
-export const minorCategoryById: Record<number, string> = {
-  1: 'クラウド',
-  2: 'プログラミング',
-  3: 'ネットワーク',
-  4: 'データベース',
-  5: '資格・試験',
-  6: 'マネジメント',
-  7: 'キャリア',
-  8: '学習法',
-  9: 'その他',
-  10: 'その他',
-  11: 'その他',
-}
+//export const minorCategoryById: Record<number, string> = {
+//  1: 'クラウド',
+//  2: 'プログラミング',
+//  3: 'ネットワーク',
+//  4: 'データベース',
+//  5: '資格・試験',
+//  6: 'マネジメント',
+//  7: 'キャリア',
+//  8: '学習法',
+//  9: 'その他',
+//  10: 'その他',
+//  11: 'その他',
+//}
 
-const majorCategoryCodeByName: Record<string, string> = {
-  技術書: '0',
-  自己啓発: '1',
-  その他: '2',
-}
-
-const minorCategoryCodeByName: Record<string, string> = Object.fromEntries(
-  Object.entries(minorCategoryById).map(([code, name]) => [name, code]),
-)
 
 const collectionStatusCodeByName: Record<string, string> = {
   開架: '0',
@@ -130,6 +121,61 @@ export const locationCodeByName: Record<string, string> = {
   東京: '0',
   大阪: '1',
 }
+
+export type MinorCategory = { id: number, name: string };
+export type MajorCategory = { 
+  id: number, 
+  name: string, 
+  minors: MinorCategory[] 
+};
+
+export const categoryData: Record<number, MajorCategory> = {
+  0: {
+    id: 0,
+    name: '技術書',
+    minors: [
+      { id: 1, name: 'クラウド' },
+      { id: 2, name: 'プログラミング' },
+      { id: 3, name: 'ネットワーク' },
+      { id: 4, name: 'データベース' },
+      { id: 5, name: '資格・試験' },
+      { id: 6, name: 'その他' }
+    ]
+  },
+  1: {
+    id: 1,
+    name: '自己啓発',
+    minors: [
+      { id: 7, name: 'キャリア' },
+      { id: 8, name: '学習法' },
+      { id: 9, name: 'その他' }
+    ]
+  },
+  2: {
+    id: 2,
+    name: 'その他',
+    minors: [
+      { id: 10, name: 'その他' }
+    ]
+  }
+};
+
+//const minorCategoryCodeByName: Record<string, string> = Object.fromEntries(
+//  Object.entries(minorCategoryById).map(([code, name]) => [name, code]),
+//)
+const minorCategoryCodeByName: Record<string, string> = Object.fromEntries(
+  Object.values(categoryData).flatMap(m => m.minors.map(minor => [minor.name, String(minor.id)]))
+);
+
+//const majorCategoryCodeByName: Record<string, string> = {
+//  技術書: '0',
+//  自己啓発: '1',
+//  その他: '2',
+//}
+const majorCategoryCodeByName: Record<string, string> = Object.fromEntries(
+  Object.values(categoryData).map(major => [major.name, String(major.id)])
+);
+
 
 function normalizeCode(value: string | null | undefined) {
   return value?.trim().toLowerCase()
@@ -157,13 +203,22 @@ function toCatalogBook(response: BookSearchResponse): CatalogBook {
     author: response.authorName,
     publisher: response.publisher,
     publishedAt: response.publishedAt ?? '',
+//    majorCategory: response.categoryLevel1 !== null
+//      ? majorCategoryById[response.categoryLevel1] ?? String(response.categoryLevel1)
+//      : '',
+//    minorCategory: response.categoryLevel2 !== null
+//      ? minorCategoryById[response.categoryLevel2] ?? String(response.categoryLevel2)
+//      : '',
     majorCategory: response.categoryLevel1 !== null
-      ? majorCategoryById[response.categoryLevel1] ?? String(response.categoryLevel1)
+      ? categoryData[response.categoryLevel1]?.name ?? String(response.categoryLevel1)
       : '',
     minorCategory: response.categoryLevel2 !== null
-      ? minorCategoryById[response.categoryLevel2] ?? String(response.categoryLevel2)
+      ? Object.values(categoryData)
+          .flatMap(m => m.minors)
+          .find(m => m.id === response.categoryLevel2)?.name ?? String(response.categoryLevel2)
       : '',
-    collectionStatus: toCollectionStatus(response.bookStatus),
+
+collectionStatus: toCollectionStatus(response.bookStatus),
     location: toLocation(response.region),
     shelfNumber: response.shelfNo,
     tierNumber: response.tierNo === null ? '' : String(response.tierNo),

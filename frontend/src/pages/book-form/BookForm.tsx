@@ -18,8 +18,13 @@ import type {
   UserRole,
 } from '../../types'
 
-// BookForm.tsx の冒頭でインポート（例）
-import { collectionStatusByCode, majorCategoryById, minorCategoryById, locationCodeByName } from '../../api/booksApi';
+// BookForm.tsx の冒頭でインポート
+//import { collectionStatusByCode, majorCategoryById, minorCategoryById, locationCodeByName } from '../../api/booksApi';
+import {
+  categoryData,
+  collectionStatusByCode,
+  locationCodeByName
+} from '../../api/booksApi';
 
 type BookFormProps = {
   mode: 'create' | 'edit'
@@ -52,87 +57,96 @@ function BookForm({
   const navigate = useNavigate()
   // カテゴリと拠点の選択肢を、書籍管理データの共通クエリから取得する。
   const data = useLibraryDataValue()
+  //const isEdit = mode === 'edit'
+  //const getMinorCategoryOptions = (majorCategory: string) => (
+  //  majorCategory
+  //    ? data.categoryOptions.minorByMajor?.[majorCategory] ?? data.categoryOptions.minor
+  //    : data.categoryOptions.minor
+  //)
+  //const minorCategoryOptions = getMinorCategoryOptions(form.majorCategory)
+
   const isEdit = mode === 'edit'
-  const getMinorCategoryOptions = (majorCategory: string) => (
-    majorCategory
-      ? data.categoryOptions.minorByMajor?.[majorCategory] ?? data.categoryOptions.minor
-      : data.categoryOptions.minor
+
+  // 選択されている大項目の文字列（例：「技術書」）から、該当するオブジェクトを探す
+  const currentMajor = Object.values(categoryData).find(
+    (major) => major.name === form.majorCategory
   )
-  const minorCategoryOptions = getMinorCategoryOptions(form.majorCategory)
+  
+  // 該当する大項目があればその minors の配列を、なければ空配列を使う
+  const minorCategoryOptions = currentMajor ? currentMajor.minors : []
 
   const updateField = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target
     if (name === 'majorCategory') {
-      const nextMinorOptions = getMinorCategoryOptions(value)
+      // 大項目が変わったら中項目は必ず空にする（選択し直しを促す）
       setForm((current) => ({
         ...current,
         majorCategory: value,
-        minorCategory: nextMinorOptions.includes(current.minorCategory)
-          ? current.minorCategory
-          : '',
+        minorCategory: '', 
       }))
     } else {
       setForm((current) => ({ ...current, [name]: value }))
     }
     setValidationErrors((current) => ({ ...current, [name]: undefined }))
+
+  {/* 中項目のセレクトボックス部分を探して以下のように修正 */}
+  <select
+    id="minorCategory"
+    name="minorCategory"
+    value={form.minorCategory}
+    onChange={updateField}
+  >
+    <option value="">選択してください</option>
+    {minorCategoryOptions.map((minor) => (
+      // minor がオブジェクトになったので、key と value に minor.name を指定
+      <option key={minor.id} value={minor.name}>{minor.name}</option>
+    ))}
+  </select>
+
+
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     try {
       event.preventDefault()
       const result = bookSchema.safeParse(form)
-
-      if (!result.success) {
-        const errors: BookValidationErrors = {}
-        result.error.issues.forEach((issue) => {
-          const field = issue.path[0] as keyof Book
-          errors[field] ??= issue.message
-        })
-        setValidationErrors(errors)
-        return
-      }
-
+      if (!result.success) { /* ...エラー処理... */ return }
       setValidationErrors({})
 
-      //const majorMap: Record<string, number> = { '技術書': 0, '自己啓発': 1, 'その他': 2 };
-      //const collectionMap: Record<string, number> = { '開架': 0, '閉架': 1, '廃棄': 2 };
-      //const locationMap: Record<string, number> = { '東京': 0, '大阪': 1 };
-
-      // 既存のテーブルから「値→キー」の逆引きマップをその場で作成
+      // 1. 共通の逆引き用関数（変わらず使用）
       const getCode = (map: Record<string | number, string>, value: string) => {
         return Object.keys(map).find(key => map[key] === value) ?? '0';
       };
 
-      // APIの bookRegisterRequest (Java側) に合わせたフィールド名に修正
+      // 2. 新しい categoryData から大項目・中項目のIDを見つける
+//      const majorObj = Object.values(categoryData).find(m => m.name === form.majorCategory);
+//      const majorId = majorObj ? majorObj.id : 0;
+
+      const majorObj = Object.values(categoryData).find(m => m.name === form.majorCategory);
+      const majorId = majorObj?.id ?? 0;
+      
+//      const minorObj = majorObj?.minors.find(m => m.name === form.minorCategory);
+//      const minorId = minorObj ? minorObj.id : 0;
+
+      const minorObj = majorObj?.minors.find(m => m.name === form.minorCategory);
+      const minorId = minorObj?.id ?? 0;
+
+
       const payload = {
-        // フロントの 'title' を 'bookName' へ
         title: form.title,
         isbn: form.isbn,
-        // フロントの 'author' を 'authorName' へ
         author: form.author,
         publisher: form.publisher,
         publishedAt: form.publishedAt,
 
-        // 数値に変換
-        majorCategory: Number(getCode(majorCategoryById, form.majorCategory)), 
-        minorCategory: Number(getCode(minorCategoryById, form.minorCategory)),
+        // 新しいID変換ロジックを適用
+        majorCategory: majorId, 
+        minorCategory: minorId,
+        
+        // 拠点と配架は以前のまま
         collectionStatus: Number(getCode(collectionStatusByCode, form.collectionStatus)),
         location: Number(getCode(locationCodeByName, form.location)),
 
-
-        // 数値に変換
-        //majorCategory: majorMap[form.majorCategory] ?? 0, 
-        //minorCategory: Number(form.minorCategory) || 0,
-        //collectionStatus: collectionMap[form.collectionStatus] ?? 0,
-        //location: locationMap[form.location] ?? 0,
-
-//        majorCategory: form.majorCategory,
-//        minorCategory: form.minorCategory,
-//        collectionStatus: form.collectionStatus,
-//        location: form.location,
-        // APIエラーに出ていた 'shelfNumber' と 'tierNumber' を対応するフィールド名へ
-        // ※もしAPI側がこれらをそのまま 'shelfNumber', 'tierNumber' で受け取る場合はそのままでOKですが
-        // エラーに出ていたので API の期待する変数名に変える必要があります
         shelfNumber: form.shelfNumber,
         tierNumber: form.tierNumber,
         notes: form.notes
@@ -145,8 +159,12 @@ function BookForm({
 
       const nextId = response?.bookId ?? response?.id ?? result.data.id
 
-      navigate(`/books/${nextId}`, {
-        state: { message: isEdit ? '書籍情報を更新しました。' : '書籍を登録しました。' },
+//      navigate(`/books/${nextId}`, {
+//      navigate( -1 as any, {
+      navigate(`/mypage`, {
+        state: {
+          message: isEdit ? '書籍情報を更新しました。' : '書籍を登録しました。'
+        },
       })
 
     } catch (error) {
@@ -306,8 +324,8 @@ function BookForm({
               onChange={updateField}
             >
               <option value="">選択してください</option>
-              {minorCategoryOptions.map((category) => (
-                <option key={category} value={category}>{category}</option>
+              {minorCategoryOptions.map((minor) => (
+                <option key={minor.id} value={minor.name}>{minor.name}</option>
               ))}
             </select>
           </div>
