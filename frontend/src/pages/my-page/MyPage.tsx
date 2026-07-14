@@ -99,6 +99,15 @@ function MyPage() {
   useEffect(() => {
     if (messageFromState) {
       setMessage(messageFromState);
+
+      // 数秒後にメッセージをクリアしてトーストを消すタイマー
+      const timer = setTimeout(() => {
+        setMessage('');
+        // 必要であればここで location.state を空にする処理（history.replace）も可能
+      }, 3000); // 3秒後に消える
+
+      return () => clearTimeout(timer); // コンポーネント破棄時にタイマーをリセット
+
     }
   }, [messageFromState]);
 
@@ -408,7 +417,11 @@ function MyPage() {
         </ModalDialog>
       )}
       <BulkReturnConfirmationModal open={bulkReturnOpen} records={selectedBorrowings} onClose={() => setBulkReturnOpen(false)} onConfirm={bulkReturn} />
-      <Toast open={true} message={message || "テストメッセージ"} severity="success" onClose={() => setMessage('')} />
+      <Toast 
+        open={Boolean(message)} 
+        message={message} 
+        onClose={() => setMessage('')} 
+      />
     </main>
   )
 }
