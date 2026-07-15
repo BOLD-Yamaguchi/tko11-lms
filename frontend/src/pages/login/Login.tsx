@@ -9,6 +9,8 @@ import "./Login.css";
 import Header from "../../components/Header";
 import { UserRole } from '../../types'
 
+import { API_BASE_URL } from "../../constants/api";      //接続サーバのアドレス 20260715
+
 type LoginProps = {
   onLogin: (role: UserRole) => void
 }
@@ -30,7 +32,7 @@ function Login({ onLogin }: LoginProps) {
     try {
       setIsSubmitting(true);
 
-      const response = await fetch("http://localhost:8080/auth/login", {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
