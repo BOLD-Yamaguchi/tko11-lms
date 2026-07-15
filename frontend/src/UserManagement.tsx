@@ -70,7 +70,7 @@ function UserManagement() {
         password,
         employeeCode: employeeCode,
         affiliationKbn: Number(department),
-        adminKbn: Number(role),
+        adminKbn: 0, //明示的に 0 固定
       };
 
       console.log("新規登録実行:", payload);
@@ -267,26 +267,7 @@ function UserManagement() {
                         />
                         一般ユーザー
                       </label>
-                      <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
-                        <input
-                          type="radio"
-                          name="role"
-                          value="1"
-                          checked={role === "1"}
-                          onChange={(e) => setRole(e.target.value)}
-                        />
-                        貸出ユーザー
-                      </label>
-                      <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
-                        <input
-                          type="radio"
-                          name="role"
-                          value="2"
-                          checked={role === "2"}
-                          onChange={(e) => setRole(e.target.value)}
-                        />
-                        管理者
-                      </label>
+                      {/* 貸出ユーザーと管理者は選択不可にするため削除 */}
                     </div>
                   </div>
                 </>

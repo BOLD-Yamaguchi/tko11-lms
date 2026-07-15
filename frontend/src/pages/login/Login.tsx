@@ -46,6 +46,7 @@ function Login({ onLogin }: LoginProps) {
 
       if (response.ok) {
         sessionStorage.setItem("userId", result.userId);
+        sessionStorage.setItem("employeeCode", result.employeeCode);
 
         sessionStorage.setItem("adminKbn", String(result.adminKbn));
         sessionStorage.setItem("employeeCode", result.employeeCode);

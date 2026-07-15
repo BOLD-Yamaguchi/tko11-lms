@@ -15,6 +15,10 @@ type User = {
 
 function UserEdit() {
   const navigate = useNavigate();
+  // ★ログインユーザーの権限を取得 (管理者なら 2)
+  const myAdminKbn = Number(sessionStorage.getItem("adminKbn"));
+  const isNotAdmin = myAdminKbn !== 2; // 管理者以外なら true
+
   const { employeeCode } = useParams<{ employeeCode: string }>();
 
   // フォームの入力状態
@@ -121,7 +125,13 @@ function UserEdit() {
 
       alert("ユーザー情報を更新しました。");
       setIsModalOpen(false);
-      navigate("/UsersList");
+
+      if (Number(sessionStorage.getItem("adminKbn")) === 2) {
+        navigate("/UsersList");
+      } else {
+        navigate("/Home");
+      }
+
     } catch (error) {
       console.error(error);
       alert("通信エラーが発生しました。");
@@ -255,6 +265,7 @@ function UserEdit() {
                       name="role"
                       value="0"
                       checked={role === "0"}
+                      disabled={isNotAdmin} // ★ここに追加！
                       onChange={(e) => setRole(e.target.value)}
                     />
                     一般ユーザー
@@ -265,6 +276,7 @@ function UserEdit() {
                       name="role"
                       value="1"
                       checked={role === "1"}
+                      disabled={isNotAdmin} // ★ここに追加！
                       onChange={(e) => setRole(e.target.value)}
                     />
                     貸出ユーザー
@@ -275,6 +287,7 @@ function UserEdit() {
                       name="role"
                       value="2"
                       checked={role === "2"}
+                      disabled={isNotAdmin} // ★ここに追加！
                       onChange={(e) => setRole(e.target.value)}
                     />
                     管理者
@@ -288,15 +301,16 @@ function UserEdit() {
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
+                disabled={Number(sessionStorage.getItem("adminKbn")) !== 2} // ★管理者以外は無効化
                 style={{
                   padding: "12px 24px",
-                  backgroundColor: "#d32f2f",
+                  backgroundColor: Number(sessionStorage.getItem("adminKbn")) === 2 ? "#d32f2f" : "#ccc",
                   color: "#fff",
                   border: "none",
                   borderRadius: "4px",
                   fontSize: "16px",
                   fontWeight: "bold",
-                  cursor: "pointer",
+                  cursor: Number(sessionStorage.getItem("adminKbn")) === 2 ? "pointer" : "not-allowed",
                   boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
                 }}
               >
@@ -307,7 +321,17 @@ function UserEdit() {
               <div style={{ display: "flex", gap: "16px" }}>
                 <button
                   type="button"
-                  onClick={() => navigate("/UsersList")}
+                  onClick={() => {
+                    // コンソールでセッションを確認（F12キーのコンソールタブに出ます）
+                    console.log("セッション確認:", sessionStorage.getItem("adminKbn"));  
+                    // 管理者(2)なら一覧へ、それ以外ならホームへ戻る
+                    if (Number(sessionStorage.getItem("adminKbn")) === 2) {
+                      navigate("/UsersList");
+                    } else {
+                      navigate("/home");
+                    }
+                  }}
+
                   style={{
                     padding: "12px 24px",
                     backgroundColor: "#fff",

@@ -3,11 +3,13 @@ export const LOAN_STATUS_OPTIONS = [
   { value: '貸出可', label: '貸出可' },
   { value: '貸出中', label: '貸出中' },
   { value: '返却申請中', label: '返却申請中' },
+  { value: '予約中', label: '予約中' },
 ] as const
 
 export const COLLECTION_STATUS_OPTIONS = [
   { value: '', label: '全て' },
   { value: '開架', label: '開架' },
+  { value: '閉架', label: '閉架' },
 ] as const
 
 export const ADMIN_COLLECTION_STATUS_OPTION = {

@@ -9,6 +9,11 @@ import { BookOpen, Users } from "lucide-react";
 function HomePage() {
   const navigate = useNavigate();
 
+// ★ここに変数を追加してください！
+  const adminKbn = Number(sessionStorage.getItem("adminKbn"));
+//  const userId = sessionStorage.getItem("userId");
+  const employeeCode = sessionStorage.getItem("employeeCode");
+
   // ホバー状態を管理するステート
   const [isHoveredBooks, setIsHoveredBooks] = useState(false);
   const [isHoveredUsers, setIsHoveredUsers] = useState(false);
@@ -95,7 +100,15 @@ function HomePage() {
                 icon={Users}
                 title="ユーザー管理"
                 description="ユーザーの登録・編集"
-                onClick={() => navigate("/UsersList")}
+                onClick={() => {
+                  if (adminKbn ===2) {
+                    // 管理者(Admin)の場合は一覧へ
+                    navigate("/UsersList")
+                  } else {
+                    // 一般ユーザーの場合は自分の編集画面へ
+                    navigate(`/users/${employeeCode}`);
+                  }
+                }}
               />
             </div>
 
