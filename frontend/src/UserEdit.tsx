@@ -4,6 +4,8 @@ import Header from "./components/Header";
 import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 import { TextBox } from "./components/TextBox";
 
+import { API_BASE_URL } from "./constants/api";      //接続サーバのアドレス 20260715
+
 type User = {
   userId: string;
   username: string;
@@ -56,7 +58,7 @@ function UserEdit() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch("http://localhost:8080/users");
+        const response = await fetch(`${API_BASE_URL}/users`);
         const users: User[] = await response.json();
 
         const currentUser = users.find((u) => u.employeeCode === employeeCode);
@@ -106,7 +108,7 @@ function UserEdit() {
     };
 
     try {
-      const response = await fetch(`http://localhost:8080/users/${employeeCode}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${employeeCode}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -145,7 +147,7 @@ function UserEdit() {
   const handleDelete = async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:8080/users/${employeeCode}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${employeeCode}`, {
         method: "DELETE",
       });
 

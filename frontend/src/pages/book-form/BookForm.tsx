@@ -39,7 +39,7 @@ type BookFormProps = {
 function BookForm({
   mode,
   initialValues,
-  onSubmit,
+//  onSubmit,
   onCsvSubmit,
   allowDisposal = false,
 }: BookFormProps) {
@@ -155,9 +155,9 @@ function BookForm({
       // デバッグ用：何が送られているかコンソールで確認
       console.log("送信ペイロード:", payload);
 
-      const response = await onSubmit(payload as any) as any
+//      const response = await onSubmit(payload as any) as any
 
-      const nextId = response?.bookId ?? response?.id ?? result.data.id
+//      const nextId = response?.bookId ?? response?.id ?? result.data.id
 
 //      navigate(`/books/${nextId}`, {
 //      navigate( -1 as any, {
