@@ -4,6 +4,8 @@ import Header from "./components/Header";
 import type { HamburgerMenuItem } from "./components/HamburgerMenu";
 import { TextBox } from "./components/TextBox";
 
+import { API_BASE_URL } from "./constants/api";      //接続サーバのアドレス 20260715
+
 function UserManagement() {
   const navigate = useNavigate();
 
@@ -75,7 +77,7 @@ function UserManagement() {
 
       console.log("新規登録実行:", payload);
       try {
-        const response = await fetch("http://localhost:8081/users", {
+        const response = await fetch(`${API_BASE_URL}/users`,{
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -102,7 +104,7 @@ function UserManagement() {
 
       console.log("パスワードリセット実行:", payload);
       try {
-        const response = await fetch(`http://localhost:8081/users/password-reset`, {
+        const response = await fetch(`${API_BASE_URL}/users/password-reset`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
