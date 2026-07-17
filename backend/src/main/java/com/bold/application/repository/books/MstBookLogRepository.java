@@ -1,6 +1,7 @@
 package com.bold.application.repository.books;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,5 +23,8 @@ public interface MstBookLogRepository extends JpaRepository<MstBookLog, Integer>
 
 	// 貸出IDによるレコード取得
 	MstBookLog findByLendId(int lendId);
+	
+	// 指定書籍の未返却履歴を新しい順で1件取得
+	Optional<MstBookLog> findFirstByBookIdAndUpdatedAtIsNullOrderByLendIdDesc(int bookId);
 
 }

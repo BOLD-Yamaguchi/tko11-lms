@@ -32,7 +32,7 @@ public class BorrowingService {
     }
 
     public List<BorrowingRecordResponse> findBorrowingList() {
-        List<MstBook> books = mstBookRepository.findByStatusIn(List.of("1", "2"));
+        List<MstBook> books = mstBookRepository.findByStatusIn(List.of("2", "3"));
 
         return books.stream()
                 .map(book -> {
@@ -42,7 +42,7 @@ public class BorrowingService {
                     response.setAuthor(book.getAuthorName());
                     response.setShelfNumber(book.getShelfNo());
                     response.setTierNumber(String.valueOf(book.getTierNo()));
-                    response.setStatus("2".equals(book.getStatus()) ? "返却申請中" : "貸出中");
+                    response.setStatus("3".equals(book.getStatus()) ? "返却申請中" : "貸出中");
 
                     if (book.getLendUserId() != null) {
                         userRepository.findById(book.getLendUserId())
@@ -51,6 +51,14 @@ public class BorrowingService {
                                     response.setBorrower(user.getUsername());
                                 });
                     }
+                    
+                    // 最新の未返却履歴から返却時の感想を取得
+                    mstBookLogRepository
+                            .findFirstByBookIdAndUpdatedAtIsNullOrderByLendIdDesc(
+                                    book.getBookId())
+                            .ifPresent(bookLog ->
+                                    response.setReturnComment(bookLog.getReview()));
+                    
                     response.setLoanDate(book.getStatusUpdatedAt() != null 
                             ? book.getStatusUpdatedAt().toLocalDate().toString() : "");
                     return response;

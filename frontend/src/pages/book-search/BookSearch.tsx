@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ChevronIcon, SearchIcon } from '../../Icons'
@@ -57,6 +57,33 @@ function BookSearch() {
   const [message, setMessage] = useState('')
   const [searchError, setSearchError] = useState('')
   const [isSearching, setIsSearching] = useState(false)
+
+  // 検索画面へ戻った際、前回の検索条件で最新の検索結果を取得し直す。
+  // （予約・貸出などでDBが更新されている可能性があるため）
+  useEffect(() => {
+    // まだ検索を行っていなければuseEffectの処理は終了
+    if (!restoredState.hasSearched){
+      return
+    }
+
+    const reloadSearchResults = async () => {
+      setIsSearching(true)
+      setSearchError('')
+
+      try {
+        const latestBooks = await searchBooks(restoredState.conditions)
+        setApiBooks(latestBooks)
+      } catch {
+        setApiBooks([])
+        setSearchError('書籍検索APIの呼び出しに失敗しました。')
+      } finally {
+        setIsSearching(false)
+      }
+    }
+
+    void reloadSearchResults()
+  }, [])
+
   const collectionOptions = [
     ...COLLECTION_STATUS_OPTIONS,
     ...(role === UserRole.Admin ? [ADMIN_COLLECTION_STATUS_OPTION] : []),

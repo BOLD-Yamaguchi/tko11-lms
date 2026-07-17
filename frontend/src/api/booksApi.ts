@@ -292,7 +292,7 @@ async function callBookApi<T>(request: () => Promise<T>): Promise<T | undefined>
 }
 
 function post(endpoint: string, payload: UnknownPayload) {
-  return callBookApi(() => httpClient.post(endpoint, { json: payload }).json())
+  return httpClient.post(endpoint, { json: payload }).json()
 }
 
 export async function registerBook(book: Book): Promise<any> {

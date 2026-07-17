@@ -16,7 +16,7 @@ export const API_ENDPOINTS = {
   lend: 'book/lend',
   reserveCancel: 'book/cancel-reservation',
   returnReject: 'book/return-reject',
-  directReturn: 'book/direcet-return',
+  directReturn: 'book/direct-return',
   bookUpdate: (bookId: string) => `books/${encodeURIComponent(bookId)}`,
   bulkReturn: 'books/bulk-return',
   csvImport: 'books/csv-import',
