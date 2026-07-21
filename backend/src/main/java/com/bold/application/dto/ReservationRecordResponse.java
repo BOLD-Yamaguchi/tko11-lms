@@ -8,6 +8,8 @@ public class ReservationRecordResponse {
     private String reservationDate;
     private String shelfNumber;
     private String tierNumber;
+    private int bookId;
+    private String employeeCode;
 
     public String getTitle() {
         return title;
@@ -56,4 +58,21 @@ public class ReservationRecordResponse {
     public void setTierNumber(String tierNumber) {
         this.tierNumber = tierNumber;
     }
+
+	public int getBookId() {
+		return bookId;
+	}
+
+	public void setBookId(int bookId) {
+		this.bookId = bookId;
+	}
+
+	public String getEmployeeCode() {
+		return employeeCode;
+	}
+
+	public void setEmployeeCode(String employeeCode) {
+		this.employeeCode = employeeCode;
+	}
+    
 }

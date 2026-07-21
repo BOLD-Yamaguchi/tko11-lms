@@ -38,12 +38,14 @@ public class ReservationService {
                     response.setAuthor(book.getAuthorName());
                     response.setShelfNumber(book.getShelfNo());
                     response.setTierNumber(String.valueOf(book.getTierNo()));
+                    response.setBookId(book.getBookId());
 
                     // 予約者（lendUserId を予約者として扱う）
                     if (book.getLendUserId() != null) {
                         userRepository.findById(book.getLendUserId())
                                 .ifPresent(user -> {
                                     response.setReserver(user.getUsername());
+                                    response.setEmployeeCode(user.getEmployeeCode());
                                 });
                     }
 

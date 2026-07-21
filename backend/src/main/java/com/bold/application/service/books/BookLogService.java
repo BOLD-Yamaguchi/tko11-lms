@@ -73,6 +73,26 @@ public class BookLogService {
 		return repository.save(mstBookLog);
 	}
 
+	// 貸出時に mst_book_log へ貸出履歴を新規登録
+	public MstBookLog createLendingLog(
+	        int bookId,
+	        UUID lendUserId) {
+
+	    MstBookLog bookLog = new MstBookLog();
+
+	    bookLog.setBookId(bookId);
+	    bookLog.setLendUserId(lendUserId);
+	    bookLog.setCreatedAt(
+	            LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
+	    // 貸出時点では未返却・感想未入力
+	    bookLog.setUpdatedAt(null);
+	    bookLog.setReview(null);
+	    // 初期状態では履歴を表示する
+	    bookLog.setHiddenFlg("0");
+
+	    return repository.save(bookLog);
+	}
+	
 	public List<MstBookLog> register(List<MstBookLog> mstBookLogList) {
 		return repository.saveAll(mstBookLogList);
 	}
@@ -144,5 +164,40 @@ public class BookLogService {
 			
 			return dto;
 		}).toList();
+	}
+	
+	// 最新の未返却履歴に返却日時を登録
+	public MstBookLog completeReturnLog(int bookId) {
+
+	    MstBookLog bookLog = repository
+	            .findFirstByBookIdAndUpdatedAtIsNullOrderByLendIdDesc(bookId)
+	            .orElseThrow(() ->
+	                    new IllegalStateException(
+	                            "未返却の貸出履歴が見つかりません。"));
+
+	    bookLog.setUpdatedAt(
+	            LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
+
+	    return repository.save(bookLog);
+	}
+	
+	// 最新の未返却履歴に返却申請時の感想を登録
+	public MstBookLog updateReturnReview(
+	        int bookId,
+	        String review) {
+
+	    MstBookLog bookLog = repository
+	            .findFirstByBookIdAndUpdatedAtIsNullOrderByLendIdDesc(bookId)
+	            .orElseThrow(() ->
+	                    new IllegalStateException(
+	                            "未返却の貸出履歴が見つかりません。"));
+
+	    // 感想は任意。空文字の場合はNULLとして保存
+	    bookLog.setReview(
+	            review == null || review.isBlank()
+	                    ? null
+	                    : review.trim());
+
+	    return repository.save(bookLog);
 	}
 }

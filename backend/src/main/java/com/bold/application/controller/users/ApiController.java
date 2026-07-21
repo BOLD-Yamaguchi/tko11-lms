@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 // Reactの開発サーバー（デフォルトは3000）からのアクセスを許可
 //@CrossOrigin(origins = "http://localhost:3000") 
-@CrossOrigin(origins = "http://localhost:5173") 
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"}) 
 public class ApiController {
 
     @GetMapping("/api/data")

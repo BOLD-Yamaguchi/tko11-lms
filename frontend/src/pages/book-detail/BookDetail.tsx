@@ -34,11 +34,12 @@ import {
   requestBookReturn,
   reserveBook,
 } from '../../api/booksApi'
-import { useLibraryDataValue } from '../../data/libraryQueries'
+import { libraryDataQueryKey,useLibraryDataValue } from '../../data/libraryQueries'
 import { getCurrentDate, getReturnDueDate } from '../../dateUtils'
 import type { BookSearchState } from '../book-search/searchState'
 import type { BookStatusDetail, LoanStatus} from '../../types'
 import { UserRole } from '../../types'
+import { useQueryClient } from '@tanstack/react-query';
 
 type BookDetailProps = {
   onStatusChange: (
@@ -207,12 +208,15 @@ function BookDetail({
   const backPath = locationState?.from === '/mypage' ? '/mypage' : '/search'
   
   const [message, setMessage] = useState(routeMessage ?? '')
+  const [toastSeverity, setToastSeverity] = useState<'success' | 'error'>('success');
   const [pendingAction, setPendingAction] = useState<BookAction | null>(null)
   const [actionStep, setActionStep] = useState<ActionStep | null>(null)
   const [authenticatedUserName, setAuthenticatedUserName] = useState('')
+  const [authenticatedEmployeeCode, setAuthenticatedEmployeeCode] = useState('')
   const [editingHistory, setEditingHistory] = useState(false)
   const [draftVisibleHistoryIds, setDraftVisibleHistoryIds] = useState<string[]>([])
-
+  const queryClient = useQueryClient();
+  
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [location.key])
@@ -297,8 +301,8 @@ const getProfile = () => {
 
     if (foundName && foundName.trim() !== '' && foundName !== '利用者') {
       return {
-        userId: masterProfile?.['userId'] || masterProfile?.['id'] || loggedIn?.['userId'] || "00000000-0000-0000-0000-000000000001",
-        employeeCode: masterProfile?.['employeeCode'] || masterProfile?.['employeeId'] || loggedIn?.['employeeCode'] || '',
+        userId: loggedIn?.['userId'] || masterProfile?.['userId'] || masterProfile?.['id'] || "00000000-0000-0000-0000-000000000001",
+        employeeCode: loggedIn?.['employeeCode'] || masterProfile?.['employeeCode'] || masterProfile?.['employeeId'] || '',
         name: foundName
       };
     }
@@ -315,13 +319,32 @@ const getProfile = () => {
   console.log("profile =", profile);
 
   const statusDetail = data?.bookStatusDetails[book.id]
+  // 現在の貸出情報
+  const currentBorrowingRecord = data.borrowingRecords.find((record) => record.bookId === book.id)
+  // 現在の予約情報
+  const currentReservationRecord = data.reservationRecords.find((record) => record.bookId === Number(book.id))
+  // 貸出中・返却申請中に表示する利用者情報
+  const displayedBorrowerName = currentBorrowingRecord?.borrower || statusDetail?.borrowerName || '不明'
+  const displayedReturnComment = currentBorrowingRecord?.returnComment || ''
+  // 予約中に表示する予約者情報
+  const displayedReserverName = currentReservationRecord?.reserver || statusDetail?.reserverName || '不明'
+
+  // 一般ユーザーには、自分が予約した書籍だけ予約取消ボタンを表示する
+  const canCancelReservation = role !== UserRole.General || currentReservationRecord?.employeeCode === profile?.employeeCode
+  const displayedActions = actions.filter(
+    (action) => action.id !== 'cancelReservation' || canCancelReservation
+  )
+
+  // 予約日を保存するカラムがないため一時的に非表示
+  //const displayedReservationDate = currentReservationRecord?.reservationDate || statusDetail?.reservationDate || '未設定'
+  
   const returnedHistory = loanHistory.filter((history) => history.returnDate.trim())
   const visibleHistoryIds = historyVisibility[book.id] ?? returnedHistory.map((history) => history.id)
   const displayedHistory = role === UserRole.Admin && editingHistory
     ? returnedHistory
     : returnedHistory.filter((history) => visibleHistoryIds.includes(history.id))
 
-  const callBookActionApi = (
+  const callBookActionApi = async (
     action: BookAction,
     payload: Record<string, unknown> = {},
   ) => {
@@ -335,19 +358,27 @@ const getProfile = () => {
           userName: profile?.name,
         }
         : {}),
+
+      // 予約取消時、操作しているユーザーの社員番号をAPIへ送る
+      ...(action === 'cancelReservation'
+        ? {
+            employeeCode: profile?.employeeCode,
+          }
+        : {}),
+
       ...payload,
     }
 
-    if (action === 'reserve') void reserveBook(requestPayload)
-    if (action === 'cancelReservation') void cancelBookReservation(requestPayload)
-    if (action === 'loan') void lendBook(requestPayload)
-    if (action === 'return') void directlyReturnBook(requestPayload)
-    if (action === 'requestReturn') void requestBookReturn(requestPayload)
-    if (action === 'cancelReturnRequest') void rejectBookReturnRequest(requestPayload)
-    if (action === 'approveReturn') void approveBookReturn(requestPayload)
+    if (action === 'reserve') return reserveBook(requestPayload)
+    if (action === 'cancelReservation') return cancelBookReservation(requestPayload)
+    if (action === 'loan') return lendBook(requestPayload)
+    if (action === 'return') return directlyReturnBook(requestPayload)
+    if (action === 'requestReturn') return requestBookReturn(requestPayload)
+    if (action === 'cancelReturnRequest') return rejectBookReturnRequest(requestPayload)
+    if (action === 'approveReturn') return approveBookReturn(requestPayload)
   }
 
-  const executeAction = (
+  const executeAction = async (
     action: BookAction,
     payload: Record<string, unknown> = {},
   ) => {
@@ -362,22 +393,40 @@ const getProfile = () => {
         employeeCode: profile?.employeeCode,
         userName: profile?.name,
       }
-    } else if (['loan', 'return'].includes(action)) {
+    } else if (['loan', 'return', 'requestReturn'].includes(action)) {
       finalPayload = {
         ...payload,
-        employeeCode: authenticatedUserName ? profile?.employeeCode : undefined,
-        userId: profile?.userId || "00000000-0000-0000-0000-000000000001",
-        userName: authenticatedUserName || profile?.name,
+        employeeCode: authenticatedEmployeeCode,
+        userName: authenticatedUserName,
       }
     }
 
     const nextStatusDetail = getNextStatusDetail(action)
-    callBookActionApi(action, finalPayload)
-    onStatusChange(book.id, setting.nextStatus, nextStatusDetail)
-    setMessage(setting.message)
-    setPendingAction(null)
-    setActionStep(null)
-    setAuthenticatedUserName('')
+
+    try {
+      // APIが成功するまで待つ
+      await callBookActionApi(action, finalPayload)
+
+      await queryClient.invalidateQueries({
+        queryKey: libraryDataQueryKey,
+      });
+      // 成功した場合だけ画面を変更
+      onStatusChange(book.id, setting.nextStatus, nextStatusDetail)
+      setToastSeverity('success');
+      setMessage(setting.message)
+      setPendingAction(null)
+      setActionStep(null)
+      setAuthenticatedUserName('')
+      setAuthenticatedEmployeeCode('')
+    } catch (error) {
+      console.error(error)
+      setToastSeverity('error');
+      setMessage('処理に失敗しました。入力内容を確認してください。')
+      // 確認画面から社員番号入力画面へ戻す
+      setAuthenticatedEmployeeCode('')
+      setAuthenticatedUserName('')
+      setActionStep('auth')
+    }
   }
 
   const getNextStatusDetail = (action: BookAction): BookStatusDetail | null | undefined => {
@@ -422,6 +471,7 @@ const getProfile = () => {
   const saveHistoryVisibility = () => {
     onHistoryVisibilityChange(book.id, draftVisibleHistoryIds)
     setEditingHistory(false)
+    setToastSeverity('success');
     setMessage('貸出履歴の表示設定を更新しました。')
   }
 
@@ -438,6 +488,7 @@ const getProfile = () => {
   const startAction = (action: BookAction) => {
     setPendingAction(action)
     setAuthenticatedUserName('')
+    setAuthenticatedEmployeeCode('')
     if (action === 'approveReturn') {
       setActionStep('approval')
     } else if (requiresEmployeeId(action)) {
@@ -453,6 +504,7 @@ const getProfile = () => {
     setPendingAction(null)
     setActionStep(null)
     setAuthenticatedUserName('')
+    setAuthenticatedEmployeeCode('')
   }
 
   const resolveUserName = (employeeId: string) => {
@@ -475,13 +527,21 @@ const getProfile = () => {
   const validateActionEmployeeId = (
     employeeId: string,
   ) => {
-    console.error("====== 🚨 社員番号バリデーション通過テスト 🚨 ======");
-    console.error("① 画面 of 入力欄から届いた値:", JSON.stringify(employeeId));
-    
-    const resolvedName = resolveUserName(employeeId);
-    console.error("② resolveUserName 関数の判定結果（名前）:", JSON.stringify(resolvedName));
-    console.error("③ 現在の data オブジェクトの生データ:", data);
-    console.error("====================================================");
+    if (pendingAction === 'requestReturn'
+      || pendingAction === 'return'
+    ) {
+      const borrowingRecord = data.borrowingRecords.find(
+        (record) => record.bookId === book.id,
+      );
+
+      if (!borrowingRecord) {
+        return 'この書籍の貸出情報が見つかりません。';
+      }
+
+      if (borrowingRecord.employeeCode !== employeeId) {
+        return '貸出者の社員番号と一致しません。';
+      }
+    }
 
     return undefined;
   }
@@ -490,6 +550,7 @@ const getProfile = () => {
     action: BookAction,
     credentials: BookActionCredentials,
   ) => {
+    setAuthenticatedEmployeeCode(credentials.employeeId)
     setAuthenticatedUserName(resolveUserName(credentials.employeeId) ?? '')
     setActionStep(action === 'requestReturn' ? 'returnRequest' : 'confirm')
   }
@@ -507,6 +568,7 @@ const getProfile = () => {
     })
     onStatusChange(book.id, '貸出中')
     onReturnCommentChange(book.id, '')
+    setToastSeverity('success');
     setMessage('返却申請を却下しました。')
     closeAction()
   }
@@ -528,20 +590,21 @@ const getProfile = () => {
       貸出可: <p>現在、この書籍は貸出できます。</p>,
       貸出中: (
         <>
-          <p>貸出者：{statusDetail?.borrowerName || profile?.name}さん</p>
+          <p>利用者：{displayedBorrowerName}さん</p>
           <p>返却予定日：{statusDetail?.returnDueDate || getReturnDueDate()}</p>
         </>
       ),
       返却申請中: (
         <>
-          <p>貸出者：{statusDetail?.borrowerName || profile?.name}さん</p>
+          <p>利用者：{displayedBorrowerName}さん</p>
           <p>返却申請を確認中です。</p>
         </>
       ),
       予約中: (
         <>
-          <p>予約者：{statusDetail?.reserverName || profile?.name}さん</p>
-          <p>予約日：{statusDetail?.reservationDate || '未設定'}</p>
+          <p>予約者：{displayedReserverName}さん</p>
+          {/* 予約日を保存するカラムがないため一時的に非表示 */}
+          {/* <p>予約日：{displayedReservationDate}</p> */}
         </>
       ),
     }[book.loanStatus]
@@ -554,10 +617,20 @@ const getProfile = () => {
     : pendingAction === 'return'
       ? '直接返却確認'
       : modalSetting?.title ?? ''
-  
-  const personLabel = pendingAction === 'cancelReservation' && role === UserRole.General
-    ? undefined
-    : (authenticatedUserName || profile?.name)
+
+  // 確認画面の氏名を操作種別に応じて切り替える
+  // 返却申請取消では、ログインユーザーではなく実際の利用者を表示する
+  let personLabel: string | undefined
+
+  if (pendingAction === 'cancelReservation'
+    && role === UserRole.General
+  ) {
+    personLabel = undefined
+  } else if (pendingAction === 'cancelReturnRequest') {
+    personLabel = displayedBorrowerName
+  } else {
+    personLabel = authenticatedUserName || profile?.name
+  }
 
   return (
     <main className="page-shell detail-page">
@@ -598,7 +671,7 @@ const getProfile = () => {
           </div>
 
           <div className="detail-actions">
-            {actions.map((action) => (
+            {displayedActions.map((action) => (
               <button key={action.id} type="button" onClick={() => startAction(action.id)}>
                 {action.icon}
                 {action.label}
@@ -643,7 +716,7 @@ const getProfile = () => {
               <thead>
                 <tr>
                   {editingHistory && <th>表示</th>}
-                  <th>貸出者</th>
+                  <th>利用者</th>
                   <th>貸出日</th>
                   <th>返却日</th>
                   <th>感想</th>
@@ -713,7 +786,7 @@ const getProfile = () => {
           prompt={actionConfirmationPrompts[pendingAction]}
           confirmLabel="確定"
           onClose={closeAction}
-          onConfirm={() => executeAction(pendingAction)}
+          onConfirm={() => void executeAction(pendingAction)}
         />
       )}
       {pendingAction === 'requestReturn' && actionStep === 'returnRequest' && (
@@ -737,18 +810,18 @@ const getProfile = () => {
         >
           <div className="return-approval-confirmation">
             <dl>
-              <div><dt>申請者：</dt><dd>{statusDetail?.borrowerName || profile?.name}さん</dd></div>
+              <div><dt>申請者：</dt><dd>{displayedBorrowerName}さん</dd></div>
               <div><dt>書籍名：</dt><dd>{book.title}</dd></div>
             </dl>
             <div className="return-comment-preview">
               <strong>返却申請時の感想</strong>
-              <p>{returnComments[book.id] || '感想は入力されていません。'}</p>
+              <p>{displayedReturnComment || '感想は入力されていません。'}</p>
             </div>
             <p>内容を確認し、返却申請の承認または却下を選択してください。</p>
           </div>
         </ModalDialog>
       )}
-      <Toast open={Boolean(message)} message={message} severity="success" onClose={() => setMessage('')} />
+      <Toast open={Boolean(message)} message={message} severity={toastSeverity} onClose={() => setMessage('')} />
     </main>
   )
 }

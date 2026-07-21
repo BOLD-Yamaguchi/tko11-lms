@@ -96,6 +96,7 @@ export type BorrowingRecord = {
 }
 
 export type ReservationRecord = {
+  bookId: number
   employeeCode: string
   title: string
   author: string

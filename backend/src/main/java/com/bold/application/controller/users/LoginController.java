@@ -15,7 +15,7 @@ import com.bold.application.service.UserService;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
 public class LoginController {
 
     private final UserService userService;
