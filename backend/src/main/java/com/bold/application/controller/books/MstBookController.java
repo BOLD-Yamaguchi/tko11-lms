@@ -362,14 +362,59 @@ public class MstBookController {
 	                ? payload.get("bookId")
 	                : payload.get("book_id");
 
+	        Object employeeCodeValue = payload.get("employeeCode");
+
 	        if (bId == null) {
 	            return ResponseEntity.badRequest()
 	                    .body("bookId が見つかりません。");
 	        }
 
-	        int bookId = Integer.parseInt(bId.toString());
+	        if (employeeCodeValue == null
+	                || employeeCodeValue.toString().isBlank()) {
+	            return ResponseEntity.badRequest()
+	                    .body("操作者の社員番号が見つかりません。");
+	        }
 
-	        // 返却申請中「3」から貸出中「2」へ戻す
+	        int bookId = Integer.parseInt(bId.toString());
+	        String employeeCode =
+	                employeeCodeValue.toString().trim();
+
+	        User operationUser = userRepository
+	                .findByEmployeeCode(employeeCode)
+	                .orElse(null);
+
+	        if (operationUser == null) {
+	            return ResponseEntity.badRequest()
+	                    .body("操作者のユーザー情報が存在しません。");
+	        }
+
+	        MstBook book = bookService.findById(bookId);
+
+	        if (book == null) {
+	            return ResponseEntity.badRequest()
+	                    .body("指定された書籍が存在しません。");
+	        }
+
+	        if (!"3".equals(book.getStatus())) {
+	            return ResponseEntity.badRequest()
+	                    .body("返却申請中の書籍だけ取消・却下できます。");
+	        }
+
+	        boolean isGeneralUser =
+	                Integer.valueOf(0).equals(
+	                        operationUser.getAdminKbn());
+
+	        // 一般ユーザーは自分が借りている書籍だけ取消可能
+	        if (isGeneralUser
+	                && (book.getLendUserId() == null
+	                || !book.getLendUserId().equals(
+	                        operationUser.getUserId()))) {
+
+	            return ResponseEntity.status(403)
+	                    .body("自分の返却申請だけ取り消せます。");
+	        }
+
+	        // 「3：返却申請中」から「2：貸出中」へ戻す
 	        MstBook updatedBook = bookService.statusUpdate(bookId, "2");
 
 	        return ResponseEntity.ok(updatedBook);
@@ -473,6 +518,18 @@ public class MstBookController {
 	        }
 
 	        int bookId = Integer.parseInt(bId.toString());
+	        
+	        MstBook book = bookService.findById(bookId);
+
+	        if (book == null) {
+	            return ResponseEntity.badRequest()
+	                    .body("指定された書籍が存在しません。");
+	        }
+
+	        if (!"3".equals(book.getStatus())) {
+	            return ResponseEntity.badRequest()
+	                    .body("返却申請中の書籍だけ返却承認できます。");
+	        }
 
 	        // 返却後は貸出可「0」へ変更
 	        MstBook updatedBook = bookService.statusUpdate(bookId, "0");
