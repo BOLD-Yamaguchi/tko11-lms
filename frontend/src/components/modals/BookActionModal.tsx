@@ -12,7 +12,7 @@ type BookActionModalProps = {
   requirePassword?: boolean
   validateEmployeeId?: (employeeId: string) => string | undefined
   onClose: () => void
-  onConfirm: (credentials: BookActionCredentials) => void
+  onConfirm: (credentials: BookActionCredentials) => void | string | Promise<void | string | undefined>
 }
 
 export type BookActionCredentials = {
@@ -36,7 +36,7 @@ export function BookActionModal({
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
-  const confirm = () => {
+  const confirm = async () => {
     const result = createBookActionSchema(
       requireEmployeeId,
       requirePassword,
@@ -53,8 +53,14 @@ export function BookActionModal({
       return
     }
 
+    const confirmationError = await onConfirm(result.data)
+
+    if (confirmationError) {
+      setError(confirmationError)
+      return
+    }
+
     setError('')
-    onConfirm(result.data)
   }
 
   return (

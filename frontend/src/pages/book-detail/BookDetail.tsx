@@ -40,6 +40,7 @@ import type { BookSearchState } from '../book-search/searchState'
 import type { BookStatusDetail, LoanStatus} from '../../types'
 import { UserRole } from '../../types'
 import { useQueryClient } from '@tanstack/react-query';
+import { API_BASE_URL } from '../../constants/api'
 
 type BookDetailProps = {
   onStatusChange: (
@@ -331,9 +332,22 @@ const getProfile = () => {
 
   // 一般ユーザーには、自分が予約した書籍だけ予約取消ボタンを表示する
   const canCancelReservation = role !== UserRole.General || currentReservationRecord?.employeeCode === profile?.employeeCode
-  const displayedActions = actions.filter(
-    (action) => action.id !== 'cancelReservation' || canCancelReservation
-  )
+  // 一般ユーザーには、自分が借りている書籍だけ返却系ボタンを表示する
+  const canOperateReturn = role !== UserRole.General || currentBorrowingRecord?.employeeCode === profile?.employeeCode
+  const displayedActions = actions.filter((action) => {
+    if (action.id === 'cancelReservation') {
+      return canCancelReservation
+    }
+
+    if (
+      action.id === 'requestReturn' ||
+      action.id === 'cancelReturnRequest'
+    ) {
+      return canOperateReturn
+    }
+
+    return true
+  })
 
   // 予約日を保存するカラムがないため一時的に非表示
   //const displayedReservationDate = currentReservationRecord?.reservationDate || statusDetail?.reservationDate || '未設定'
@@ -385,7 +399,7 @@ const getProfile = () => {
     const setting = actionSettings[action]
     let finalPayload = { ...payload }
 
-    // 💡 修正：APIに送るオブジェクトからも、固定の '利用者' 文字列を徹底的に排除
+    // 操作内容と権限に応じて、ログインユーザーまたは認証した対象利用者の情報を設定
     if (action === 'reserve') {
       finalPayload = {
         ...payload,
@@ -393,7 +407,25 @@ const getProfile = () => {
         employeeCode: profile?.employeeCode,
         userName: profile?.name,
       }
-    } else if (['loan', 'return', 'requestReturn'].includes(action)) {
+    } else if (action === 'cancelReturnRequest') {
+      // 取消・却下を操作しているログインユーザー
+      finalPayload = {
+        ...payload,
+        employeeCode: profile?.employeeCode,
+        userName: profile?.name,
+      }
+    } else if (
+      role === UserRole.General &&
+      action === 'requestReturn'
+    ) {
+      finalPayload = {
+        ...payload,
+        employeeCode: profile?.employeeCode,
+        userName: profile?.name,
+      }
+    } else if (
+      ['loan', 'return', 'requestReturn'].includes(action)
+    ) {
       finalPayload = {
         ...payload,
         employeeCode: authenticatedEmployeeCode,
@@ -528,7 +560,8 @@ const getProfile = () => {
     employeeId: string,
   ) => {
     if (pendingAction === 'requestReturn'
-      || pendingAction === 'return'
+      || pendingAction === 'return' 
+      || pendingAction === 'cancelReturnRequest'
     ) {
       const borrowingRecord = data.borrowingRecords.find(
         (record) => record.bookId === book.id,
@@ -543,17 +576,76 @@ const getProfile = () => {
       }
     }
 
+    // 予約取消では、予約者本人の社員番号だけを許可する
+    if (pendingAction === 'cancelReservation') {
+      if (!currentReservationRecord) {
+        return 'この書籍の予約情報が見つかりません。'
+      }
+
+      if (currentReservationRecord.employeeCode !== employeeId) {
+        return '予約者の社員番号と一致しません。'
+      }
+    }
+
+    // 予約中の書籍を貸し出す場合は、予約者本人だけを許可する
+    if (
+      pendingAction === 'loan'
+      && currentReservationRecord
+      && currentReservationRecord.employeeCode !== employeeId
+    ) {
+      return '予約者の社員番号と一致しません。'
+    }
+
     return undefined;
   }
   
-  const finishAuthentication = (
-    action: BookAction,
-    credentials: BookActionCredentials,
-  ) => {
-    setAuthenticatedEmployeeCode(credentials.employeeId)
-    setAuthenticatedUserName(resolveUserName(credentials.employeeId) ?? '')
-    setActionStep(action === 'requestReturn' ? 'returnRequest' : 'confirm')
+const finishAuthentication = async (
+  action: BookAction,
+  credentials: BookActionCredentials,
+): Promise<string | undefined> => {
+  let userName =
+    resolveUserName(credentials.employeeId) ?? ''
+
+  if (requiresPassword(action)) {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/auth/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            employeeCode: credentials.employeeId,
+            password: credentials.password,
+          }),
+        },
+      )
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        return result.message
+          ?? '社員番号またはパスワードが違います。'
+      }
+
+      userName = result.username ?? userName
+    } catch (error) {
+      console.error(error)
+      return '認証処理に失敗しました。'
+    }
   }
+
+  setAuthenticatedEmployeeCode(credentials.employeeId)
+  setAuthenticatedUserName(userName)
+  setActionStep(
+    action === 'requestReturn'
+      ? 'returnRequest'
+      : 'confirm',
+  )
+
+  return undefined
+}
 
   const submitReturnRequest = (comment: string) => {
     onReturnCommentChange(book.id, comment)
@@ -622,11 +714,17 @@ const getProfile = () => {
   // 返却申請取消では、ログインユーザーではなく実際の利用者を表示する
   let personLabel: string | undefined
 
-  if (pendingAction === 'cancelReservation'
-    && role === UserRole.General
+  if (pendingAction === 'cancelReservation') {
+    // 予約取消では、実際の予約者名を表示
+    personLabel = role === UserRole.General
+      ? undefined
+      : displayedReserverName
+  } else if (
+    pendingAction === 'return'
+    || pendingAction === 'requestReturn'
+    || pendingAction === 'cancelReturnRequest'
   ) {
-    personLabel = undefined
-  } else if (pendingAction === 'cancelReturnRequest') {
+    // 返却系では、実際の貸出者名を表示
     personLabel = displayedBorrowerName
   } else {
     personLabel = authenticatedUserName || profile?.name
