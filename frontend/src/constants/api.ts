@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
   bookDetail: (bookId: string) => `book/${encodeURIComponent(bookId)}`,
   borrowLists: 'book/borrow-lists',
   historyLists: 'book/history-lists-user',
+  historyListsBook: 'book/history-lists-book',
   reservationLists: 'book/reservation-lists',
   bookSearch: 'book/search',
   returnRequest: 'book/return-request',

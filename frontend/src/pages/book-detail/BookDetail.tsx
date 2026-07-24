@@ -28,7 +28,7 @@ import {
   cancelBookReservation,
   directlyReturnBook,
   fetchBookDetail,
-  fetchHistoryLists,
+  fetchHistoryListsByBookId,
   lendBook,
   rejectBookReturnRequest,
   requestBookReturn,
@@ -193,13 +193,13 @@ function BookDetail({
   onHistoryVisibilityChange,
   onReturnCommentChange,
 }: BookDetailProps) {
+  const [historyList, setHistoryList] = useState<any[]>([])
+
   const navigate = useNavigate()
   const location = useLocation()
   const role = Number(sessionStorage.getItem("adminKbn")) as UserRole
-  // 詳細・状態・履歴表示に必要な書籍管理データを共通クエリから取得する。
   const data = useLibraryDataValue()
   const books = data.books
-  const loanHistory = data.loanHistory
   const historyVisibility = data.historyVisibility
   const returnComments = data.returnComments
   const { bookId } = useParams()
@@ -226,7 +226,14 @@ function BookDetail({
     if (!book?.id) return
 
     void fetchBookDetail(book.id)
-    void fetchHistoryLists(book.id)
+  
+    fetchHistoryListsByBookId(book.id)
+      .then((res) => {
+        setHistoryList(res ?? [])
+      })
+      .catch((err) => {
+        console.error('履歴の取得に失敗しました', err)
+      })
   }, [book?.id])
 
   if (!book) {
@@ -294,7 +301,7 @@ function BookDetail({
     return null
   }
 
-const getProfile = () => {
+  const getProfile = () => {
     const masterProfile = data?.roleProfiles?.[role] as any;
     const loggedIn = getLoggedInUser() as any;
 
@@ -308,7 +315,6 @@ const getProfile = () => {
       };
     }
 
-    // 💡 修正：ここで文字列を返さず、空文字かロールそのものを返すようにする
     return {
       userId: loggedIn?.userId ?? "00000000-0000-0000-0000-000000000001",
       employeeCode: loggedIn?.employeeCode ?? '',
@@ -317,22 +323,15 @@ const getProfile = () => {
   }
 
   const profile = getProfile()
-  console.log("profile =", profile);
 
   const statusDetail = data?.bookStatusDetails[book.id]
-  // 現在の貸出情報
   const currentBorrowingRecord = data.borrowingRecords.find((record) => record.bookId === book.id)
-  // 現在の予約情報
   const currentReservationRecord = data.reservationRecords.find((record) => record.bookId === Number(book.id))
-  // 貸出中・返却申請中に表示する利用者情報
   const displayedBorrowerName = currentBorrowingRecord?.borrower || statusDetail?.borrowerName || '不明'
   const displayedReturnComment = currentBorrowingRecord?.returnComment || ''
-  // 予約中に表示する予約者情報
   const displayedReserverName = currentReservationRecord?.reserver || statusDetail?.reserverName || '不明'
 
-  // 一般ユーザーには、自分が予約した書籍だけ予約取消ボタンを表示する
   const canCancelReservation = role !== UserRole.General || currentReservationRecord?.employeeCode === profile?.employeeCode
-  // 一般ユーザーには、自分が借りている書籍だけ返却系ボタンを表示する
   const canOperateReturn = role !== UserRole.General || currentBorrowingRecord?.employeeCode === profile?.employeeCode
   const displayedActions = actions.filter((action) => {
     if (action.id === 'cancelReservation') {
@@ -349,14 +348,12 @@ const getProfile = () => {
     return true
   })
 
-  // 予約日を保存するカラムがないため一時的に非表示
-  //const displayedReservationDate = currentReservationRecord?.reservationDate || statusDetail?.reservationDate || '未設定'
-  
-  const returnedHistory = loanHistory.filter((history) => history.returnDate.trim())
-  const visibleHistoryIds = historyVisibility[book.id] ?? returnedHistory.map((history) => history.id)
+  // 💡 修正：APIレスポンスのキー名（lendId, updatedAtなど）と紐付ける
+  const returnedHistory = historyList.filter((history) => history.updatedAt && history.updatedAt.trim())
+  const visibleHistoryIds = historyVisibility[book.id] ?? returnedHistory.map((history) => String(history.lendId))
   const displayedHistory = role === UserRole.Admin && editingHistory
     ? returnedHistory
-    : returnedHistory.filter((history) => visibleHistoryIds.includes(history.id))
+    : returnedHistory.filter((history) => visibleHistoryIds.includes(String(history.lendId)))
 
   const callBookActionApi = async (
     action: BookAction,
@@ -373,7 +370,6 @@ const getProfile = () => {
         }
         : {}),
 
-      // 予約取消時、操作しているユーザーの社員番号をAPIへ送る
       ...(action === 'cancelReservation'
         ? {
             employeeCode: profile?.employeeCode,
@@ -399,7 +395,6 @@ const getProfile = () => {
     const setting = actionSettings[action]
     let finalPayload = { ...payload }
 
-    // 操作内容と権限に応じて、ログインユーザーまたは認証した対象利用者の情報を設定
     if (action === 'reserve') {
       finalPayload = {
         ...payload,
@@ -408,7 +403,6 @@ const getProfile = () => {
         userName: profile?.name,
       }
     } else if (action === 'cancelReturnRequest') {
-      // 取消・却下を操作しているログインユーザー
       finalPayload = {
         ...payload,
         employeeCode: profile?.employeeCode,
@@ -436,13 +430,11 @@ const getProfile = () => {
     const nextStatusDetail = getNextStatusDetail(action)
 
     try {
-      // APIが成功するまで待つ
       await callBookActionApi(action, finalPayload)
 
       await queryClient.invalidateQueries({
         queryKey: libraryDataQueryKey,
       });
-      // 成功した場合だけ画面を変更
       onStatusChange(book.id, setting.nextStatus, nextStatusDetail)
       setToastSeverity('success');
       setMessage(setting.message)
@@ -454,7 +446,6 @@ const getProfile = () => {
       console.error(error)
       setToastSeverity('error');
       setMessage('処理に失敗しました。入力内容を確認してください。')
-      // 確認画面から社員番号入力画面へ戻す
       setAuthenticatedEmployeeCode('')
       setAuthenticatedUserName('')
       setActionStep('auth')
@@ -462,7 +453,6 @@ const getProfile = () => {
   }
 
   const getNextStatusDetail = (action: BookAction): BookStatusDetail | null | undefined => {
-    // 💡 修正：ステパネの出し入れや各種イベント発火後の状態オブジェクトからも固定の '利用者' を排除
     if (action === 'reserve') {
       return {
         lendUserId: profile?.userId || "00000000-0000-0000-0000-000000000001",
@@ -576,7 +566,6 @@ const getProfile = () => {
       }
     }
 
-    // 予約取消では、予約者本人の社員番号だけを許可する
     if (pendingAction === 'cancelReservation') {
       if (!currentReservationRecord) {
         return 'この書籍の予約情報が見つかりません。'
@@ -587,7 +576,6 @@ const getProfile = () => {
       }
     }
 
-    // 予約中の書籍を貸し出す場合は、予約者本人だけを許可する
     if (
       pendingAction === 'loan'
       && currentReservationRecord
@@ -599,53 +587,53 @@ const getProfile = () => {
     return undefined;
   }
   
-const finishAuthentication = async (
-  action: BookAction,
-  credentials: BookActionCredentials,
-): Promise<string | undefined> => {
-  let userName =
-    resolveUserName(credentials.employeeId) ?? ''
+  const finishAuthentication = async (
+    action: BookAction,
+    credentials: BookActionCredentials,
+  ): Promise<string | undefined> => {
+    let userName =
+      resolveUserName(credentials.employeeId) ?? ''
 
-  if (requiresPassword(action)) {
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/auth/login`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+    if (requiresPassword(action)) {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/auth/login`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              employeeCode: credentials.employeeId,
+              password: credentials.password,
+            }),
           },
-          body: JSON.stringify({
-            employeeCode: credentials.employeeId,
-            password: credentials.password,
-          }),
-        },
-      )
+        )
 
-      const result = await response.json()
+        const result = await response.json()
 
-      if (!response.ok) {
-        return result.message
-          ?? '社員番号またはパスワードが違います。'
+        if (!response.ok) {
+          return result.message
+            ?? '社員番号またはパスワードが違います。'
+        }
+
+        userName = result.username ?? userName
+      } catch (error) {
+        console.error(error)
+        return '認証処理に失敗しました。'
       }
-
-      userName = result.username ?? userName
-    } catch (error) {
-      console.error(error)
-      return '認証処理に失敗しました。'
     }
+
+    setAuthenticatedEmployeeCode(credentials.employeeId)
+    setAuthenticatedUserName(userName)
+    setActionStep(
+      action === 'requestReturn'
+        ? 'returnRequest'
+        : 'confirm',
+    )
+
+    return undefined
   }
-
-  setAuthenticatedEmployeeCode(credentials.employeeId)
-  setAuthenticatedUserName(userName)
-  setActionStep(
-    action === 'requestReturn'
-      ? 'returnRequest'
-      : 'confirm',
-  )
-
-  return undefined
-}
 
   const submitReturnRequest = (comment: string) => {
     onReturnCommentChange(book.id, comment)
@@ -675,7 +663,6 @@ const finishAuthentication = async (
     navigate(backPath)
   }
 
-  // 💡 修正：画面上の「現在の状態」パネルテキストからもフォールバックの '利用者' を排除
   const statusDescription = isDisposed
     ? <p>この書籍は廃棄済みのため、貸出・予約操作はできません。</p>
     : {
@@ -695,8 +682,6 @@ const finishAuthentication = async (
       予約中: (
         <>
           <p>予約者：{displayedReserverName}さん</p>
-          {/* 予約日を保存するカラムがないため一時的に非表示 */}
-          {/* <p>予約日：{displayedReservationDate}</p> */}
         </>
       ),
     }[book.loanStatus]
@@ -710,12 +695,9 @@ const finishAuthentication = async (
       ? '直接返却確認'
       : modalSetting?.title ?? ''
 
-  // 確認画面の氏名を操作種別に応じて切り替える
-  // 返却申請取消では、ログインユーザーではなく実際の利用者を表示する
   let personLabel: string | undefined
 
   if (pendingAction === 'cancelReservation') {
-    // 予約取消では、実際の予約者名を表示
     personLabel = role === UserRole.General
       ? undefined
       : displayedReserverName
@@ -724,7 +706,6 @@ const finishAuthentication = async (
     || pendingAction === 'requestReturn'
     || pendingAction === 'cancelReturnRequest'
   ) {
-    // 返却系では、実際の貸出者名を表示
     personLabel = displayedBorrowerName
   } else {
     personLabel = authenticatedUserName || profile?.name
@@ -821,31 +802,35 @@ const finishAuthentication = async (
                 </tr>
               </thead>
               <tbody>
-                {displayedHistory.map((loan) => (
-                  <tr
-                    key={loan.id}
-                    className={
-                      editingHistory && !draftVisibleHistoryIds.includes(loan.id)
-                        ? 'history-hidden-row'
-                        : ''
-                    }
-                  >
-                    {editingHistory && (
-                      <td>
-                        <input
-                          type="checkbox"
-                          aria-label={`${loan.id}を表示`}
-                          checked={draftVisibleHistoryIds.includes(loan.id)}
-                          onChange={() => toggleHistoryVisibility(loan.id)}
-                        />
-                      </td>
-                    )}
-                    <td>{loan.borrower}</td>
-                    <td>{loan.loanDate}</td>
-                    <td>{loan.returnDate}</td>
-                    <td>{loan.comment}</td>
-                  </tr>
-                ))}
+                {displayedHistory.map((loan) => {
+                  const historyIdStr = String(loan.lendId)
+                  return (
+                    <tr
+                      key={loan.lendId}
+                      className={
+                        editingHistory && !draftVisibleHistoryIds.includes(historyIdStr)
+                          ? 'history-hidden-row'
+                          : ''
+                      }
+                    >
+                      {editingHistory && (
+                        <td>
+                          <input
+                            type="checkbox"
+                            aria-label={`${historyIdStr}を表示`}
+                            checked={draftVisibleHistoryIds.includes(historyIdStr)}
+                            onChange={() => toggleHistoryVisibility(historyIdStr)}
+                          />
+                        </td>
+                      )}
+                      {/* 💡 修正：APIレスポンスのプロパティ名にマッピング */}
+                      <td>{loan.borrower}</td>
+                      <td>{loan.createdAt ? loan.createdAt.replace('T', ' ') : '-'}</td>
+                      <td>{loan.updatedAt ? loan.updatedAt.replace('T', ' ') : '貸出中'}</td>
+                      <td>{loan.review || '-'}</td>
+                    </tr>
+                  )
+                })}
                 {displayedHistory.length === 0 && (
                   <tr>
                     <td colSpan={editingHistory ? 5 : 4} className="empty-history">
