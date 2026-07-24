@@ -54,10 +54,10 @@ public class BorrowingService {
                     
                     // 最新の未返却履歴から返却時の感想を取得
                     mstBookLogRepository
-                            .findFirstByBookIdAndUpdatedAtIsNullOrderByLendIdDesc(
-                                    book.getBookId())
-                            .ifPresent(bookLog ->
-                                    response.setReturnComment(bookLog.getReview()));
+                    .findTopByBookIdOrderByLendIdDesc(
+                            book.getBookId())
+                    .ifPresent(bookLog ->
+                            response.setReturnComment(bookLog.getReview()));
                     
                     response.setLoanDate(book.getStatusUpdatedAt() != null 
                             ? book.getStatusUpdatedAt().toLocalDate().toString() : "");

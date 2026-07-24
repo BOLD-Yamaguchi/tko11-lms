@@ -198,15 +198,23 @@ public class MstBookController {
 
 			int bookId = Integer.parseInt(bId.toString());
 			MstBook updatedBook = bookService.statusUpdate(bookId, "1");
+			
+			UUID userId = null;
 			if (uId != null) {
 				String userIdStr = uId.toString();
 				if (userIdStr.contains("-") && userIdStr.length() > 30) {
-					UUID userId = UUID.fromString(userIdStr);
+					userId = UUID.fromString(userIdStr);
 					bookService.lendUserUpdate(bookId, userId);
 				} else {
 					System.out.println("--- [注意] userId '" + userIdStr + "' はUUID形式ではないため、今回はユーザーID更新をスキップします");
 				}
 			}
+
+			// --- 【追加】予約時に mst_book_log へ予約履歴（ステータス：1 予約中）を登録 ---
+			if (userId != null) {
+				bookLogService.createReservationLog(bookId, userId, LocalDateTime.now());
+			}
+			// --------------------------------------------------------------------------
 
 			return ResponseEntity.ok(updatedBook);
 

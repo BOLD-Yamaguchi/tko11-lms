@@ -17,7 +17,7 @@ import com.bold.application.entity.books.MstBookLog;
 import com.bold.application.entity.users.User;
 import com.bold.application.repository.books.MstBookLogRepository;
 import com.bold.application.repository.books.MstBookRepository;
-import com.bold.application.repository.users.UserRepository; // 1. インポート追加
+import com.bold.application.repository.users.UserRepository;
 
 @Service
 public class BookLogService {
@@ -28,12 +28,11 @@ public class BookLogService {
 	@Autowired
 	private MstBookRepository bookRepository;
 
-	@Autowired // 2. 依存性の注入を追加
+	@Autowired
 	private UserRepository userRepository;
 
 	// 貸出履歴一覧取得（全て）
 	public List<BookLogDto> getAll() {
-		// 3. 共通ロジックを使用して書籍情報とユーザー名を結合して取得
 		return mapLogsWithBookInfo(repository.findAll());
 	}
 
@@ -55,6 +54,12 @@ public class BookLogService {
 		dto.setLendUserId(entity.getLendUserId());
 		dto.setReview(entity.getReview());
 		dto.setHiddenFlg(entity.getHiddenFlg());
+
+		// --- 【改修】ステータスと予約日をDTOへ転記 ---
+		dto.setStatus(entity.getStatus());
+		dto.setReservationAt(entity.getReservationAt());
+		// ------------------------------------------
+
 		if(entity.getCreatedAt() != null) {
 			dto.setCreatedAt(entity.getCreatedAt());
 		}
@@ -73,7 +78,27 @@ public class BookLogService {
 		return repository.save(mstBookLog);
 	}
 
-	// 貸出時に mst_book_log へ貸出履歴を新規登録
+	// --- 【新規追加】予約時に mst_book_log へ予約履歴を新規登録（ステータス：1 予約中） ---
+	public MstBookLog createReservationLog(
+	        int bookId,
+	        UUID lendUserId,
+	        LocalDateTime reservationAt) {
+
+	    MstBookLog bookLog = new MstBookLog();
+
+	    bookLog.setBookId(bookId);
+	    bookLog.setLendUserId(lendUserId);
+	    bookLog.setStatus("1"); // 1: 予約中
+	    bookLog.setReservationAt(reservationAt);
+	    bookLog.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
+	    bookLog.setUpdatedAt(null);
+	    bookLog.setReview(null);
+	    bookLog.setHiddenFlg("0");
+
+	    return repository.save(bookLog);
+	}
+
+	// --- 【改修】貸出時に mst_book_log へ貸出履歴を新規登録（ステータス：2 貸出中） ---
 	public MstBookLog createLendingLog(
 	        int bookId,
 	        UUID lendUserId) {
@@ -82,6 +107,7 @@ public class BookLogService {
 
 	    bookLog.setBookId(bookId);
 	    bookLog.setLendUserId(lendUserId);
+	    bookLog.setStatus("2"); // 2: 貸出中
 	    bookLog.setCreatedAt(
 	            LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
 	    // 貸出時点では未返却・感想未入力
@@ -115,6 +141,7 @@ public class BookLogService {
 		return repository.save(log);
 	}
 
+	// --- 【改修】一括返却（ステータス：5 返却済み） ---
 	public List<MstBookLog> bulkReturnBooks(List<BorrowingRecordResponse> borrowingRecordList) {
 		List<Integer> bookIdList = borrowingRecordList.stream().map(BorrowingRecordResponse::getBookId).toList();
 		List<MstBookLog> mstBookLogList = repository.findByBookIdIn(bookIdList);
@@ -122,7 +149,10 @@ public class BookLogService {
 			.filter(mstBookLog -> mstBookLog.getUpdatedAt() == null)
 			.collect(Collectors.toList());
 
-		filteredList.forEach(mstBookLog -> mstBookLog.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo"))));
+		filteredList.forEach(mstBookLog -> {
+			mstBookLog.setStatus("5"); // 5: 返却済み
+			mstBookLog.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
+		});
 		return repository.saveAll(filteredList);
 	}
 
@@ -141,7 +171,11 @@ public class BookLogService {
 		List<UUID> userIds = logs.stream().map(MstBookLog::getLendUserId).distinct().toList();
 		
 		List<MstBook> books = bookRepository.findByBookIdIn(bookIds);
-		Map<Integer, MstBook> bookMap = books.stream().collect(Collectors.toMap(MstBook::getBookId, b -> b));
+		Map<Integer, MstBook> bookMap = books.stream().collect(Collectors.toMap(
+			    MstBook::getBookId, 
+			    b -> b, 
+			    (existing, replacement) -> existing
+			));
 		
 		List<User> users = userRepository.findByUserIdIn(userIds);
 		Map<UUID, User> userMap = users.stream().collect(Collectors.toMap(
@@ -159,22 +193,23 @@ public class BookLogService {
 			}
 			
 			User user = userMap.get(log.getLendUserId());
-			System.out.println("★デバッグ: 検索ID=" + log.getLendUserId() + " 取得できたUser=" + user); // これを追加
+			System.out.println("★デバッグ: 検索ID=" + log.getLendUserId() + " 取得できたUser=" + user);
 			dto.setBorrower(user != null ? user.getUsername() : "不明");
 			
 			return dto;
 		}).toList();
 	}
 	
-	// 最新の未返却履歴に返却日時を登録
+	// --- 【改修】最新の未返却履歴に返却日時とステータス（5: 返却済み）を登録 ---
 	public MstBookLog completeReturnLog(int bookId) {
 
-	    MstBookLog bookLog = repository
-	            .findFirstByBookIdAndUpdatedAtIsNullOrderByLendIdDesc(bookId)
-	            .orElseThrow(() ->
-	                    new IllegalStateException(
-	                            "未返却の貸出履歴が見つかりません。"));
+		MstBookLog bookLog = repository
+		        .findTopByBookIdOrderByLendIdDesc(bookId)
+		        .orElseThrow(() ->
+		                new IllegalStateException(
+		                        "該当する書籍の履歴が見つかりません。"));
 
+	    bookLog.setStatus("5"); // 5: 返却済み
 	    bookLog.setUpdatedAt(
 	            LocalDateTime.now(ZoneId.of("Asia/Tokyo")));
 
@@ -186,11 +221,11 @@ public class BookLogService {
 	        int bookId,
 	        String review) {
 
-	    MstBookLog bookLog = repository
-	            .findFirstByBookIdAndUpdatedAtIsNullOrderByLendIdDesc(bookId)
-	            .orElseThrow(() ->
-	                    new IllegalStateException(
-	                            "未返却の貸出履歴が見つかりません。"));
+		MstBookLog bookLog = repository
+		        .findTopByBookIdOrderByLendIdDesc(bookId)
+		        .orElseThrow(() ->
+		                new IllegalStateException(
+		                        "該当する書籍の履歴が見つかりません。"));
 
 	    // 感想は任意。空文字の場合はNULLとして保存
 	    bookLog.setReview(

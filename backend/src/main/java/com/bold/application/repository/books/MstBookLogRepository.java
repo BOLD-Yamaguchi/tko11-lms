@@ -24,7 +24,19 @@ public interface MstBookLogRepository extends JpaRepository<MstBookLog, Integer>
 	// 貸出IDによるレコード取得
 	MstBookLog findByLendId(int lendId);
 	
-	// 指定書籍の未返却履歴を新しい順で1件取得
-	Optional<MstBookLog> findFirstByBookIdAndUpdatedAtIsNullOrderByLendIdDesc(int bookId);
+	// --- 【今回追加・推奨するメソッド】 ---
+
+	/**
+	 * 指定した書籍IDの中で、最も新しい（lendIdが大きい）ログを1件取得する
+	 * （書籍の一覧や詳細で「現在の状態」を知るために使います）
+	 */
+	Optional<MstBookLog> findTopByBookIdOrderByLendIdDesc(int bookId);
+
+	/**
+	 * 複数冊の書籍IDリストを一括で受け取り、それぞれ「最新のログ」を効率よく取得したい場合などに使えるカスタムクエリ例
+	 * （必要に応じて実装）
+	 */
+	// @Query("SELECT l FROM MstBookLog l WHERE l.lendId IN (SELECT MAX(sub.lendId) FROM MstBookLog sub GROUP BY sub.bookId) AND l.bookId IN :bookIds")
+	// List<MstBookLog> findLatestLogsByBookIds(@Param("bookIds") List<Integer> bookIds);
 
 }
