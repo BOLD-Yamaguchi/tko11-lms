@@ -33,6 +33,13 @@ public class MstBookLog {
     @Column(nullable = false, length = 1)
     private String hiddenFlg;
 
+    // --- 【今回の追加項目】 ---
+    @Column(length = 20)
+    private String status; // ステータス（例: "貸出中", "返却済み", "予約中" など）
+
+    private LocalDateTime reservationAt; // 予約日（※日時まで管理する場合は LocalDateTime にしてください）
+    // -------------------------
+
     public int getLendId() {
         return lendId;
     }
@@ -88,4 +95,22 @@ public class MstBookLog {
     public void setHiddenFlg(String hiddenFlg) {
         this.hiddenFlg = hiddenFlg;
     }
+
+    // --- 【今回の追加項目のGetter / Setter】 ---
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getReservationAt() {
+        return reservationAt;
+    }
+
+    public void setReservationAt(LocalDateTime reservationAt) {
+        this.reservationAt = reservationAt;
+    }
+    // ------------------------------------------
 }

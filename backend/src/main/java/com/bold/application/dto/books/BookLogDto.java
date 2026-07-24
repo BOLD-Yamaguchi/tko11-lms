@@ -15,6 +15,11 @@ public class BookLogDto {
 	private String author;
 	private String borrower;
 
+	// --- 【今回追加するフィールド】 ---
+	private String status;
+	private LocalDateTime reservationAt;
+	// ----------------------------------
+
 	public int getLendId() {
 		return lendId;
 	}
@@ -67,7 +72,10 @@ public class BookLogDto {
 		return updatedAt;
 	}
 
-	// Getter/Setter を追加
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
 	public String getBorrower() {
 		return borrower;
 	}
@@ -76,13 +84,37 @@ public class BookLogDto {
 		this.borrower = borrower;
 	}	
 	
-	public void setUpdatedAt(LocalDateTime updatedAt) {
-		this.updatedAt = updatedAt;
+	public String getTitle() { 
+		return title; 
 	}
-	// Getter/Setter の追記
-	public String getTitle() { return title; }
-	public void setTitle(String title) { this.title = title; }
+	
+	public void setTitle(String title) { 
+		this.title = title; 
+	}
 
-	public String getAuthor() { return author; }
-	public void setAuthor(String author) { this.author = author; }
+	public String getAuthor() { 
+		return author; 
+	}
+	
+	public void setAuthor(String author) { 
+		this.author = author; 
+	}
+
+	// --- 【今回追加する Getter / Setter】 ---
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public LocalDateTime getReservationAt() {
+		return reservationAt;
+	}
+
+	public void setReservationAt(LocalDateTime reservationAt) {
+		this.reservationAt = reservationAt;
+	}
+	// -----------------------------------------
 }
