@@ -417,3 +417,12 @@ export async function fetchHistoryListsAll() {
     .get('book/history-lists-all')
     .json<UserLoanHistory[]>(); // 必要に応じて適切な型（配列など）を指定してください
 }
+
+// 【追加】書籍IDを指定してその本の貸出履歴を取得する関数
+export async function fetchHistoryListsByBookId(bookId: string) {
+  return httpClient
+    .get(API_ENDPOINTS.historyListsBook, { // ※バックエンドの正確なパスが別であれば合わせてください
+      searchParams: { bookId }
+    })
+    .json<UserLoanHistory[]>()
+}
