@@ -41,6 +41,7 @@ import type { BookStatusDetail, LoanStatus} from '../../types'
 import { UserRole } from '../../types'
 import { useQueryClient } from '@tanstack/react-query';
 import { API_BASE_URL } from '../../constants/api'
+import { fetchUsers } from '../../api/usersApi'
 
 type BookDetailProps = {
   onStatusChange: (
@@ -621,6 +622,22 @@ function BookDetail({
       } catch (error) {
         console.error(error)
         return '認証処理に失敗しました。'
+      }
+    } else if (!userName) {
+      try {
+        const users = await fetchUsers()
+        const targetUser = users.find(
+          (user) => user.employeeCode === credentials.employeeId,
+        )
+
+        if (!targetUser) {
+          return '該当する社員番号の利用者が見つかりません。'
+        }
+
+        userName = targetUser.username
+      } catch (error) {
+        console.error(error)
+        return '利用者情報の取得に失敗しました。'
       }
     }
 
