@@ -18,8 +18,6 @@ import type {
   UserRole,
 } from '../../types'
 
-// BookForm.tsx の冒頭でインポート
-//import { collectionStatusByCode, majorCategoryById, minorCategoryById, locationCodeByName } from '../../api/booksApi';
 import {
   categoryData,
   collectionStatusByCode,
@@ -39,11 +37,10 @@ type BookFormProps = {
 function BookForm({
   mode,
   initialValues,
-//  onSubmit,
+  onSubmit, // ← コメントアウトを解除して受け取るように修正
   onCsvSubmit,
   allowDisposal = false,
 }: BookFormProps) {
-  // 入力内容、検証結果、CSV選択、破棄確認の各フォーム状態を管理する。
   const [form, setForm] = useState<Book>(initialValues)
   const [csvMessage, setCsvMessage] = useState('')
   const [csvErrors, setCsvErrors] = useState<BookCsvError[]>([])
@@ -55,30 +52,19 @@ function BookForm({
   const [csvGuideOpen, setCsvGuideOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
-  // カテゴリと拠点の選択肢を、書籍管理データの共通クエリから取得する。
   const data = useLibraryDataValue()
-  //const isEdit = mode === 'edit'
-  //const getMinorCategoryOptions = (majorCategory: string) => (
-  //  majorCategory
-  //    ? data.categoryOptions.minorByMajor?.[majorCategory] ?? data.categoryOptions.minor
-  //    : data.categoryOptions.minor
-  //)
-  //const minorCategoryOptions = getMinorCategoryOptions(form.majorCategory)
 
   const isEdit = mode === 'edit'
 
-  // 選択されている大項目の文字列（例：「技術書」）から、該当するオブジェクトを探す
   const currentMajor = Object.values(categoryData).find(
     (major) => major.name === form.majorCategory
   )
   
-  // 該当する大項目があればその minors の配列を、なければ空配列を使う
   const minorCategoryOptions = currentMajor ? currentMajor.minors : []
 
   const updateField = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target
     if (name === 'majorCategory') {
-      // 大項目が変わったら中項目は必ず空にする（選択し直しを促す）
       setForm((current) => ({
         ...current,
         majorCategory: value,
@@ -88,49 +74,24 @@ function BookForm({
       setForm((current) => ({ ...current, [name]: value }))
     }
     setValidationErrors((current) => ({ ...current, [name]: undefined }))
-
-  {/* 中項目のセレクトボックス部分を探して以下のように修正 */}
-  <select
-    id="minorCategory"
-    name="minorCategory"
-    value={form.minorCategory}
-    onChange={updateField}
-  >
-    <option value="">選択してください</option>
-    {minorCategoryOptions.map((minor) => (
-      // minor がオブジェクトになったので、key と value に minor.name を指定
-      <option key={minor.id} value={minor.name}>{minor.name}</option>
-    ))}
-  </select>
-
-
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     try {
       event.preventDefault()
       const result = bookSchema.safeParse(form)
-      if (!result.success) { /* ...エラー処理... */ return }
+      if (!result.success) { return }
       setValidationErrors({})
 
-      // 1. 共通の逆引き用関数（変わらず使用）
       const getCode = (map: Record<string | number, string>, value: string) => {
         return Object.keys(map).find(key => map[key] === value) ?? '0';
       };
 
-      // 2. 新しい categoryData から大項目・中項目のIDを見つける
-//      const majorObj = Object.values(categoryData).find(m => m.name === form.majorCategory);
-//      const majorId = majorObj ? majorObj.id : 0;
-
       const majorObj = Object.values(categoryData).find(m => m.name === form.majorCategory);
       const majorId = majorObj?.id ?? 0;
       
-//      const minorObj = majorObj?.minors.find(m => m.name === form.minorCategory);
-//      const minorId = minorObj ? minorObj.id : 0;
-
       const minorObj = majorObj?.minors.find(m => m.name === form.minorCategory);
       const minorId = minorObj?.id ?? 0;
-
 
       const payload = {
         title: form.title,
@@ -138,29 +99,20 @@ function BookForm({
         author: form.author,
         publisher: form.publisher,
         publishedAt: form.publishedAt,
-
-        // 新しいID変換ロジックを適用
         majorCategory: majorId, 
         minorCategory: minorId,
-        
-        // 拠点と配架は以前のまま
         collectionStatus: Number(getCode(collectionStatusByCode, form.collectionStatus)),
         location: Number(getCode(locationCodeByName, form.location)),
-
         shelfNumber: form.shelfNumber,
         tierNumber: form.tierNumber,
         notes: form.notes
       }
 
-      // デバッグ用：何が送られているかコンソールで確認
       console.log("送信ペイロード:", payload);
 
-//      const response = await onSubmit(payload as any) as any
+      // ▼ APIへデータを送信する処理のコメントアウトを解除
+      await onSubmit(payload as any)
 
-//      const nextId = response?.bookId ?? response?.id ?? result.data.id
-
-//      navigate(`/books/${nextId}`, {
-//      navigate( -1 as any, {
       navigate(`/mypage`, {
         state: {
           message: isEdit ? '書籍情報を更新しました。' : '書籍を登録しました。'
