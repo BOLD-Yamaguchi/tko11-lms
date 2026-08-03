@@ -649,6 +649,16 @@ public class MstBookController {
 		return BookSearchResponse.from(mstBook);
 	}
 
+	// 書籍詳細取得API
+	@GetMapping("/{id}")
+	public ResponseEntity<BookSearchResponse> getBookDetail(@org.springframework.web.bind.annotation.PathVariable("id") int id) {
+		MstBook mstBook = bookService.findById(id);
+		if (mstBook == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(toSearchResponse(mstBook));
+	}
+	
 	// MstBookController.java に追加
 	//    @GetMapping("/history-lists-user")
 	//    public List<BorrowingRecordResponse> getHistoryList(@RequestParam String employeeCode) {
